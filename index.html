@@ -136,7 +136,7 @@ class GameScene extends Phaser.Scene {
   
   setupGame() {
     this.speed = 4.5; this.score = 0; this.coinCount = 0; this.logCount = 0;
-    this.dead = false; this.jumping = false; this.sliding = false; this.dyingAnim = false; this.canRestart = false;
+    this.dead = false; this.jumping = false; this.sliding = false; this.dyingAnim = false;
     this.velY = 0; this.jumpCount = 0;
     this.torchFlames = [];
 
@@ -428,7 +428,7 @@ class GameScene extends Phaser.Scene {
     this.kW = this.input.keyboard.addKey('W');
     this.kSp = this.input.keyboard.addKey('SPACE');
     this.kS = this.input.keyboard.addKey('S');
-    this.input.on('pointerdown', p => { if (this.dead) { if (!this.dyingAnim && this.canRestart) this.scene.restart(); return; } p.y < H/2 ? this.doJump() : this.doSlide(); });
+    this.input.on('pointerdown', p => { if (this.dead) { if (!this.dyingAnim) this.scene.restart(); return; } p.y < H/2 ? this.doJump() : this.doSlide(); });
     this.input.on('pointerup', () => this.endSlide());
   }
 
@@ -603,11 +603,9 @@ class GameScene extends Phaser.Scene {
     }
     this.add.text(W/2, H/2-64, taunt, { fontFamily: 'monospace', fontSize: '9px', fontStyle: 'italic', color: '#FF8888', stroke: '#000', strokeThickness: 2 }).setOrigin(0.5).setDepth(31);
 
-    // Name input for leaderboard
+    // Auto-submit score with saved name
     const finalScore = Math.floor(this.score);
     const savedName = localStorage.getItem('eir_name') || '';
-    
-    this.add.text(W/2, H/2-44, 'ENTER NAME FOR LEADERBOARD:', { fontFamily: 'monospace', fontSize: '9px', color: '#AAA' }).setOrigin(0.5).setDepth(31);
     
     // Create HTML input overlay
     const canvas = this.sys.game.canvas;
@@ -615,6 +613,8 @@ class GameScene extends Phaser.Scene {
     const scaleX = rect.width / W;
     const scaleY = rect.height / H;
     
+    this.add.text(W/2, H/2-44, 'ENTER NAME FOR LEADERBOARD:', { fontFamily: 'monospace', fontSize: '9px', color: '#AAA' }).setOrigin(0.5).setDepth(31);
+
     const input = document.createElement('input');
     input.type = 'text';
     input.maxLength = 12;
@@ -627,10 +627,9 @@ class GameScene extends Phaser.Scene {
     input.style.height = (22 * scaleY) + 'px';
     input.style.fontSize = (14 * scaleY) + 'px';
     document.body.appendChild(input);
-    input.focus();
     this._nameInput = input;
 
-    const submitBtn = this.add.text(W/2, H/2 - 8, '[ SUBMIT SCORE ]', { fontFamily: 'monospace', fontSize: '12px', fontStyle: 'bold', color: '#FFD700', stroke: '#000', strokeThickness: 2 }).setOrigin(0.5).setDepth(31).setInteractive({ useHandCursor: true });
+    const statusTxt = this.add.text(W/2, H/2 - 8, '[ SUBMIT SCORE ]', { fontFamily: 'monospace', fontSize: '12px', fontStyle: 'bold', color: '#FFD700', stroke: '#000', strokeThickness: 2 }).setOrigin(0.5).setDepth(31).setInteractive({ useHandCursor: true });
     
     let submitted = false;
     const doSubmit = () => {
@@ -639,17 +638,22 @@ class GameScene extends Phaser.Scene {
       const name = (input.value || 'ANON').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 12) || 'ANON';
       localStorage.setItem('eir_name', name);
       input.remove();
-      submitBtn.setText('SUBMITTING...');
+      statusTxt.setText('SUBMITTING...');
       fetch(DREAMLO_BASE + DREAMLO_PRIVATE + '/add/' + encodeURIComponent(name) + '/' + finalScore)
-        .then(() => { submitBtn.setText('SUBMITTED!'); this.canRestart = true; this.loadLeaderboard(); })
-        .catch(() => { submitBtn.setText('OFFLINE - RETRY LATER'); this.canRestart = true; this.loadLeaderboard(); });
+        .then(() => { statusTxt.setText('SUBMITTED!'); this.loadLeaderboard(); })
+        .catch(() => { statusTxt.setText('OFFLINE'); this.loadLeaderboard(); });
     };
 
-    submitBtn.on('pointerdown', doSubmit);
+    statusTxt.on('pointerdown', (p) => { p.event.stopPropagation(); doSubmit(); });
     input.addEventListener('keydown', (e) => { 
       e.stopPropagation();
       if (e.key === 'Enter') doSubmit(); 
     });
+
+    // If saved name exists, auto-submit silently
+    if (savedName) {
+      this.time.delayedCall(200, () => doSubmit());
+    }
 
     // Leaderboard area
     this.lbTexts = [];
@@ -661,9 +665,6 @@ class GameScene extends Phaser.Scene {
     this.loadLeaderboard();
 
     this.add.text(W/2, H/2 + 108, '[ CLICK / SPACE TO RETRY ]', { fontFamily: 'monospace', fontSize: '10px', color: '#666' }).setOrigin(0.5).setDepth(31);
-    
-    const skipBtn = this.add.text(W/2 + 100, H/2 - 8, '[ SKIP ]', { fontFamily: 'monospace', fontSize: '10px', color: '#666', stroke: '#000', strokeThickness: 1 }).setOrigin(0.5).setDepth(31).setInteractive({ useHandCursor: true });
-    skipBtn.on('pointerdown', () => { input.remove(); this.canRestart = true; skipBtn.setText(''); submitBtn.setText('SKIPPED'); });
     
     // Clean up input on restart
     this.events.once('shutdown', () => { if (this._nameInput && this._nameInput.parentNode) this._nameInput.remove(); });
@@ -697,7 +698,7 @@ class GameScene extends Phaser.Scene {
   update(time) {
     if (!this.gameReady) return;
     
-    if (this.dead) { if (!this.dyingAnim && this.canRestart && (Phaser.Input.Keyboard.JustDown(this.kSp) || Phaser.Input.Keyboard.JustDown(this.kUp))) this.scene.restart(); return; }
+    if (this.dead) { if (!this.dyingAnim && (Phaser.Input.Keyboard.JustDown(this.kSp) || Phaser.Input.Keyboard.JustDown(this.kUp))) this.scene.restart(); return; }
     if (Phaser.Input.Keyboard.JustDown(this.kUp) || Phaser.Input.Keyboard.JustDown(this.kSp) || Phaser.Input.Keyboard.JustDown(this.kW)) this.doJump();
     if (this.kS.isDown) this.doSlide(); else if (this.sliding) this.endSlide();
 
