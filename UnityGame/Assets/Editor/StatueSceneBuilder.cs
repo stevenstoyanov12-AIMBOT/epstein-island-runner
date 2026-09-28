@@ -18,6 +18,7 @@ public static class StatueSceneBuilder
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         var marble = GetMaterial("Marble", new Color(0.90f, 0.88f, 0.83f), 0.6f, 0f);
+        var stone = GetMaterial("Stone", new Color(0.62f, 0.60f, 0.57f), 0.2f, 0f);
         var grass = GetMaterial("Grass", new Color(0.32f, 0.5f, 0.25f), 0.1f, 0f);
         var path = GetMaterial("Path", new Color(0.62f, 0.56f, 0.47f), 0.15f, 0f);
 
@@ -50,6 +51,10 @@ public static class StatueSceneBuilder
             // face the centre (yaw = angle, since the mesh faces -Z), varied so they don't look copy-pasted
             VeiledStatue($"VeiledStatue_{i + 1}", statues, pos, angle + Random.Range(-12f, 12f), marble);
         }
+
+        // Portrait busts on pedestals near the start, facing the camera, to compare
+        Bust("Bust_Portrait", statues, new Vector3(-1.1f, 0f, -1.5f), marble, stone);
+        Bust("Bust_Grin", statues, new Vector3(1.1f, 0f, -1.5f), marble, stone);
 
         // Camera looking at the plaza
         var cam = new GameObject("Main Camera");
@@ -102,6 +107,29 @@ public static class StatueSceneBuilder
             root.AddComponent<MeshCollider>().sharedMesh = lowest;
         GameObjectUtility.SetStaticEditorFlags(root, StaticEditorFlags.BatchingStatic | StaticEditorFlags.ContributeGI);
         return root;
+    }
+
+    // A bust mesh (base at its origin, facing -Z) on a 1 m stone pedestal standing on the plaza.
+    static void Bust(string name, Transform parent, Vector3 position, Material marble, Material stone)
+    {
+        const float plaza = 0.1f, pedestal = 1f;
+        var root = new GameObject(name).transform;
+        root.SetParent(parent, false);
+        root.localPosition = position;
+        Part(PrimitiveType.Cube, "Pedestal", root, new Vector3(0f, plaza + pedestal / 2f, 0f), new Vector3(0.55f, pedestal, 0.45f), stone);
+
+        var mesh = LoadMesh($"Assets/Models/Statues/{name}.obj");
+        if (mesh == null)
+        {
+            Debug.LogError($"Missing bust mesh Assets/Models/Statues/{name}.obj");
+            return;
+        }
+        var bust = new GameObject("Bust");
+        bust.transform.SetParent(root, false);
+        bust.transform.localPosition = new Vector3(0f, plaza + pedestal, 0f);
+        bust.AddComponent<MeshFilter>().sharedMesh = mesh;
+        bust.AddComponent<MeshRenderer>().sharedMaterial = marble;
+        bust.AddComponent<MeshCollider>().sharedMesh = mesh;
     }
 
     static Mesh LoadMesh(string path)
