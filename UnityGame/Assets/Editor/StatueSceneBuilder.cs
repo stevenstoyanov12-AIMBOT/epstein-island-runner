@@ -56,6 +56,7 @@ public static class StatueSceneBuilder
         cam.tag = "MainCamera";
         cam.AddComponent<Camera>().fieldOfView = 60f;
         cam.AddComponent<AudioListener>();
+        cam.AddComponent<FlyCamera>();
         // player eye height, a few metres from the centre statue
         cam.transform.position = new Vector3(0f, 1.7f, -4f);
         cam.transform.LookAt(hero.transform.position + Vector3.up * 1.4f);
