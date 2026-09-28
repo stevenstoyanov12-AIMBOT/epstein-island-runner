@@ -52,9 +52,8 @@ public static class StatueSceneBuilder
             VeiledStatue($"VeiledStatue_{i + 1}", statues, pos, angle + Random.Range(-12f, 12f), marble);
         }
 
-        // Portrait busts on pedestals near the start, facing the camera, to compare
-        Bust("Bust_Portrait", statues, new Vector3(-1.1f, 0f, -1.5f), marble, stone);
-        Bust("Bust_Grin", statues, new Vector3(1.1f, 0f, -1.5f), marble, stone);
+        // Portrait bust wearing a marble drape, on a pedestal in front of the start
+        Bust("Bust_Portrait", statues, new Vector3(0f, 0f, -1.5f), marble, stone);
 
         // Camera looking at the plaza
         var cam = new GameObject("Main Camera");
@@ -130,6 +129,16 @@ public static class StatueSceneBuilder
         bust.AddComponent<MeshFilter>().sharedMesh = mesh;
         bust.AddComponent<MeshRenderer>().sharedMaterial = marble;
         bust.AddComponent<MeshCollider>().sharedMesh = mesh;
+
+        // optional marble cloth draped over the body
+        var drapeMesh = LoadMesh($"Assets/Models/Statues/{name}_Drape.obj");
+        if (drapeMesh != null)
+        {
+            var drape = new GameObject("Drape");
+            drape.transform.SetParent(bust.transform, false);
+            drape.AddComponent<MeshFilter>().sharedMesh = drapeMesh;
+            drape.AddComponent<MeshRenderer>().sharedMaterial = marble;
+        }
     }
 
     static Mesh LoadMesh(string path)
