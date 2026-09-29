@@ -553,17 +553,15 @@ public static class StatueSceneBuilder
     {
         var head = bustRoot.Find("Head");
         if (head == null) return;
-        // Eyes set into the sockets: a marble eyeball that blends into the sculpted eye, and on it a glowing
-        // red iris (texture from tools/blender_eyes) with a black, hot-rimmed pupil. The eyeball never turns;
-        // iris and pupil glide over it together on a pivot at the eye's centre.
-        var marble = GetMaterial("Marble", new Color(0.90f, 0.88f, 0.83f), 0.6f, 0f);
+        // Eyes laid onto the bust's own sculpted eyeballs: a glowing red iris (texture from tools/blender_eyes)
+        // with a black, hot-rimmed pupil, gliding together on a pivot at the eye's centre. No extra eyeball:
+        // the sculpted one fills the socket.
         var irisMat = Glow("StatueEyes", new Color(0.8f, 0.5f, 0.5f),
                            LoadTexture("Assets/Models/Statues/Textures/statue_eye.png", false));
         var pupilMat = Glow("StatuePupil", new Color(0.01f, 0f, 0f));
         var rimMat = Glow("StatuePupilRim", new Color(1f, 0.8f, 0.45f));
         foreach (var m in new[] { irisMat, pupilMat, rimMat }) m.SetFloat("_Cull", (float)CullMode.Off);
-        var eyeball = SavedMesh("StatueEyeball", EyeMesh(Mathf.PI, 48, 24, 1f, false));
-        var irisCap = SavedMesh("StatueIris", EyeMesh(0.5f, 36, 8, 1.003f, true));
+        var irisCap = SavedMesh("StatueIris", EyeMesh(0.46f, 36, 8, 1.003f, true));
         var rimCap = SavedMesh("StatuePupilRim", EyeMesh(0.19f, 24, 4, 1.006f, false));
         var pupilCap = SavedMesh("StatuePupil", EyeMesh(0.15f, 24, 4, 1.009f, false));
         var eyes = new Transform[2];
@@ -573,8 +571,7 @@ public static class StatueSceneBuilder
             // fit checked with tools/blender_eyes/fit_test.py; each eye placed on its own (the face is asymmetric)
             var eye = new GameObject(i == 0 ? "Eye_L" : "Eye_R").transform;
             eye.SetParent(head, false);
-            eye.localPosition = new Vector3(i == 0 ? -0.041f : 0.0355f, 0.595f, 0.067f);
-            MeshPart(eye, "Eyeball", eyeball, marble);
+            eye.localPosition = new Vector3(i == 0 ? -0.041f : 0.0355f, 0.595f, 0.0655f);
             var pivot = new GameObject("PupilPivot").transform;
             pivot.SetParent(eye, false);
             MeshPart(pivot, "Iris", irisCap, irisMat);

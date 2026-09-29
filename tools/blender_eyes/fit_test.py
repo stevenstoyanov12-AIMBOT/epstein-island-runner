@@ -23,7 +23,9 @@ ap.add_argument("--xr", type=float, default=0.037)
 ap.add_argument("--y", type=float, default=0.595)
 ap.add_argument("--z", type=float, default=0.067)
 ap.add_argument("--look", type=float, nargs=2, default=(0.0, 0.0))
+ap.add_argument("--iris", type=float, default=0.42)
 ap.add_argument("--close", action="store_true", help="close-up on the eyes")
+ap.add_argument("--cam", type=float, nargs=3, default=(0.0, -0.55, 0.6))
 args = ap.parse_args()
 
 
@@ -99,11 +101,8 @@ rim_mat = glow("Rim", colour=(1, 0.8, 0.45, 1))
 to_test = Euler((math.radians(90), 0, 0))
 for side in (-1, 1):
     centre = Vector((args.xl if side < 0 else args.xr, -args.z, args.y))
-    ball = cap("Eyeball", math.pi, 48, 24, 1.0, marble)
-    ball.location = centre
-    ball.rotation_euler = to_test
     look = to_test.to_matrix() @ Euler((math.radians(-args.look[1]), math.radians(args.look[0]), 0)).to_matrix()
-    for nm, th, lift, mat, uv in (("Iris", 0.5, 1.003, eye_mat, True), ("Rim", 0.19, 1.006, rim_mat, False),
+    for nm, th, lift, mat, uv in (("Iris", args.iris, 1.003, eye_mat, True), ("Rim", 0.19, 1.006, rim_mat, False),
                                   ("Pupil", 0.15, 1.009, pupil_mat, False)):
         o = cap(nm, th, 36, 8, lift, mat, uv=uv)
         o.location = centre
@@ -117,10 +116,10 @@ key.data.energy = 30; key.location = (0.3, -0.6, 0.9)
 key.rotation_euler = (Vector((0, 0, 0.6)) - key.location).to_track_quat("-Z", "Y").to_euler()
 sc.collection.objects.link(key)
 cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam")); sc.collection.objects.link(cam); sc.camera = cam
-cam.data.lens = 85 if not args.close else 130
+cam.data.lens = 85 if not args.close else 90
 cam.data.clip_start = 0.01
-target = Vector((0, 0, 0.6 if not args.close else args.y))
-cam.location = (0.0, -0.55, 0.6)
+target = Vector((0, 0, 0.6)) if not args.close else Vector((args.xr, -args.z, args.y))
+cam.location = tuple(args.cam)
 cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
 sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.use_denoising = True
 sc.render.resolution_x, sc.render.resolution_y = (600, 600) if not args.close else (800, 400)
