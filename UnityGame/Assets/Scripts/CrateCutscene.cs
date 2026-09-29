@@ -143,7 +143,11 @@ public class CrateCutscene : MonoBehaviour
         RenderSettings.fogColor = NightSky;
         RenderSettings.fogDensity = 0.016f;
         if (moon != null) moon.enabled = true;
-        if (street != null) street.speed = cruiseSpeed;
+        if (street != null)
+        {
+            street.speed = cruiseSpeed;
+            street.SetVisible(true);
+        }
 
         // reset the van, doors and cargo; clear the wreckage of the last run
         van.SetPositionAndRotation(vanStartPos, vanStartRot);
@@ -183,7 +187,11 @@ public class CrateCutscene : MonoBehaviour
         RenderSettings.fogDensity = fogDensity;
         RenderSettings.fogMode = fogMode;
         if (moon != null) moon.enabled = false;
-        if (street != null) street.speed = 0f;
+        if (street != null)
+        {
+            street.speed = 0f;
+            street.SetVisible(true);
+        }
         cutsceneCamera.enabled = false;
         if (previousCamera != null)
         {
@@ -296,6 +304,8 @@ public class CrateCutscene : MonoBehaviour
                 rb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.VelocityChange);
             }
             foreach (var rb in breakable) Shatter(rb);
+            // after the impact only the night sky shows through the doors
+            if (street != null) street.SetVisible(false);
         }
 
         // --- a car far behind, headlights on, drifting between lanes

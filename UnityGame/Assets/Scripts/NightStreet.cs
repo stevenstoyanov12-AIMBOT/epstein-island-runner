@@ -11,6 +11,13 @@ public class NightStreet : MonoBehaviour
     public Light[] lampLights;          // children of the segments
     public float lampClearance = 6f;    // lamps closer to the van than this stay dark
 
+    // Show or hide the whole street (buildings, road, lamps and anything else under it).
+    public void SetVisible(bool visible)
+    {
+        foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+        foreach (var l in GetComponentsInChildren<Light>(true)) l.gameObject.SetActive(visible);
+    }
+
     void Update()
     {
         float span = segmentLength * segments.Length;
