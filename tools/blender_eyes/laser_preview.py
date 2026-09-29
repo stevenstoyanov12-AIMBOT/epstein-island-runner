@@ -110,35 +110,9 @@ moon.data.energy = 0.6; moon.data.color = (0.6, 0.7, 1.0)
 moon.rotation_euler = (math.radians(50), 0, math.radians(-30))
 sc.collection.objects.link(moon)
 cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam")); sc.collection.objects.link(cam); sc.camera = cam
-cam.data.lens = 35
-cam.location = (0.9, -1.1, 0.75)
-cam.rotation_euler = (Vector((-0.25, -0.6, 0.55)) - cam.location).to_track_quat("-Z", "Y").to_euler()
-
-# bloom: compositor glare
-sc.use_nodes = True
-tree = sc.node_tree if hasattr(sc, "node_tree") and sc.node_tree else None
-if tree is None and hasattr(sc, "compositing_node_group"):
-    tree = bpy.data.node_groups.new("Comp", "CompositorNodeTree")
-    sc.compositing_node_group = tree
-if tree is not None:
-    for n in list(tree.nodes):
-        tree.nodes.remove(n)
-    rl = tree.nodes.new("CompositorNodeRLayers")
-    glare = tree.nodes.new("CompositorNodeGlare")
-    try:
-        glare.glare_type = "FOG_GLOW"
-        glare.quality = "MEDIUM"
-        glare.threshold = 1.0
-        glare.size = 8
-    except (AttributeError, TypeError):
-        pass
-    try:
-        outn = tree.nodes.new("CompositorNodeComposite")
-    except RuntimeError:
-        outn = tree.nodes.new("NodeGroupOutput")
-        tree.interface.new_socket("Image", in_out="OUTPUT", socket_type="NodeSocketColor")
-    tree.links.new(rl.outputs["Image"], glare.inputs[0])
-    tree.links.new(glare.outputs[0], outn.inputs[0])
+cam.data.lens = 28
+cam.location = (0.55, -0.95, 0.72)
+cam.rotation_euler = (Vector((-0.12, -0.3, 0.6)) - cam.location).to_track_quat("-Z", "Y").to_euler()
 
 sc.render.engine = "CYCLES"
 sc.cycles.samples = 16
@@ -150,7 +124,7 @@ FPS = 24
 CHARGE, BEAM = 36, 30
 frames = []
 beams = []
-for f in range(CHARGE + BEAM):
+for f in range(0, CHARGE + BEAM, 2):
     t_sec = f / FPS
     for o in beams:
         bpy.data.objects.remove(o)
@@ -165,7 +139,7 @@ for f in range(CHARGE + BEAM):
             if not on:
                 continue
             t = (t_sec * speed * (0.8 + 0.8 * k) + phase) % 1.0
-            radius = 0.22 * (1 - t) ** 1.4
+            radius = 0.08 * (1 - t) ** 1.6
             ang = (phase + t * 1.75) * 2 * math.pi
             local = tilt @ Vector((math.cos(ang), math.sin(ang), 0)) * radius + Vector((0, 0, 1)) * radius * 0.6
             o.location = c + forward * 0.015 + to_test(local)
@@ -179,14 +153,28 @@ for f in range(CHARGE + BEAM):
         snap = math.exp(-age * 12)
         for c in centres:
             a = c + forward * 0.01
-            beams.append(cylinder("Core", a, TARGET, (0.008 + 0.012 * snap) / 2 * fade, core_mat))
-            beams.append(cylinder("Glow", a, TARGET, (0.03 + 0.05 * snap) / 2 * fade, glow_mat))
-            beams.append(cylinder("Haze", a, TARGET, (0.14 + 0.2 * snap) / 2 * math.sqrt(fade), haze_mat))
+            beams.append(cylinder("Core", a, TARGET, (0.006 + 0.01 * snap) / 2 * fade, core_mat))
+            beams.append(cylinder("Glow", a, TARGET, (0.02 + 0.03 * snap) / 2 * fade, glow_mat))
+            beams.append(cylinder("Haze", a, TARGET, (0.06 + 0.08 * snap) / 2 * math.sqrt(fade), haze_mat))
     path = os.path.join(OUT, f"f{f:03d}.png")
     sc.render.filepath = path
     bpy.ops.render.render(write_still=True)
     frames.append(path)
 
-imgs = [Image.open(p).convert("RGB") for p in frames]
-imgs[0].save(os.path.join(OUT, "laser.gif"), save_all=True, append_images=imgs[1:], duration=int(1000 / FPS), loop=0)
+from scipy import ndimage
+
+
+def bloom(path):
+    """Soft bloom like Unity's: blur only the brightest parts and add them back."""
+    a = np.asarray(Image.open(path).convert("RGB")).astype(float) / 255
+    bright = np.clip(a - 0.75, 0, None) * 4
+    glow = sum(np.stack([ndimage.gaussian_filter(bright[..., c], s) for c in range(3)], -1) * wgt
+               for s, wgt in ((3, 0.5), (9, 0.35), (22, 0.25)))
+    return Image.fromarray((np.clip(a + glow, 0, 1) * 255).astype(np.uint8))
+
+
+imgs = [bloom(p) for p in frames]
+imgs[len(imgs) // 3].save(os.path.join(OUT, "charge.png"))
+imgs[CHARGE // 2 + 4].save(os.path.join(OUT, "beam.png"))
+imgs[0].save(os.path.join(OUT, "laser.gif"), save_all=True, append_images=imgs[1:], duration=int(2000 / FPS), loop=0)
 print("gif", os.path.join(OUT, "laser.gif"))

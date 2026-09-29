@@ -156,7 +156,7 @@ public class LaserEye
             motes[i].gameObject.SetActive(on);
             if (!on) continue;
             float t = Mathf.Repeat(Time.time * moteSpeed[i] * (0.8f + 0.8f * k) + motePhase[i], 1f);  // 0 far .. 1 in the eye
-            float radius = 0.22f * Mathf.Pow(1f - t, 1.4f);
+            float radius = 0.08f * Mathf.Pow(1f - t, 1.6f);   // a tight swirl hugging the eye
             float angle = (motePhase[i] + t * 1.75f) * Mathf.PI * 2f;
             var local = moteTilt[i] * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * radius
                         + Vector3.forward * radius * 0.6f;   // they come in from in front, not from inside the head
@@ -198,9 +198,9 @@ public class LaserEye
             l.enabled = true;
             l.material.mainTextureOffset = new Vector2(-Time.time * 2f, 0f);   // a slow shimmer along it
         }
-        core.widthMultiplier = (0.008f + 0.012f * snap) * flicker * fade;
-        glow.widthMultiplier = (0.03f + 0.05f * snap) * flicker * fade;
-        haze.widthMultiplier = (0.14f + 0.2f * snap) * Mathf.Sqrt(fade);
+        core.widthMultiplier = (0.006f + 0.01f * snap) * flicker * fade;
+        glow.widthMultiplier = (0.02f + 0.03f * snap) * flicker * fade;
+        haze.widthMultiplier = (0.06f + 0.08f * snap) * Mathf.Sqrt(fade);
 
         SetFlare(flare, flareMat, (0.16f + 0.25f * snap) * flicker * fade, new Color(1f, 0.85f, 0.75f, 1f));
         eyeLight.intensity = (4f + 6f * snap) * fade;
