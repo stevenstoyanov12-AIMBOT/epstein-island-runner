@@ -2,7 +2,7 @@
 crop it to the head, render previews and export a GLB/FBX for Unity.
 Blender coords after glTF import: X right, Z up, face looks toward -Y (d = -Y is 'frontness').
 usage: python3 paint_soldier.py MODEL.glb OUT_DIR PREVIEW_PREFIX"""
-import math, sys, bpy, bmesh
+import math, os, sys, bpy, bmesh
 import numpy as np
 from mathutils import Vector
 src, out_dir, prev = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -76,6 +76,38 @@ for i, c in enumerate(col):
     attr.data[i].color = (*c, 1.0)
 me.color_attributes.active_color = attr
 
+# --- lens reflections: the two little soldiers in each lens, taken 1:1 from the reference drawing ---------
+REF = os.environ.get("SOLDIER_REF")
+lens_objs = []
+if REF:
+    from PIL import Image, ImageDraw, ImageFilter
+    ref = Image.open(REF).convert("RGB")
+    lens_d = float(d[lens].max()) + 0.003                                  # just in front of the lens surface
+    # (drawing crop in 400x400 pixels, model x range): viewer's left lens is the character's right (-x)
+    for name, box, (x0, x1) in (("LensR", (73, 133, 151, 200), (-0.228, -0.036)),
+                                ("LensL", (201, 133, 292, 202), (0.036, 0.228))):
+        crop = ref.crop(box).resize((512, 400), Image.LANCZOS)
+        mask = Image.new("L", crop.size, 0)
+        ImageDraw.Draw(mask).rounded_rectangle((6, 6, 506, 394), radius=70, fill=255)
+        crop.putalpha(mask.filter(ImageFilter.GaussianBlur(3)))
+        tex_path = os.path.join(out_dir, f"soldier_{name.lower()}.png"); os.makedirs(out_dir, exist_ok=True)
+        crop.save(tex_path)
+        z0, z1 = 0.482, 0.634
+        verts = [(x0, -lens_d, z0), (x1, -lens_d, z0), (x1, -lens_d, z1), (x0, -lens_d, z1)]
+        lm = bpy.data.meshes.new(name); lm.from_pydata(verts, [], [(0, 1, 2, 3)])
+        uv = lm.uv_layers.new(name="UVMap")
+        for li, (u, v) in zip(range(4), ((0, 0), (1, 0), (1, 1), (0, 1))):
+            uv.data[li].uv = (u, v)
+        lo = bpy.data.objects.new(name, lm); bpy.context.collection.objects.link(lo)
+        mt = bpy.data.materials.new(name); mt.use_nodes = True; t = mt.node_tree; bs = t.nodes["Principled BSDF"]
+        img = t.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(tex_path)
+        t.links.new(img.outputs["Color"], bs.inputs["Base Color"])
+        t.links.new(img.outputs["Color"], bs.inputs["Emission Color"]); bs.inputs["Emission Strength"].default_value = 0.6
+        t.links.new(img.outputs["Alpha"], bs.inputs["Alpha"]); bs.inputs["Roughness"].default_value = 0.15
+        if hasattr(mt, "surface_render_method"): mt.surface_render_method = "BLENDED"
+        lm.materials.append(mt)
+        lens_objs.append(lo)
+
 m = bpy.data.materials.new("Soldier"); m.use_nodes = True; nt = m.node_tree; b = nt.nodes["Principled BSDF"]
 vc = nt.nodes.new("ShaderNodeVertexColor"); vc.layer_name = "Col"
 nt.links.new(vc.outputs["Color"], b.inputs["Base Color"]); b.inputs["Roughness"].default_value = 0.75
@@ -91,14 +123,16 @@ sun.rotation_euler = (math.radians(40), 0, math.radians(25)); sc.collection.obje
 cam = bpy.data.objects.new("C", bpy.data.cameras.new("C")); sc.collection.objects.link(cam); sc.camera = cam; cam.data.lens = 85
 sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.use_denoising = True
 sc.render.resolution_x = sc.render.resolution_y = 500; sc.view_settings.view_transform = "Standard"
-for name, ang in (("front", 0), ("three", 35), ("side", 80)):
+for name, ang in (("front", 0), ("three", 35), ("side", 80), ("close", 0)):
     a = math.radians(ang); cam.location = (3.2 * math.sin(a), -3.2 * math.cos(a), 0.58)
+    cam.data.lens = 260 if name == "close" else 85
     cam.rotation_euler = (Vector((0, 0, 0.56)) - cam.location).to_track_quat("-Z", "Y").to_euler()
     sc.render.filepath = f"{prev}_{name}.png"; bpy.ops.render.render(write_still=True)
 
 import os
 os.makedirs(out_dir, exist_ok=True)
 bpy.ops.object.select_all(action="DESELECT"); obj.select_set(True)
+for lo in lens_objs: lo.select_set(True)
 bpy.ops.export_scene.gltf(filepath=os.path.join(out_dir, "SoldierHead.glb"), use_selection=True, export_vertex_color="ACTIVE")
 bpy.ops.export_scene.fbx(filepath=os.path.join(out_dir, "SoldierHead.fbx"), use_selection=True, colors_type="LINEAR",
-                         axis_forward="-Z", axis_up="Y", apply_scale_options="FBX_SCALE_UNITS")
+                         axis_forward="-Z", axis_up="Y", apply_scale_options="FBX_SCALE_UNITS", path_mode="COPY", embed_textures=True)
