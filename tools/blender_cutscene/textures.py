@@ -142,7 +142,7 @@ def facade(out, w=512, h=1024):
                 warm = np.array([1.0, 0.72, 0.38]) if rng.random() < 0.75 else np.array([0.55, 0.7, 1.0])
                 glow = warm * rng.uniform(0.5, 1.0)
                 emit[y0:y1, x0:x1] = glow
-                col[y0:y1, x0:x1] = glow * 0.6
+                col[y0:y1, x0:x1] = glow          # full brightness: the facade is drawn self-lit
                 if rng.random() < 0.5:                        # half-drawn blind
                     split = y0 + int((y1 - y0) * rng.uniform(0.2, 0.6))
                     emit[y0:split, x0:x1] *= 0.25

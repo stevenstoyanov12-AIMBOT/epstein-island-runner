@@ -246,7 +246,8 @@ public static class StatueSceneBuilder
         var eye = new GameObject("Eye").transform;
         eye.SetParent(hero.transform, false);
         eye.localPosition = new Vector3(0f, 0.73f, 0.33f);
-        eye.LookAt(root.transform.TransformPoint(new Vector3(0.15f, 1.3f, 0f)));
+        // aimed a little low so the BATON CORPORATION crate by the doors is in frame under the windows
+        eye.LookAt(root.transform.TransformPoint(new Vector3(0.1f, 0.95f, 0f)));
 
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
@@ -287,15 +288,11 @@ public static class StatueSceneBuilder
         asphalt.SetTexture("_BaseMap", LoadTexture($"{CutsceneFolder}/Textures/asphalt.png", false));
         asphalt.SetTextureScale("_BaseMap", new Vector2(1f, 5f));
         var pavement = GetMaterial("Pavement", new Color(0.22f, 0.22f, 0.23f), 0.15f, 0f);
-        var facade = GetMaterial("Facade", Color.white, 0.2f, 0f);
-        facade.SetTexture("_BaseMap", LoadTexture($"{CutsceneFolder}/Textures/facade_albedo.png", false));
-        facade.SetTexture("_EmissionMap", LoadTexture($"{CutsceneFolder}/Textures/facade_emission.png", false));
-        facade.SetColor("_EmissionColor", Color.white * 1.6f);
-        facade.EnableKeyword("_EMISSION");
-        facade.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        // building fronts at night: dark brick with lit windows, drawn self-lit so the windows glow
+        var facade = Glow("Facade", Color.white, LoadTexture($"{CutsceneFolder}/Textures/facade_albedo.png", false));
         var poleMat = GetMaterial("LampPole", new Color(0.08f, 0.08f, 0.09f), 0.4f, 0.8f);
-        var lampGlow = Glow("LampGlow", new Color(1f, 0.75f, 0.45f), 6f);
-        foreach (var m in new[] { asphalt, facade }) EditorUtility.SetDirty(m);
+        var lampGlow = Glow("LampGlow", new Color(1f, 0.85f, 0.6f));
+        EditorUtility.SetDirty(asphalt);
 
         // the street is not parented to the van, so the van can slide and spin across it in the crash
         var root = new GameObject("NightStreet").transform;
@@ -352,12 +349,12 @@ public static class StatueSceneBuilder
         street.lampLights = lamps.ToArray();
 
         // just the headlights of a car far behind (no body: at night that's all you'd see)
-        var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 30f);
+        var headGlow = Glow("HeadlightGlow", Color.white);
         var car = new GameObject("DistantHeadlights").transform;
         car.SetParent(root, false);
         car.localPosition = new Vector3(-0.9f, road, 26f);
         foreach (int side in new[] { -1, 1 })
-            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.45f, 0.3f, 0.2f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.6f, 0.4f, 0.2f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
         var beams = new GameObject("Beams").AddComponent<Light>();
         beams.transform.SetParent(car, false);
         beams.transform.localPosition = new Vector3(0f, 0.7f, -0.2f);
@@ -383,12 +380,20 @@ public static class StatueSceneBuilder
         cutscene.moon = moon;
     }
 
-    static Material Glow(string name, Color color, float strength)
+    // Self-lit material: unlit, so it shows at full brightness in the dark whatever the lighting.
+    static Material Glow(string name, Color color, Texture2D texture = null)
     {
-        var m = GetMaterial(name, color, 0.5f, 0f);
-        m.SetColor("_EmissionColor", color * strength);
-        m.EnableKeyword("_EMISSION");
-        m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        string path = $"{MaterialFolder}/{name}.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        var unlit = Shader.Find("Universal Render Pipeline/Unlit");
+        if (m == null)
+        {
+            m = new Material(unlit);
+            AssetDatabase.CreateAsset(m, path);
+        }
+        m.shader = unlit;
+        m.SetColor("_BaseColor", color);
+        if (texture != null) m.SetTexture("_BaseMap", texture);
         EditorUtility.SetDirty(m);
         return m;
     }

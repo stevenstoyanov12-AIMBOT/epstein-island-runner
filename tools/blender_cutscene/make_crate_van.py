@@ -144,8 +144,8 @@ def build_stencil(name="Crate_Stencil", sides=(1, -1)):
     uv = bm.loops.layers.uv.new("UVMap")
     s = CRATE
     y = s / 2 - 0.028 + 0.007    # just outside the slats (inside the frame), clear of their hand-built wobble
-    w, hgt = 0.86, 0.43
-    zc = s / 2 + 0.06 + 0.03
+    w, hgt = 1.0, 0.5   # big enough to read across the van
+    zc = s / 2 + 0.06 + 0.1
     for side in sides:
         pts = [(-w / 2, -hgt / 2), (w / 2, -hgt / 2), (w / 2, hgt / 2), (-w / 2, hgt / 2)]
         # seen from outside, 'right' is -X on the +Y side and +X on the -Y side

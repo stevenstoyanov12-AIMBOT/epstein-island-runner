@@ -64,8 +64,9 @@ public class CrateCutscene : MonoBehaviour
         ceiling.range = 5f;
         ceiling.shadows = LightShadows.Soft;
         fill = MakeLight("CrateFill", LightType.Point, new Color(0.5f, 0.55f, 0.7f), 0f);
-        fill.transform.position = eye.position + eye.forward * 1.2f;
-        fill.range = 3f;
+        // a soft light on the crates in front, so the stencilled lettering reads in the dark
+        fill.transform.position = eye.position + eye.forward * 1.1f + Vector3.up * 0.3f;
+        fill.range = 3.5f;
         fill.shadows = LightShadows.None;
 
         engine = Source(true);
@@ -301,7 +302,7 @@ public class CrateCutscene : MonoBehaviour
         if (distantCar != null)
             distantCar.localPosition = distantStart + new Vector3(Mathf.Sin(t * 0.35f) * 1.6f, 0f, Mathf.Sin(t * 0.5f) * 5f);
 
-        fill.intensity = afterCrash ? 0.03f : 0.12f;  // just enough to make out the cargo
+        fill.intensity = afterCrash ? 0.05f : 0.6f;
     }
 
     // The crash moves the van body: shoved sideways across the road, the back swinging round, leaning hard
