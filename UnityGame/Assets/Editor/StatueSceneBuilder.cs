@@ -324,12 +324,17 @@ public static class StatueSceneBuilder
                     z += w;
                 }
             }
-            // a matching pair of lamp posts facing each other across the road, one pair per segment
-            foreach (int ls in new[] { -1, 1 })
+            // single lamp posts at random spots: a random side of the road, unevenly spaced,
+            // and now and then a dark stretch with none at all
+            int lampCount = rng.NextDouble() < 0.2 ? 0 : rng.NextDouble() < 0.3 ? 2 : 1;
+            for (int k = 0; k < lampCount; k++)
             {
+                int ls = rng.NextDouble() < 0.5 ? -1 : 1;
+                float lz = lampCount == 1 ? 2f + (float)rng.NextDouble() * 16f
+                                          : (k == 0 ? 1.5f + (float)rng.NextDouble() * 6f : 11f + (float)rng.NextDouble() * 7f);
                 var lampRoot = new GameObject("LampPost").transform;
                 lampRoot.SetParent(seg, false);
-                lampRoot.localPosition = new Vector3(ls * 4.4f, road, segLen / 2f);
+                lampRoot.localPosition = new Vector3(ls * 4.4f, road, lz);
                 NoCollider(Part(PrimitiveType.Cylinder, "Pole", lampRoot, new Vector3(0f, 2.6f, 0f), new Vector3(0.14f, 2.6f, 0.14f), poleMat));
                 NoCollider(Part(PrimitiveType.Cube, "Arm", lampRoot, new Vector3(-ls * 0.6f, 5.15f, 0f), new Vector3(1.3f, 0.08f, 0.08f), poleMat));
                 NoCollider(Part(PrimitiveType.Sphere, "Lamp", lampRoot, new Vector3(-ls * 1.15f, 5.02f, 0f), new Vector3(0.35f, 0.18f, 0.35f), lampGlow));
