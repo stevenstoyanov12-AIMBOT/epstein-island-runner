@@ -38,17 +38,18 @@ def grow(rng, start, direction, length, radius, depth, out):
         return
     n_children = rng.integers(2, 4) if depth > 0 else 4
     for k in range(n_children):
-        t = rng.uniform(0.55, 1.0) if depth > 0 else 1.0
+        leader = depth > 0 and k == 0  # one child always carries on from the tip, so no branch ends bare
+        t = 1.0 if leader or depth == 0 else rng.uniform(0.55, 0.95)
         idx = min(int(t * steps), steps)
         base_dir = d if depth > 0 else np.array([0, 1.0, 0])
         # rotate away from the parent by 25-50 degrees around a random axis
-        ang = np.radians(rng.uniform(25, 50) if depth > 0 else 38)
+        ang = np.radians(rng.uniform(8, 18) if leader else rng.uniform(25, 50) if depth > 0 else 38)
         spin = (2 * np.pi * k / n_children + rng.uniform(-0.4, 0.4)) if depth == 0 else rng.uniform(0, 2 * np.pi)
         perp = np.cross(base_dir, [0.3, 0.1, 0.9])
         perp /= np.linalg.norm(perp)
         perp = trimesh.transformations.rotation_matrix(spin, base_dir)[:3, :3] @ perp
         child = np.cos(ang) * base_dir + np.sin(ang) * perp
-        grow(rng, pts[idx], child, length * rng.uniform(0.62, 0.78), radii[idx] * (0.8 if depth == 0 else 0.72), depth + 1, out)
+        grow(rng, pts[idx], child, length * rng.uniform(0.62, 0.78), radii[idx] * (0.8 if depth == 0 else 0.95 if leader else 0.72), depth + 1, out)
 
 
 def tube(pts, radii, sides, rng):
