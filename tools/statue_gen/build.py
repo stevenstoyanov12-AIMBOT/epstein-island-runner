@@ -79,7 +79,7 @@ def cavity(m):
     return np.clip(c / (np.percentile(np.abs(c), 97) + 1e-9), -1, 1)
 
 
-def render(m, path, yaw=0.0, pitch=8.0, size=900, target=None, zoom=1.0):
+def render(m, path, yaw=0.0, pitch=8.0, size=900, target=None, zoom=1.0, colors=None):
     R = trimesh.transformations.euler_matrix(np.radians(pitch), np.radians(yaw), 0, "rxyz")[:3, :3]
     target = m.bounds.mean(0) if target is None else np.asarray(target)
     v = (m.vertices - target) @ R.T
@@ -92,13 +92,13 @@ def render(m, path, yaw=0.0, pitch=8.0, size=900, target=None, zoom=1.0):
 
     L = np.array([-0.5, 0.65, -0.6]); L /= np.linalg.norm(L)
     L2 = np.array([0.7, 0.2, -0.3]); L2 /= np.linalg.norm(L2)
-    ndl = n @ L
+    ndl = n @ L if colors is None else np.abs(n @ L)  # coloured parts may be thin, two-sided leaves
     wrap = np.clip((ndl + 0.35) / 1.35, 0, 1)                       # soft marble wrap light
     fill = np.clip(n @ L2, 0, 1) * 0.25
     H = L + np.array([0, 0, -1.0]); H /= np.linalg.norm(H)
     spec = np.clip(n @ H, 0, 1) ** 40 * 0.25
     ao = np.clip(1.0 - 0.9 * np.maximum(cav, 0) + 0.08 * np.minimum(cav, 0), 0.3, 1.05)
-    base = np.array([0.93, 0.90, 0.84])
+    base = np.array([0.93, 0.90, 0.84]) if colors is None else colors
     sss = np.array([1.0, 0.88, 0.75])
     col = (base * (0.18 + 0.8 * wrap[:, None] + fill[:, None]) + sss * 0.06) * ao[:, None] + spec[:, None]
 
