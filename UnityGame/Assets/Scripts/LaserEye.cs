@@ -14,6 +14,7 @@ public class LaserEye
     readonly Transform flare, impactFlare;
     readonly Material flareMat, impactFlareMat;
     float beamLength, lastScorch;
+    readonly float noiseSeed = Random.Range(0f, 100f);   // each eye flickers differently
 
     static Texture2D softDot, beamTex, scorchTex;
     static Material scorchMat;
@@ -166,7 +167,7 @@ public class LaserEye
         var dir = full.normalized;
         var to = from + dir * len;
 
-        float flicker = 0.85f + 0.3f * Mathf.PerlinNoise(Time.time * 30f, eye.GetInstanceID() * 0.1f);
+        float flicker = 0.85f + 0.3f * Mathf.PerlinNoise(Time.time * 30f, noiseSeed);
         float snap = Mathf.Exp(-age * 12f);                    // the extra-bright flash as it fires
         WobbleLine(core, from, to, 0.004f, Time.time);
         WobbleLine(glow, from, to, 0.012f, Time.time + 3f);
