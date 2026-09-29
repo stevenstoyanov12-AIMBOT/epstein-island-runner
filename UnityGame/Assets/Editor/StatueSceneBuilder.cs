@@ -436,7 +436,9 @@ public static class StatueSceneBuilder
         var head = (GameObject)PrefabUtility.InstantiatePrefab(model);
         head.transform.SetParent(root, false);
         head.transform.localPosition = new Vector3(0f, 1.1f - 0.25f, 0f);   // the chin cut (0.25) sits on the pedestal
-        head.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);      // face the camera
+        // turn to face the camera on top of the import's own rotation (a single-mesh FBX keeps its
+        // upright correction on the root, which a plain assignment would wipe out)
+        head.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * head.transform.localRotation;
         foreach (var cam in head.GetComponentsInChildren<Camera>()) Object.DestroyImmediate(cam.gameObject);
         foreach (var l in head.GetComponentsInChildren<Light>()) Object.DestroyImmediate(l.gameObject);
         foreach (var r in head.GetComponentsInChildren<MeshRenderer>())
