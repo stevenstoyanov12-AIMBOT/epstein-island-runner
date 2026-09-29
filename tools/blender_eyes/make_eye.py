@@ -33,7 +33,7 @@ def eye_texture(path, w=1024, h=512):
         veins = np.maximum(veins, np.exp(-(d / 0.0015) ** 2) * rng.uniform(0.4, 1) * np.clip((theta - 0.45) / 0.8, 0, 1) * np.clip((2.4 - theta) / 0.8, 0, 1))
     col = col * (1 - veins[..., None]) + np.array([0.2, 0.01, 0.0]) * veins[..., None]
     # iris: glowing red with radial fibres, hot toward the pupil
-    R = 1.15                    # the iris covers the whole cap that shows out of the socket
+    R = 1.45                    # the iris covers everything that can show out of the socket
     iris = theta < R
     fib = 0.75 + 0.25 * np.sin(U * 2 * np.pi * 70 + 3 * np.sin(U * 2 * np.pi * 9)) * np.sin(theta * 30)
     t = np.clip(theta / R, 0, 1)
@@ -41,8 +41,7 @@ def eye_texture(path, w=1024, h=512):
     col[iris] = irisc[iris]
     ring = np.abs(theta - R) < 0.06
     col[ring] = [0.08, 0.0, 0.0]                                   # limbal ring
-    col[theta < 0.2] = [0.01, 0.0, 0.0]                            # pupil
-    col[(theta >= 0.2) & (theta < 0.235)] = [1.0, 0.8, 0.45]       # hot rim round the pupil
+    # no pupil painted on: in the game a separate pupil glides over the iris, so the eyeball never turns
     Image.fromarray((np.clip(col, 0, 1) * 255).astype(np.uint8)).save(path)
 
 

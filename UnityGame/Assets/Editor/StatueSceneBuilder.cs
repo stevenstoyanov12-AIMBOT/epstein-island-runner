@@ -553,25 +553,98 @@ public static class StatueSceneBuilder
     {
         var head = bustRoot.Find("Head");
         if (head == null) return;
-        // Blender-made eyeballs (tools/blender_eyes), self-lit so they glow, set into the eye sockets
+        // Glowing eyeballs set into the sockets (iris texture from tools/blender_eyes). The eyeball itself never
+        // turns; a pupil (black centre, hot rim) glides over it on a pivot at the eye's centre.
         var eyeMat = Glow("StatueEyes", new Color(0.6f, 0.05f, 0.05f),
                           LoadTexture("Assets/Models/Statues/Textures/statue_eye.png", false));
+        var pupilMat = Glow("StatuePupil", new Color(0.01f, 0f, 0f));
+        var rimMat = Glow("StatuePupilRim", new Color(1f, 0.8f, 0.45f));
+        foreach (var m in new[] { eyeMat, pupilMat, rimMat }) m.SetFloat("_Cull", (float)CullMode.Off);
+        var eyeball = SavedMesh("StatueEyeball", EyeMesh(Mathf.PI, 48, 24, 1f, true));
+        var pupilCap = SavedMesh("StatuePupil", EyeMesh(0.17f, 24, 4, 1.004f, false));
+        var rimCap = SavedMesh("StatuePupilRim", EyeMesh(0.215f, 24, 4, 1.002f, false));
         var eyes = new Transform[2];
+        var pupils = new Transform[2];
         for (int i = 0; i < 2; i++)
         {
-            var eye = AddMesh(head, i == 0 ? "Eye_L" : "Eye_R", "Assets/Models/Statues/StatueEye.fbx", eyeMat);
-            if (eye == null) return;
-            // measured from the bust mesh: the socket hollows beside the nose bridge. The eyeball is scaled
-            // down and sunk so only its front few millimetres show between the lids.
             // fit checked with tools/blender_eyes/fit_test.py: only the glowing iris shows between the lids
-            eye.transform.localPosition = new Vector3(i == 0 ? -0.037f : 0.037f, 0.595f, 0.067f);
-            eye.transform.localScale = Vector3.one * 1.05f;
-            eye.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
-            eyes[i] = eye.transform;
+            var eye = new GameObject(i == 0 ? "Eye_L" : "Eye_R").transform;
+            eye.SetParent(head, false);
+            // each eye placed on its own: the face is not perfectly symmetric
+            eye.localPosition = new Vector3(i == 0 ? -0.041f : 0.0355f, 0.595f, 0.067f);
+            MeshPart(eye, "Eyeball", eyeball, eyeMat);
+            var pivot = new GameObject("PupilPivot").transform;
+            pivot.SetParent(eye, false);
+            MeshPart(pivot, "Pupil", pupilCap, pupilMat);
+            MeshPart(pivot, "PupilRim", rimCap, rimMat);
+            eyes[i] = eye;
+            pupils[i] = pivot;
         }
         var gaze = bustRoot.gameObject.AddComponent<StatueGaze>();
         gaze.head = head;
         gaze.eyes = eyes;
+        gaze.pupils = pupils;
+    }
+
+    // Radius of the eye's surface at angle theta from its front: a sphere whose front bulges like a cornea
+    // (the same shape as tools/blender_eyes/make_eye.py makes).
+    static float EyeSurface(float theta)
+    {
+        const float r0 = 0.013f;
+        float z = r0 * Mathf.Cos(theta);
+        return r0 * (1f + 0.12f * Mathf.Max(0f, (z - 0.009f) / 0.004f)) * 1.05f;
+    }
+
+    // A cap of the eye's surface out to `maxTheta` from the front (+Z). With `uv`, the texture's top row maps
+    // to the front and its bottom row to the back, as the eye texture is painted.
+    static Mesh EyeMesh(float maxTheta, int segments, int rings, float lift, bool uv)
+    {
+        var verts = new List<Vector3>();
+        var uvs = new List<Vector2>();
+        var tris = new List<int>();
+        for (int r = 0; r <= rings; r++)
+        {
+            float theta = maxTheta * r / rings;
+            float rad = EyeSurface(theta) * lift;
+            for (int s = 0; s <= segments; s++)
+            {
+                float phi = 2f * Mathf.PI * s / segments;
+                verts.Add(new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi), Mathf.Cos(theta)) * rad);
+                uvs.Add(new Vector2((float)s / segments, 1f - theta / Mathf.PI));
+            }
+        }
+        for (int r = 0; r < rings; r++)
+            for (int s = 0; s < segments; s++)
+            {
+                int a = r * (segments + 1) + s, b = a + segments + 1;
+                tris.AddRange(new[] { a, a + 1, b, a + 1, b + 1, b });
+            }
+        var m = new Mesh();
+        m.SetVertices(verts);
+        if (uv) m.SetUVs(0, uvs);
+        m.SetTriangles(tris, 0);
+        m.RecalculateNormals();
+        m.RecalculateBounds();
+        return m;
+    }
+
+    static Mesh SavedMesh(string name, Mesh mesh)
+    {
+        string path = $"{MaterialFolder}/{name}.asset";
+        AssetDatabase.DeleteAsset(path);
+        mesh.name = name;
+        AssetDatabase.CreateAsset(mesh, path);
+        return mesh;
+    }
+
+    static void MeshPart(Transform parent, string name, Mesh mesh, Material mat)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        var r = go.AddComponent<MeshRenderer>();
+        r.sharedMaterial = mat;
+        r.shadowCastingMode = ShadowCastingMode.Off;
     }
 
     // A bust mesh (base at its origin, facing -Z) on a 1 m stone pedestal standing on the plaza.

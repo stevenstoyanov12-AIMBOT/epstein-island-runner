@@ -10,7 +10,8 @@ using UnityEngine;
 public class StatueGaze : MonoBehaviour
 {
     public Transform head;                    // the part that turns (the bust)
-    public Transform[] eyes;                  // eye positions; beams come from here
+    public Transform[] eyes;                  // eyeballs (fixed in the sockets); beams come from here
+    public Transform[] pupils;                // pivots at each eye's centre carrying a pupil on the surface
     public float turnSpeed = 140f;            // degrees per second when locking on
     public float sweepSpeed = 25f;
     public float viewAngle = 40f;             // half-angle of the gaze cone
@@ -25,7 +26,6 @@ public class StatueGaze : MonoBehaviour
     GazeTarget target;
     Light gazeLight;
     Renderer[] eyeRenderers;
-    Quaternion[] eyeRest;
     LineRenderer[] aimLines, beams;
     AudioSource whine, zap;
     // eye tint (multiplies the eye texture) and gaze-cone colours
@@ -35,14 +35,13 @@ public class StatueGaze : MonoBehaviour
     {
         sweepYaw = head.eulerAngles.y;
         eyeRenderers = new Renderer[eyes.Length];
-        eyeRest = new Quaternion[eyes.Length];
         aimLines = new LineRenderer[eyes.Length];
         beams = new LineRenderer[eyes.Length];
         var lineMat = new Material(Shader.Find("Sprites/Default"));
         for (int i = 0; i < eyes.Length; i++)
         {
-            eyeRenderers[i] = eyes[i].GetComponent<Renderer>();
-            eyeRest[i] = eyes[i].localRotation;
+            var ball = eyes[i].Find("Eyeball");
+            eyeRenderers[i] = ball != null ? ball.GetComponent<Renderer>() : eyes[i].GetComponent<Renderer>();
             aimLines[i] = Line(eyes[i], lineMat, 0.008f);
             beams[i] = Line(eyes[i], lineMat, 0.06f);
         }
@@ -78,23 +77,23 @@ public class StatueGaze : MonoBehaviour
 
     void LateUpdate()
     {
-        // eyes swivel in their sockets: fixed on the target when it has one, otherwise rolling round in
-        // slow, full circles (each eye a little out of step with the other)
-        for (int i = 0; i < eyes.Length; i++)
+        // The eyeballs never turn (so nothing but glowing iris ever shows in the sockets); the pupils glide
+        // over them instead: fixed on the target when it has one, otherwise circling all the way round,
+        // each a little out of step with the other.
+        for (int i = 0; i < pupils.Length; i++)
         {
             Quaternion look;
             if (target != null && state != State.Cooldown)
             {
-                // turn toward the target, but only as far as the sockets allow (the back of the eye stays hidden)
-                var dir = eyes[i].parent.InverseTransformDirection(target.AimPoint - eyes[i].position);
-                look = Quaternion.RotateTowards(Quaternion.identity, Quaternion.LookRotation(dir), 18f);
+                var dir = pupils[i].parent.InverseTransformDirection(target.AimPoint - pupils[i].position);
+                look = Quaternion.RotateTowards(Quaternion.identity, Quaternion.LookRotation(dir), 13f);   // stays inside the eyelids
             }
             else
             {
                 float a = Time.time * 1.3f + i * 0.5f;
-                look = Quaternion.Euler(Mathf.Sin(a) * 14f, Mathf.Cos(a) * 14f, 0f);
+                look = Quaternion.Euler(Mathf.Sin(a) * 12f, Mathf.Cos(a) * 12f, 0f);
             }
-            eyes[i].localRotation = Quaternion.Slerp(eyes[i].localRotation, look * eyeRest[i], Time.deltaTime * 12f);
+            pupils[i].localRotation = Quaternion.Slerp(pupils[i].localRotation, look, Time.deltaTime * 12f);
         }
     }
 
