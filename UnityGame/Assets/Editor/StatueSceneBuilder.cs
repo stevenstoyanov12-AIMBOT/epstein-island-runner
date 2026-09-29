@@ -571,8 +571,10 @@ public static class StatueSceneBuilder
             // fit checked with tools/blender_eyes/fit_test.py
             var eye = new GameObject(i == 0 ? "Eye_L" : "Eye_R").transform;
             eye.SetParent(head, false);
-            // centred on the bust's sculpted eyeballs (sphere fit: 3.4 cm either side, 0.595 m up)
-            eye.localPosition = new Vector3(i == 0 ? -0.034f : 0.034f, 0.595f, 0.0655f);
+            // matched to the eye openings on a face-on render of the original bust (tools/blender_eyes/fit_test.py
+            // --noeyes vs with eyes). The bust is turned 180 degrees in its pivot, so the mesh's x is negated here:
+            // mesh eyes at x -0.039 / +0.030 become +0.039 / -0.030.
+            eye.localPosition = new Vector3(i == 0 ? -0.030f : 0.039f, 0.5995f, 0.067f);
             var pivot = new GameObject("PupilPivot").transform;
             pivot.SetParent(eye, false);
             MeshPart(pivot, "Iris", irisCap, irisMat);
