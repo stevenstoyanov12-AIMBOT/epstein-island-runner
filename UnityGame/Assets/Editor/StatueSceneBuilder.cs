@@ -217,9 +217,10 @@ public static class StatueSceneBuilder
         const float floorTop = 0.024f, lowHeight = 0.36f;
         // the player's crate is stacked on two flat crates at the front of the cargo area, so from inside
         // it you look down the van over the other crates and out of the rear-door windows
-        var stash = new Vector3(0.5f, floorTop, -3f);
+        // the van is exactly two crates wide: right column at x 0.55, left column at x -0.6
+        var stash = new Vector3(0.55f, floorTop, -3f);
         Crate("Crate_Low_1", root.transform, stash, 0f, crates, "Crate_Low", null);
-        Crate("Crate_Low_2", root.transform, stash + Vector3.up * lowHeight, 2f, crates, "Crate_Low", null);
+        Crate("Crate_Low_2", root.transform, stash + Vector3.up * lowHeight, 0f, crates, "Crate_Low", null);
         var hero = Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates);
         // the rest of the cargo, kept below the line of sight to the windows; loose for the crash
         var cargo = new List<Rigidbody>();
@@ -231,11 +232,10 @@ public static class StatueSceneBuilder
             rb.isKinematic = true;
             cargo.Add(rb);
         }
-        Loose(Crate("Crate_2", root.transform, new Vector3(0.5f, floorTop, -1.3f), -3f, crates), 60f);
-        Loose(Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop, -1.25f), 4f, crates), 60f);
-        Loose(Crate("Crate_4", root.transform, new Vector3(-0.56f, floorTop, -2.75f), 3f, crates), 60f);
-        Loose(Crate("Crate_Low_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -2.75f), -6f, crates, "Crate_Low", null), 25f);
-        Loose(Crate("Crate_Low_4", root.transform, new Vector3(-0.5f, floorTop, -0.35f), 12f, crates, "Crate_Low", null), 25f);
+        Loose(Crate("Crate_2", root.transform, new Vector3(0.55f, floorTop, -1.3f), 0f, crates), 60f);
+        Loose(Crate("Crate_3", root.transform, new Vector3(-0.6f, floorTop, -1.25f), 0f, crates), 60f);
+        Loose(Crate("Crate_4", root.transform, new Vector3(-0.6f, floorTop, -2.8f), 0f, crates), 60f);
+        Loose(Crate("Crate_Low_3", root.transform, new Vector3(-0.6f, floorTop + CrateHeight, -2.8f), -4f, crates, "Crate_Low", null), 25f);
         if (hero == null) return;
 
         // crouched close to the crate's slats, looking down the van toward the rear doors (+Z)
