@@ -14,7 +14,7 @@ from scipy import ndimage
 from skimage.measure import marching_cubes
 
 from build import decimate, render, write_obj
-from sdf import fbm, smax, smin
+from sdf import capsule, fbm, length, smax, smin, sphere
 
 STATUES = "../../UnityGame/Assets/Models/Statues"
 
@@ -42,16 +42,16 @@ def drape_field(p, d, neck, width):
     s = np.clip(neck - y, 0, None)
 
     # base cloth: follows the body, loosening further down
-    cloth = d - 0.010 - 0.018 * np.clip(s / 0.35, 0, 1)
+    cloth = d - 0.007 - 0.006 * np.clip(s / 0.35, 0, 1)   # snug over the body
     warp = 1.8 * fbm(p * np.array([5.0, 2.0, 5.0]), 3, 4) + 4.0 * s
     folds = 0.7 * np.abs(np.sin(theta * 7 + warp)) + 0.3 * np.abs(np.sin(theta * 15 + 1.1 + 1.5 * warp))
-    cloth = cloth - (0.002 + 0.02 * np.clip(s / 0.35, 0, 1)) * folds
+    cloth = cloth - (0.002 + 0.011 * np.clip(s / 0.35, 0, 1)) * folds
 
     # sash: thicker diagonal band from the left shoulder down across the chest to the right hip
     u = (x / width) * 0.55 + (y - neck) * 1.6          # distance along the diagonal band
     band = np.abs(u + 0.12) - 0.16
     sash_folds = np.abs(np.sin((y * 1.0 - x * 0.6) * 45 + 3.0 * fbm(p * 6, 2, 9)))
-    sash = smax(d - 0.022 - 0.006 * sash_folds, band, 0.02)
+    sash = smax(d - 0.016 - 0.005 * sash_folds, band, 0.02)
     cloth = smin(cloth, sash, 0.012)
 
     # scooped neckline that leaves the neck and collarbones bare
@@ -61,6 +61,37 @@ def drape_field(p, d, neck, width):
     return cloth
 
 
+def bullet_damage(p, f, neck, rng, count):
+    """Chip bullet craters with hairline cracks into the front of the cloth (never above the neckline)."""
+    surf = np.flatnonzero((np.abs(f) < 0.002) & (p[:, 2] < np.median(p[:, 2])) & (p[:, 1] < neck - 0.06))
+    rng.shuffle(surf)
+    hits = []
+    for i in surf:
+        if len(hits) == count:
+            break
+        if all(np.linalg.norm(p[i] - h) > 0.07 for h in hits):
+            hits.append(p[i])
+    for c in hits:
+        near = np.flatnonzero(length(p - c) < 0.08)
+        pp, dd = p[near], f[near]
+        n = np.array([0.0, 0.0, -1.0])  # the front faces -Z
+        r = rng.uniform(0.008, 0.014)
+        jag = 0.25 * r * fbm(pp * 350.0, 2, int(rng.integers(1000)))
+        core = sphere(pp, c + n * 0.2 * r, 0.75 * r) + jag
+        spall = sphere(pp, c + n * (2.4 * r - 0.003), 2.4 * r) + jag
+        dd = smax(dd, -np.minimum(core, spall), 0.0015)
+        for _ in range(rng.integers(2, 5)):
+            a = rng.uniform(0, 2 * np.pi)
+            pts = [c + np.array([np.cos(a), np.sin(a), 0.0]) * r * 0.8]
+            for _ in range(3):
+                a += rng.normal(0, 0.45)
+                pts.append(pts[-1] + np.array([np.cos(a), np.sin(a), 0.0]) * rng.uniform(0.01, 0.022))
+            for a0, b0 in zip(pts[:-1], pts[1:]):
+                dd = np.maximum(dd, -capsule(pp, a0, b0, 0.0022))
+        f[near] = dd
+    return f
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("name")
@@ -68,6 +99,8 @@ def main():
     ap.add_argument("--voxel", type=float, default=0.003)
     ap.add_argument("--tris", type=int, default=60000)
     ap.add_argument("--preview", default="previews")
+    ap.add_argument("--seed", type=int, default=3)
+    ap.add_argument("--hits", type=int, default=9, help="bullet impacts on the cloth")
     args = ap.parse_args()
 
     bust = trimesh.load(os.path.join(STATUES, f"{args.name}.obj"), force="mesh")
@@ -76,12 +109,13 @@ def main():
                              indexing="ij"), -1).reshape(-1, 3)
     width = np.ptp(bust.vertices[:, 0])
     f = drape_field(g, d.reshape(-1), args.neck, width).reshape(d.shape)
+    f = bullet_damage(g, f.reshape(-1), args.neck, np.random.default_rng(args.seed), args.hits).reshape(d.shape)
     f[:, 0, :] = np.maximum(f[:, 0, :], 0.001)  # close the bottom
     v, faces, _, _ = marching_cubes(f.astype(np.float32), 0.0, spacing=(args.voxel,) * 3)
     drape = trimesh.Trimesh(v + lo, faces[:, ::-1], process=True)
     if drape.volume < 0:
         drape.invert()
-    trimesh.smoothing.filter_taubin(drape, iterations=8)
+    trimesh.smoothing.filter_taubin(drape, iterations=4)
     drape = decimate(drape, args.tris)
 
     write_obj(drape, os.path.join(STATUES, f"{args.name}_Drape.obj"), f"{args.name}_Drape")
