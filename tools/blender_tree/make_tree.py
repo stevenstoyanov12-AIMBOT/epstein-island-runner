@@ -194,7 +194,7 @@ def sprout_twigs(skel, rng, leaf_target):
             stem = rng.uniform(0.015, 0.035)
             # card origin is 12% up the leaf from its stem end, so offset along the leaf axis
             pos = node + R[:, 1] * (stem + 0.12 * size)
-            h = np.clip((pos[2] - 2.0) / (top - 2.0), 0, 1)
+            h = np.clip((pos[2] - 1.5) / (top - 1.5), 0, 1)
             cell = int(np.clip(rng.normal(h * 3.3, 0.9), 0, 3.999))
             placements.append((pos, R, size, cell))
     return twigs, placements
@@ -243,6 +243,53 @@ def bark_material(tex):
     nt.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
     bsdf.inputs["Roughness"].default_value = 0.9
     return m
+
+
+def build_grass(rng, tex, count=7000, inner=0.35, outer=1.5):
+    """Tufts of curved, tapered grass blades in a ring around the trunk, thinning out at the edge."""
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+    made = 0
+    while made < count:
+        a = rng.uniform(0, 2 * math.pi)
+        # ragged, uneven edge instead of a perfect circle
+        edge = outer * (0.8 + 0.12 * math.sin(3 * a + 1.0) + 0.08 * math.sin(7 * a + 2.0) + 0.05 * math.sin(13 * a))
+        r = inner + (edge - inner) * math.sqrt(rng.random())
+        if rng.random() > 1.2 - (r - inner) / (edge - inner):   # sparser toward the edge
+            continue
+        tuft = np.array([r * math.cos(a), r * math.sin(a), 0.0])
+        for _ in range(rng.integers(4, 9)):
+            base = tuft + np.append(rng.normal(0, 0.035, 2), 0.0)
+            height = rng.uniform(0.1, 0.26) * (1.15 - 0.5 * (r - inner) / (edge - inner))
+            width = rng.uniform(0.008, 0.014)
+            yaw = rng.uniform(0, 2 * math.pi)
+            lean = np.array([math.cos(yaw), math.sin(yaw), 0.0]) * rng.uniform(0.2, 0.6)
+            side = np.array([-math.sin(yaw), math.cos(yaw), 0.0])
+            tint = rng.random()
+            rows = []
+            for k, t in enumerate((0.0, 0.35, 0.7, 1.0)):
+                c = base + np.array([0, 0, height * t]) + lean * height * t * t
+                wdt = width * (1 - t) if k < 3 else 0.0
+                rows.append((bm.verts.new(c - side * wdt), bm.verts.new(c + side * wdt), t))
+            for (l0, r0, t0), (l1, r1, t1) in zip(rows[:-1], rows[1:]):
+                f = bm.faces.new((l0, r0, r1, l1)) if l1 is not r1 else None
+                if f:
+                    for loop, (uu, vv) in zip(f.loops, ((0, t0), (1, t0), (1, t1), (0, t1))):
+                        loop[uv].uv = (tint * 0.9 + uu * 0.1, vv)
+            made += 1
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
+    me = bpy.data.meshes.new("Tree_Grass")
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new("Tree_Grass", me)
+    bpy.context.collection.objects.link(obj)
+    m = bpy.data.materials.new("Grass")
+    m.use_nodes = True
+    img = m.node_tree.nodes.new("ShaderNodeTexImage")
+    img.image = bpy.data.images.load(os.path.join(tex, "grass.png"))
+    m.node_tree.links.new(img.outputs["Color"], m.node_tree.nodes["Principled BSDF"].inputs["Base Color"])
+    obj.data.materials.append(m)
+    return obj
 
 
 def leaf_material(tex):
@@ -319,10 +366,16 @@ def main():
     os.makedirs(tex, exist_ok=True)
     textures.bark(tex)
     textures.leaves(tex)
+    textures.grass(tex)
 
     # skeleton in Y-up space (from the numpy generator), converted to Blender's Z-up
     branches = []
     grow(rng, np.array([0, 0, 0.0]), np.array([0.05, 1, 0.02]), 1.7, 0.27, 0, branches)
+    # shorten only the trunk by 0.5 m; the crown keeps its size and just sits lower
+    squash = 0.5
+    t_pts, t_r, _ = branches[0]
+    branches[0] = (t_pts * [1, (t_pts[-1, 1] - squash) / t_pts[-1, 1], 1], t_r, 0)
+    branches[1:] = [(p - [0, squash, 0], r, d) for p, r, d in branches[1:]]
     # fold the root flare into the start of the trunk so there is no seam between them
     trunk_pts, trunk_r, _ = branches[0]
     keep = trunk_pts[:, 1] > 0.45
@@ -376,13 +429,14 @@ def main():
         pos = np.array([r * math.cos(a), r * math.sin(a), 0.012 + rng.uniform(0, 0.01)])
         fallen.append((pos, Rz @ Rx, rng.uniform(0.1, 0.15), int(rng.integers(4))))
     fallen_obj = build_leaves("Tree_FallenLeaves", fallen, rng)
+    grass_obj = build_grass(rng, tex)
     leaf_mat = leaf_material(tex)
     for o in (crown, fallen_obj):
         o.data.materials.append(leaf_mat)
         bpy.context.view_layer.objects.active = o
         bpy.ops.object.shade_smooth()
 
-    for o in (bark, crown, fallen_obj):
+    for o in (bark, crown, fallen_obj, grass_obj):
         print(f"{o.name}: {sum(len(p.vertices) - 2 for p in o.data.polygons)} tris")
 
     # previews
@@ -395,7 +449,7 @@ def main():
     bpy.data.objects.remove(g)
 
     # export each part as FBX for Unity (Y-up, metres)
-    for o in (bark, crown, fallen_obj):
+    for o in (bark, crown, fallen_obj, grass_obj):
         bpy.ops.object.select_all(action="DESELECT")
         o.select_set(True)
         bpy.context.view_layer.objects.active = o

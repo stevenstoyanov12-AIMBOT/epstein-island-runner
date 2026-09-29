@@ -162,8 +162,22 @@ def leaves(out, cell=1024):
     save(normal_map(hgt, -8.0), os.path.join(out, "leaves_normal.png"))
 
 
+def grass(out, w=256, h=512):
+    """Grass blade strip: u picks a blade tint, v runs from root (dark) to tip (pale, a bit dry)."""
+    u = np.linspace(0, 1, w)[None, :, None]
+    v = np.linspace(1, 0, h)[:, None, None]           # image top = blade tip
+    root = np.array([0.10, 0.20, 0.06])
+    mid = np.array([0.28, 0.45, 0.14]) * (0.85 + 0.3 * u)
+    tip = np.array([0.62, 0.62, 0.30]) * (0.9 + 0.2 * u)
+    col = np.where(v < 0.6, root + (mid - root) * (v / 0.6), mid + (tip - mid) * ((v - 0.6) / 0.4))
+    streak = fbm(np.stack(np.meshgrid(np.arange(w) / 6.0, np.arange(h) / 60.0, [0.0]), -1).reshape(-1, 3), 2, 31)
+    col = col * (0.9 + 0.12 * streak.reshape(h, w)[..., None])
+    save((np.clip(col, 0, 1) * 255).astype(np.uint8), os.path.join(out, "grass.png"))
+
+
 if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "textures"
     os.makedirs(out, exist_ok=True)
     bark(out)
     leaves(out)
+    grass(out)

@@ -102,6 +102,15 @@ public static class StatueSceneBuilder
             falling.leafMaterial = leaves;
         }
         AddMesh(root.transform, "FallenLeaves", $"{TreeFolder}/Tree_FallenLeaves.fbx", leaves);
+
+        var grass = GetMaterial("TreeGrass", Color.white, 0.15f, 0f);
+        grass.SetTexture("_BaseMap", LoadTexture($"{TreeFolder}/Textures/grass.png", false));
+        grass.SetFloat("_Cull", (float)CullMode.Off);
+        grass.doubleSidedGI = true;
+        EditorUtility.SetDirty(grass);
+        var tuft = AddMesh(root.transform, "Grass", $"{TreeFolder}/Tree_Grass.fbx", grass);
+        if (tuft != null)
+            tuft.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
     }
 
     static Texture2D LoadTexture(string path, bool normalMap)
