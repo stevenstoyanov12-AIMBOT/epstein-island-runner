@@ -29,7 +29,7 @@ public class StatueGaze : MonoBehaviour
     LineRenderer[] aimLines, beams;
     AudioSource whine, zap;
     // eye tint (multiplies the eye texture) and gaze-cone colours
-    static readonly Color Dim = new Color(0.55f, 0.35f, 0.35f), Bright = new Color(1f, 0.25f, 0.2f), White = new Color(1f, 1f, 1f);
+    static readonly Color Dim = new Color(0.8f, 0.5f, 0.5f), Bright = new Color(1f, 0.25f, 0.2f), White = new Color(1f, 1f, 1f);
 
     void Start()
     {
@@ -40,8 +40,8 @@ public class StatueGaze : MonoBehaviour
         var lineMat = new Material(Shader.Find("Sprites/Default"));
         for (int i = 0; i < eyes.Length; i++)
         {
-            var ball = eyes[i].Find("Eyeball");
-            eyeRenderers[i] = ball != null ? ball.GetComponent<Renderer>() : eyes[i].GetComponent<Renderer>();
+            var iris = eyes[i].Find("PupilPivot/Iris");   // the glowing part whose tint shows the statue's mood
+            eyeRenderers[i] = iris != null ? iris.GetComponent<Renderer>() : eyes[i].GetComponentInChildren<Renderer>();
             aimLines[i] = Line(eyes[i], lineMat, 0.008f);
             beams[i] = Line(eyes[i], lineMat, 0.06f);
         }
@@ -86,12 +86,12 @@ public class StatueGaze : MonoBehaviour
             if (target != null && state != State.Cooldown)
             {
                 var dir = pupils[i].parent.InverseTransformDirection(target.AimPoint - pupils[i].position);
-                look = Quaternion.RotateTowards(Quaternion.identity, Quaternion.LookRotation(dir), 13f);   // stays inside the eyelids
+                look = Quaternion.RotateTowards(Quaternion.identity, Quaternion.LookRotation(dir), 8f);   // stays inside the eyelids
             }
             else
             {
                 float a = Time.time * 1.3f + i * 0.5f;
-                look = Quaternion.Euler(Mathf.Sin(a) * 12f, Mathf.Cos(a) * 12f, 0f);
+                look = Quaternion.Euler(Mathf.Sin(a) * 7f, Mathf.Cos(a) * 7f, 0f);
             }
             pupils[i].localRotation = Quaternion.Slerp(pupils[i].localRotation, look, Time.deltaTime * 12f);
         }

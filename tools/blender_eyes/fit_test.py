@@ -38,7 +38,7 @@ def cap(name, max_theta, segs, rings, lift, material, uv=False):
     verts, uvs, faces = [], [], []
     for r in range(rings + 1):
         th = max_theta * r / rings
-        rad = surface(th) * lift
+        rad = (surface(0.0) if max_theta < math.pi else surface(th)) * lift
         for s in range(segs + 1):
             ph = 2 * math.pi * s / segs
             verts.append((math.sin(th) * math.cos(ph) * rad, math.sin(th) * math.sin(ph) * rad, math.cos(th) * rad))
@@ -99,12 +99,13 @@ rim_mat = glow("Rim", colour=(1, 0.8, 0.45, 1))
 to_test = Euler((math.radians(90), 0, 0))
 for side in (-1, 1):
     centre = Vector((args.xl if side < 0 else args.xr, -args.z, args.y))
-    ball = cap("Eyeball", math.pi, 48, 24, 1.0, eye_mat, uv=True)
+    ball = cap("Eyeball", math.pi, 48, 24, 1.0, marble)
     ball.location = centre
     ball.rotation_euler = to_test
     look = to_test.to_matrix() @ Euler((math.radians(-args.look[1]), math.radians(args.look[0]), 0)).to_matrix()
-    for nm, th, lift, mat in (("Pupil", 0.17, 1.004, pupil_mat), ("Rim", 0.215, 1.002, rim_mat)):
-        o = cap(nm, th, 24, 4, lift, mat)
+    for nm, th, lift, mat, uv in (("Iris", 0.5, 1.003, eye_mat, True), ("Rim", 0.19, 1.006, rim_mat, False),
+                                  ("Pupil", 0.15, 1.009, pupil_mat, False)):
+        o = cap(nm, th, 36, 8, lift, mat, uv=uv)
         o.location = centre
         o.rotation_euler = look.to_euler()
 

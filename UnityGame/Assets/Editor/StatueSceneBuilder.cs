@@ -553,30 +553,33 @@ public static class StatueSceneBuilder
     {
         var head = bustRoot.Find("Head");
         if (head == null) return;
-        // Glowing eyeballs set into the sockets (iris texture from tools/blender_eyes). The eyeball itself never
-        // turns; a pupil (black centre, hot rim) glides over it on a pivot at the eye's centre.
-        var eyeMat = Glow("StatueEyes", new Color(0.6f, 0.05f, 0.05f),
-                          LoadTexture("Assets/Models/Statues/Textures/statue_eye.png", false));
+        // Eyes set into the sockets: a marble eyeball that blends into the sculpted eye, and on it a glowing
+        // red iris (texture from tools/blender_eyes) with a black, hot-rimmed pupil. The eyeball never turns;
+        // iris and pupil glide over it together on a pivot at the eye's centre.
+        var marble = GetMaterial("Marble", new Color(0.90f, 0.88f, 0.83f), 0.6f, 0f);
+        var irisMat = Glow("StatueEyes", new Color(0.8f, 0.5f, 0.5f),
+                           LoadTexture("Assets/Models/Statues/Textures/statue_eye.png", false));
         var pupilMat = Glow("StatuePupil", new Color(0.01f, 0f, 0f));
         var rimMat = Glow("StatuePupilRim", new Color(1f, 0.8f, 0.45f));
-        foreach (var m in new[] { eyeMat, pupilMat, rimMat }) m.SetFloat("_Cull", (float)CullMode.Off);
-        var eyeball = SavedMesh("StatueEyeball", EyeMesh(Mathf.PI, 48, 24, 1f, true));
-        var pupilCap = SavedMesh("StatuePupil", EyeMesh(0.17f, 24, 4, 1.004f, false));
-        var rimCap = SavedMesh("StatuePupilRim", EyeMesh(0.215f, 24, 4, 1.002f, false));
+        foreach (var m in new[] { irisMat, pupilMat, rimMat }) m.SetFloat("_Cull", (float)CullMode.Off);
+        var eyeball = SavedMesh("StatueEyeball", EyeMesh(Mathf.PI, 48, 24, 1f, false));
+        var irisCap = SavedMesh("StatueIris", EyeMesh(0.5f, 36, 8, 1.003f, true));
+        var rimCap = SavedMesh("StatuePupilRim", EyeMesh(0.19f, 24, 4, 1.006f, false));
+        var pupilCap = SavedMesh("StatuePupil", EyeMesh(0.15f, 24, 4, 1.009f, false));
         var eyes = new Transform[2];
         var pupils = new Transform[2];
         for (int i = 0; i < 2; i++)
         {
-            // fit checked with tools/blender_eyes/fit_test.py: only the glowing iris shows between the lids
+            // fit checked with tools/blender_eyes/fit_test.py; each eye placed on its own (the face is asymmetric)
             var eye = new GameObject(i == 0 ? "Eye_L" : "Eye_R").transform;
             eye.SetParent(head, false);
-            // each eye placed on its own: the face is not perfectly symmetric
             eye.localPosition = new Vector3(i == 0 ? -0.041f : 0.0355f, 0.595f, 0.067f);
-            MeshPart(eye, "Eyeball", eyeball, eyeMat);
+            MeshPart(eye, "Eyeball", eyeball, marble);
             var pivot = new GameObject("PupilPivot").transform;
             pivot.SetParent(eye, false);
-            MeshPart(pivot, "Pupil", pupilCap, pupilMat);
+            MeshPart(pivot, "Iris", irisCap, irisMat);
             MeshPart(pivot, "PupilRim", rimCap, rimMat);
+            MeshPart(pivot, "Pupil", pupilCap, pupilMat);
             eyes[i] = eye;
             pupils[i] = pivot;
         }
@@ -605,7 +608,9 @@ public static class StatueSceneBuilder
         for (int r = 0; r <= rings; r++)
         {
             float theta = maxTheta * r / rings;
-            float rad = EyeSurface(theta) * lift;
+            // the eyeball follows the cornea bulge; caps (iris, pupil) keep the front radius so they never
+            // sink into the bulge as they glide off-centre
+            float rad = (maxTheta < Mathf.PI ? EyeSurface(0f) : EyeSurface(theta)) * lift;
             for (int s = 0; s <= segments; s++)
             {
                 float phi = 2f * Mathf.PI * s / segments;
