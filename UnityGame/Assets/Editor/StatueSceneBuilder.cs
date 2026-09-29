@@ -568,10 +568,11 @@ public static class StatueSceneBuilder
         var pupils = new Transform[2];
         for (int i = 0; i < 2; i++)
         {
-            // fit checked with tools/blender_eyes/fit_test.py; each eye placed on its own (the face is asymmetric)
+            // fit checked with tools/blender_eyes/fit_test.py
             var eye = new GameObject(i == 0 ? "Eye_L" : "Eye_R").transform;
             eye.SetParent(head, false);
-            eye.localPosition = new Vector3(i == 0 ? -0.041f : 0.0355f, 0.595f, 0.0655f);
+            // centred on the bust's sculpted eyeballs (sphere fit: 3.4 cm either side, 0.595 m up)
+            eye.localPosition = new Vector3(i == 0 ? -0.034f : 0.034f, 0.595f, 0.0655f);
             var pivot = new GameObject("PupilPivot").transform;
             pivot.SetParent(eye, false);
             MeshPart(pivot, "Iris", irisCap, irisMat);
