@@ -1,15 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// 13-second night cutscene from inside a crate stacked at the front of a van's cargo area, looking through
-// the slats past the other crates and out of the rear-door windows at the street, its lamps and a car's
-// headlights far behind. A failing ceiling lamp flickers over the cargo. Then headlights flare, tyres
-// screech and the van is hit side-on: the crate tips over, the cargo tumbles, the light dies, fade out.
+// 13-second night cutscene in the back of a van, seen from the front corner of the cargo area: the player's
+// crate stacked on two others, the rest of the cargo, and through the rear-door windows the street, its lamps
+// and a car's headlights far behind. A failing ceiling lamp flickers over the cargo. Then headlights flare,
+// tyres screech and the van is hit side-on: every crate is thrown about, the light dies, fade out.
 // Plays on start; press C to watch it again. Sound (engine, bumps, screech, crash) is synthesised at runtime.
 public class CrateCutscene : MonoBehaviour
 {
     public Camera cutsceneCamera;
-    public Transform eye;                 // crouched eye position inside the player's crate
+    public Transform eye;                 // camera mount in the van; shake and glances are applied on top
     public Transform van;                 // van root; lights are placed relative to it
     public Light moon;                    // night light for the street, enabled only during the cutscene
     public NightStreet street;
@@ -55,8 +55,8 @@ public class CrateCutscene : MonoBehaviour
         ceiling.range = 5f;
         ceiling.shadows = LightShadows.Soft;
         fill = MakeLight("CrateFill", LightType.Point, new Color(0.5f, 0.55f, 0.7f), 0f);
-        fill.transform.position = eye.position + eye.forward * 0.2f;
-        fill.range = 1.2f;
+        fill.transform.position = eye.position + eye.forward * 0.6f;
+        fill.range = 3f;
         fill.shadows = LightShadows.None;
 
         engine = Source(true);
@@ -196,7 +196,7 @@ public class CrateCutscene : MonoBehaviour
         bool afterCrash = sinceCrash > 0f;
 
         // --- camera: breathing, rumble, bumps, a gentle turn and glances at the other crates
-        var offset = new Vector3(0f, Mathf.Sin(t * 1.6f) * 0.006f, 0f);
+        var offset = new Vector3(0f, Mathf.Sin(t * 1.6f) * 0.004f, 0f);
         float rumble = afterCrash ? 0f : 1f;
         offset += new Vector3(Mathf.PerlinNoise(t * 9f, 0f) - 0.5f, Mathf.PerlinNoise(0f, t * 11f) - 0.5f, 0f) * 0.006f * rumble;
         float pitch = 0f, roll = (Mathf.PerlinNoise(t * 3f, 5f) - 0.5f) * 1.2f * rumble;
@@ -218,24 +218,21 @@ public class CrateCutscene : MonoBehaviour
         float lean = Mathf.Sin(Mathf.Clamp01((t - 3f) / 2.2f) * Mathf.PI);
         roll += lean * 4f;
         offset.x += lean * 0.025f;
-        // look down the cargo at the other crates, across to the left stack, and back to the window
-        float glance = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 3.0f) / 0.8f)) * -24f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 5.2f) / 0.9f)) * 24f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 7.0f) / 0.6f)) * 10f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 8.0f) / 0.6f)) * -10f;
+        // slow drift from the player's crate toward the window and back, like a handheld camera
+        float glance = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 2.5f) / 2.5f)) * 8f
+                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 6.0f) / 2.0f)) * -8f;
         // headlights flare in the rear window: snap to look at them
         if (t > Headlights && !afterCrash) glance = Mathf.Lerp(glance, 12f, Mathf.Clamp01((t - Headlights) / 0.3f));
 
-        // --- the crash: slammed sideways, the crate tips onto its side and settles, shaking
+        // --- the crash: a violent jolt sideways, then the camera settles askew, still trembling
         if (afterCrash)
         {
             float slam = Mathf.Exp(-sinceCrash * 5f);
-            offset.x -= Mathf.Min(sinceCrash * 1.6f, 0.18f);
-            offset.y -= Mathf.Min(sinceCrash * 0.8f, 0.2f);
-            offset += Random.insideUnitSphere * 0.05f * slam;
-            float tip = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(sinceCrash / 0.55f));
-            roll += -78f * tip + Mathf.Sin(sinceCrash * 30f) * 8f * slam;
-            pitch += Mathf.Sin(sinceCrash * 23f) * 6f * slam + 6f * tip;
+            float tilt = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(sinceCrash / 0.4f));
+            offset.x -= 0.12f * tilt;
+            offset += Random.insideUnitSphere * 0.08f * slam;
+            roll += -14f * tilt + Mathf.Sin(sinceCrash * 30f) * 9f * slam;
+            pitch += Mathf.Sin(sinceCrash * 23f) * 6f * slam;
             glance += Mathf.Sin(sinceCrash * 17f) * 10f * slam;
         }
         var ct = cutsceneCamera.transform;
@@ -287,7 +284,7 @@ public class CrateCutscene : MonoBehaviour
         if (distantCar != null)
             distantCar.localPosition = distantStart + new Vector3(Mathf.Sin(t * 0.35f) * 1.6f, 0f, Mathf.Sin(t * 0.5f) * 5f);
 
-        fill.intensity = afterCrash ? 0.02f : 0.05f;
+        fill.intensity = afterCrash ? 0.03f : 0.12f;  // just enough to make out the cargo
     }
 
     static void SetFlyCamera(Camera cam, bool on)
