@@ -16,6 +16,7 @@ public class LaserEye
     // charge-up: a 4x4 flipbook rendered in Blender (tools/blender_eyes/charge_flipbook.py), played over the eye
     readonly Transform chargeQuad;
     readonly Material chargeMat;
+    readonly Mesh chargeMesh;
     readonly float noiseSeed = Random.Range(0f, 100f);   // each eye flickers differently
 
     static Texture2D softDot, beamTex, scorchTex;
@@ -40,8 +41,8 @@ public class LaserEye
 
         chargeQuad = Quad(root, "ChargeFlipbook", out chargeMat);
         chargeMat = Additive(chargeFlipbook != null ? chargeFlipbook : softDot, new Color(3f, 3f, 3f, 1f));
-        chargeMat.mainTextureScale = new Vector2(0.25f, 0.25f);
         chargeQuad.GetComponent<MeshRenderer>().sharedMaterial = chargeMat;
+        chargeMesh = chargeQuad.GetComponent<MeshFilter>().mesh;   // its own copy; frames are picked via its UVs
         chargeQuad.localPosition = new Vector3(0f, 0f, 0.025f);   // just in front of the eye
         chargeQuad.localScale = Vector3.one * 0.08f;
         chargeQuad.gameObject.SetActive(false);
@@ -136,7 +137,9 @@ public class LaserEye
     {
         // play the Blender charge animation over the eye: frame 0 at the start, frame 15 just before firing
         int frame = Mathf.Min(15, Mathf.FloorToInt(k * 16f));
-        chargeMat.mainTextureOffset = new Vector2((frame % 4) * 0.25f, 0.75f - (frame / 4) * 0.25f);
+        float u0 = (frame % 4) * 0.25f, v0 = 0.75f - (frame / 4) * 0.25f;
+        // Unity's quad vertices: bottom-left, bottom-right, top-left, top-right
+        chargeMesh.uv = new[] { new Vector2(u0, v0), new Vector2(u0 + 0.25f, v0), new Vector2(u0, v0 + 0.25f), new Vector2(u0 + 0.25f, v0 + 0.25f) };
         chargeQuad.gameObject.SetActive(true);
 
         // aim line: a faint, jittering thread that narrows and steadies as the charge completes
