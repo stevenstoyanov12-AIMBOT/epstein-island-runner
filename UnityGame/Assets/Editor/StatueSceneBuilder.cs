@@ -90,7 +90,13 @@ public static class StatueSceneBuilder
         var trunk = AddMesh(root.transform, "Bark", $"{TreeFolder}/Tree_Bark.fbx", bark);
         if (trunk != null)
             trunk.AddComponent<MeshCollider>().sharedMesh = trunk.GetComponent<MeshFilter>().sharedMesh;
-        AddMesh(root.transform, "Leaves", $"{TreeFolder}/Tree_Leaves.fbx", leaves);
+        var crown = AddMesh(root.transform, "Leaves", $"{TreeFolder}/Tree_Leaves.fbx", leaves);
+        if (crown != null)
+        {
+            var falling = root.AddComponent<FallingLeaves>();
+            falling.crown = crown.GetComponent<MeshFilter>().sharedMesh;
+            falling.leafMaterial = leaves;
+        }
         AddMesh(root.transform, "FallenLeaves", $"{TreeFolder}/Tree_FallenLeaves.fbx", leaves);
     }
 
