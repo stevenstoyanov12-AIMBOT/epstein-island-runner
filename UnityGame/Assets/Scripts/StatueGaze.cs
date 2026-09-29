@@ -28,7 +28,7 @@ public class StatueGaze : MonoBehaviour
 
     enum State { Searching, Charging, Firing, Cooldown }
     State state;
-    float timer, sweepYaw;
+    float timer, sweepYaw, turnDir;   // turnDir: which way the head keeps sweeping after losing the target
     GazeTarget target;
     Vector3 aimPoint;                         // where the beam is pointing (lags behind the target)
     Light gazeLight;
@@ -171,6 +171,7 @@ public class StatueGaze : MonoBehaviour
 
     void StartBeam()
     {
+        turnDir = 0f;
         whine.Stop();
         fx.PlayOneShot(crack, 1f);
         hum.volume = 0.5f;
@@ -184,12 +185,25 @@ public class StatueGaze : MonoBehaviour
     void UpdateBeam()
     {
         // follow the noisiest player: anyone clearly louder than the current target steals the beam
+        // mid-beam it only switches to someone it can actually see (in its view, not behind cover)
         var loudest = LoudestVisible();
-        if (loudest != null && loudest != target && (target == null || !target.Alive || loudest.Noise > target.Noise + switchMargin))
+        if (loudest != null && loudest != target && CanSee(loudest)
+            && (target == null || !target.Alive || loudest.Noise > target.Noise + switchMargin))
             target = loudest;
-        if (target != null && target.Alive)
+        if (target != null && target.Alive && CanSee(target))
+        {
             aimPoint = Vector3.MoveTowards(aimPoint, target.AimPoint, beamTrackSpeed * Time.deltaTime);
-        TurnToward(aimPoint, turnSpeed);
+            TurnToward(aimPoint, turnSpeed);
+        }
+        else
+        {
+            // lost sight of them: no chasing. The head keeps its normal slow sweep and the beam simply
+            // points wherever the head is facing, so a player who broke line of sight gets away.
+            if (turnDir == 0f) turnDir = Mathf.Sign(Vector3.SignedAngle(head.forward, aimPoint - head.position, Vector3.up) + 0.001f);
+            head.rotation = Quaternion.Euler(0f, head.eulerAngles.y + turnDir * sweepSpeed * Time.deltaTime, 0f);
+            var eye = EyeCentre;
+            aimPoint = eye + head.forward * Mathf.Max(3f, Vector3.Distance(eye, aimPoint));
+        }
 
         float fade = Mathf.Clamp01((beamTime - timer) / 0.25f);   // thins out over the last quarter second
         hum.volume = 0.5f * fade;
