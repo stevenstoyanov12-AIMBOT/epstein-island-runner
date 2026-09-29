@@ -445,7 +445,7 @@ public static class StatueSceneBuilder
         {
             if (r.name == "Cube") { Object.DestroyImmediate(r.gameObject); continue; }   // Blender's default cube
             if (!painted) { r.sharedMaterial = GetMaterial("HeadGrey", new Color(0.6f, 0.6f, 0.6f), 0.2f, 0f); continue; }
-            if (r.name.StartsWith("Lens"))
+            if (r.name.StartsWith("Lens") || r.name == "Mouth" || r.name == "Leaf")   // textured decals
             {
                 var tex = LoadTexture($"Assets/Models/Characters/soldier_{r.name.ToLower()}.png", false);
                 var m = Glow($"Soldier{r.name}", Color.white, tex);

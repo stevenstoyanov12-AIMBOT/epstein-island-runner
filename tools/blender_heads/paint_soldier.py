@@ -142,6 +142,50 @@ if REF:
     mm.materials.append(mt)
     lens_objs.append(mo)
 
+    # the leaf on the end of the stem, drawn like the one in the picture: a lobed oak-style sprig in the
+    # drawing's olive green, with a dark ink outline, a lighter midrib and side veins
+    W, H = 600, 360
+    leaf = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    dr = ImageDraw.Draw(leaf)
+    pts = []
+    for i in range(121):                                   # outline: stem end at x=0, tip at x=W
+        t = i / 120
+        lobes = 0.55 + 0.45 * abs(math.sin(t * math.pi * 3.5))
+        half = (H * 0.46) * math.sin(math.pi * t) ** 0.8 * lobes
+        pts.append((12 + t * (W - 24), H / 2 - half))
+    pts += [(x, H - y) for x, y in reversed(pts)]
+    dr.polygon(pts, fill=(106, 124, 64, 255))
+    shade = Image.new("RGBA", (W, H), (0, 0, 0, 0)); ds = ImageDraw.Draw(shade)
+    ds.polygon([(x, y) for x, y in pts if y > H / 2 - 1] or pts, fill=(80, 98, 50, 110))   # darker lower half
+    leaf = Image.alpha_composite(leaf, shade)
+    dr = ImageDraw.Draw(leaf)
+    dr.line([(12, H / 2), (W - 20, H / 2)], fill=(150, 168, 100, 255), width=6)            # midrib
+    for k in range(1, 7):                                                              # side veins to each lobe
+        x0 = 12 + (W - 24) * k / 7.5
+        for sgn in (-1, 1):
+            dr.line([(x0, H / 2), (x0 + 55, H / 2 + sgn * H * 0.3 * math.sin(math.pi * k / 7.5))],
+                    fill=(135, 152, 88, 255), width=4)
+    dr.line(pts + [pts[0]], fill=(46, 52, 32, 255), width=7)                           # ink outline
+    leaf_path = os.path.join(out_dir, "soldier_leaf.png")
+    leaf.save(leaf_path)
+    L, Wd = 0.20, 0.12                                     # size in metres; lies flat, pointing forward from the tip
+    tip = (0.007, -0.575, 0.413)
+    # tilted 55 degrees about its own length so its face shows from the front and the sides, drooping a little
+    wx, wz = math.cos(math.radians(55)) * Wd / 2, math.sin(math.radians(55)) * Wd / 2
+    verts = [(tip[0] - wx, tip[1], tip[2] - wz), (tip[0] + wx, tip[1], tip[2] + wz),
+             (tip[0] + wx - 0.04, tip[1] - L, tip[2] + wz - 0.06), (tip[0] - wx - 0.04, tip[1] - L, tip[2] - wz - 0.06)]
+    lf = bpy.data.meshes.new("Leaf"); lf.from_pydata(verts, [], [(0, 1, 2, 3)])
+    uv = lf.uv_layers.new(name="UVMap")
+    for li, (u, v) in zip(range(4), ((0, 0), (0, 1), (1, 1), (1, 0))):   # texture length runs along the leaf
+        uv.data[li].uv = (u, v)
+    lo = bpy.data.objects.new("Leaf", lf); bpy.context.collection.objects.link(lo)
+    mt = bpy.data.materials.new("Leaf"); mt.use_nodes = True; t = mt.node_tree; bs = t.nodes["Principled BSDF"]
+    img = t.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(leaf_path)
+    t.links.new(img.outputs["Color"], bs.inputs["Base Color"]); t.links.new(img.outputs["Alpha"], bs.inputs["Alpha"])
+    if hasattr(mt, "surface_render_method"): mt.surface_render_method = "BLENDED"
+    lf.materials.append(mt)
+    lens_objs.append(lo)
+
 m = bpy.data.materials.new("Soldier"); m.use_nodes = True; nt = m.node_tree; b = nt.nodes["Principled BSDF"]
 vc = nt.nodes.new("ShaderNodeVertexColor"); vc.layer_name = "Col"
 nt.links.new(vc.outputs["Color"], b.inputs["Base Color"]); b.inputs["Roughness"].default_value = 0.75
@@ -157,9 +201,9 @@ sun.rotation_euler = (math.radians(40), 0, math.radians(25)); sc.collection.obje
 cam = bpy.data.objects.new("C", bpy.data.cameras.new("C")); sc.collection.objects.link(cam); sc.camera = cam; cam.data.lens = 85
 sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.use_denoising = True
 sc.render.resolution_x = sc.render.resolution_y = 500; sc.view_settings.view_transform = "Standard"
-for name, ang in (("front", 0), ("three", 35), ("side", 80), ("close", 0), ("back", 180)):
+for name, ang in (("front", 0), ("three", 35), ("side", 80), ("close", 0), ("back", 180), ("leaf", 30)):
     a = math.radians(ang); cam.location = (3.2 * math.sin(a), -3.2 * math.cos(a), 0.58)
-    cam.data.lens = 260 if name == "close" else 85
+    cam.data.lens = 260 if name == "close" else (60 if name == "leaf" else 85)
     cam.rotation_euler = (Vector((0, 0, 0.56)) - cam.location).to_track_quat("-Z", "Y").to_euler()
     sc.render.filepath = f"{prev}_{name}.png"; bpy.ops.render.render(write_still=True)
 
