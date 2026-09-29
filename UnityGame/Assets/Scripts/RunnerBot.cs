@@ -1,9 +1,10 @@
 using UnityEngine;
 
-// An animated mannequin (tools/blender_character/make_runner.py) that roams the garden for the watching
-// statue to hunt: it walks between random spots, sometimes breaks into a sprint, and "fires" every few
-// seconds, which makes it loud (GazeTarget) so the statue's eyes lock on and its lasers follow it.
-// When the statue is charging at it, it panics and sprints for cover.
+// An animated Mixamo character (tools/blender_character/mixamo_combine.py: Walk, Run, Shoot) that roams the
+// garden for the watching statue to hunt. It walks between random spots, sometimes sprints, and every few
+// seconds shoots on the move: the Shoot clip plays on the upper body only, over the walk or run on the legs,
+// so it can walk-and-shoot and run-and-shoot. Shooting makes it loud (GazeTarget), so the statue's eyes
+// lock on and its lasers follow it; once loud, it panics and sprints away.
 [RequireComponent(typeof(GazeTarget))]
 public class RunnerBot : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class RunnerBot : MonoBehaviour
 
     GazeTarget target;
     Animation anim;
-    string walkClip, runClip;
+    string walkClip, runClip, shootClip;
+    float shootTime;                          // seconds left of the current burst
+    Transform hand;
     Vector3 destination;
     bool running;
     float nextShot, flash;
@@ -32,7 +35,17 @@ public class RunnerBot : MonoBehaviour
                 s.wrapMode = WrapMode.Loop;
                 if (s.name.Contains("Walk")) walkClip = s.name;
                 if (s.name.Contains("Run")) runClip = s.name;
+                if (s.name.Contains("Shoot")) shootClip = s.name;
             }
+        if (anim != null && shootClip != null)
+        {
+            // shooting only moves the body from the spine up; the legs keep walking or running underneath
+            var shoot = anim[shootClip];
+            shoot.layer = 1;
+            var spine = FindDeep(transform, "mixamorig:Spine");
+            if (spine != null) shoot.AddMixingTransform(spine, true);
+        }
+        hand = FindDeep(transform, "mixamorig:RightHand");
         PickDestination();
         nextShot = Time.time + Random.Range(shotInterval.x, shotInterval.y);
 
@@ -44,6 +57,17 @@ public class RunnerBot : MonoBehaviour
         muzzle.widthMultiplier = 0.03f;
         muzzle.positionCount = 2;
         muzzle.enabled = false;
+    }
+
+    static Transform FindDeep(Transform t, string name)
+    {
+        if (t.name == name) return t;
+        foreach (Transform c in t)
+        {
+            var f = FindDeep(c, name);
+            if (f != null) return f;
+        }
+        return null;
     }
 
     void PickDestination()
@@ -84,18 +108,30 @@ public class RunnerBot : MonoBehaviour
 
         if (Time.time >= nextShot)
         {
-            target.MakeNoise();
+            shootTime = 1.2f;                  // a short burst: raise the gun, fire a few rounds
             nextShot = Time.time + Random.Range(shotInterval.x, shotInterval.y);
-            flash = 0.08f;
         }
+        if (shootTime > 0f)
+        {
+            shootTime -= Time.deltaTime;
+            if (anim != null && shootClip != null) anim.Blend(shootClip, 1f, 0.15f);
+            // rounds go off during the burst: each one is a flash and more noise
+            if (Mathf.Repeat(shootTime, 0.3f) < Time.deltaTime && shootTime < 1f)
+            {
+                target.MakeNoise();
+                flash = 0.06f;
+            }
+        }
+        else if (anim != null && shootClip != null)
+            anim.Blend(shootClip, 0f, 0.25f);   // lower the gun
         // a quick muzzle flash when it fires, so you can see who made the noise
         flash -= Time.deltaTime;
         muzzle.enabled = flash > 0f;
         if (muzzle.enabled)
         {
-            var hand = transform.position + transform.up * 1.2f + transform.right * 0.25f + transform.forward * 0.3f;
-            muzzle.SetPosition(0, hand);
-            muzzle.SetPosition(1, hand + transform.forward * 0.6f);
+            var from = hand != null ? hand.position : transform.position + transform.up * 1.2f + transform.forward * 0.3f;
+            muzzle.SetPosition(0, from);
+            muzzle.SetPosition(1, from + transform.forward * 0.6f);
         }
     }
 }
