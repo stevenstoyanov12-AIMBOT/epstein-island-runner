@@ -61,17 +61,23 @@ col[fringe] = HAIR
 face = ~helmet & ~fringe & (d > -0.06) & (ax < 0.25)
 col[face] = SKIN
 col[face & (np.hypot(ax - 0.165, (z - 0.43) * 1.3) < 0.045)] = CHEEK     # rosy cheeks under the glasses
-col[face & (ax < 0.05) & (np.abs(z - 0.412) < 0.005) & (d > 0.02)] = MOUTH
 # sunglasses: dark frame, slate lenses with a lighter reflection band
 glass = ~helmet & (ax < 0.245) & (z > 0.468) & (z < 0.648) & (d > 0.05)
 col[glass] = FRAME
 lens = glass & (ax > 0.036) & (ax < 0.228) & (z > 0.482) & (z < 0.634)
 col[lens] = LENS
 col[lens & (np.abs((z - 0.56) - 0.5 * (ax - 0.13)) < 0.01)] = LENS_HI
+# the nose pokes through under the glasses' bridge: keep it skin, not frame
+nose = glass & (ax < 0.05) & (z < 0.535)   # nose tip z 0.46-0.52; the bridge bar is z 0.55-0.61
+col[nose] = SKIN
+# the mouth as in the drawing: a small, slightly down-turned line, with a hint of lower lip
+mouth_z = 0.398 - 2.0 * ax ** 2
+col[face & (ax < 0.045) & (np.abs(z - mouth_z) < 0.0035) & (d > 0.02)] = MOUTH
 # ear-side chin strap
 col[~helmet & (x > 0.22) & (z > 0.3) & (z < 0.49) & (d > -0.06)] = STRAP
 # the leaf in the mouth
-col[(d > 0.1) & (z > 0.34) & (z < 0.44) & ~glass] = LEAF
+col[(d > 0.09) & (z > 0.37) & (z < 0.43) & (ax < 0.4) & ~glass & (nrm[:, 1] > -0.9)] = LEAF   # the green stem, as in the drawing
+
 # a few darker strands in the hair
 hair_mask = np.all(col == HAIR, axis=1)
 col[hair_mask & (np.sin(z * 90 + x * 30) > 0.85)] = HAIR_DK
