@@ -261,6 +261,16 @@ public static class StatueSceneBuilder
         cutscene.eye = eye;
         cutscene.van = root.transform;
         cutscene.cargo = cargo.ToArray();
+        // the crates by the doors burst into planks in the crash
+        cutscene.breakable = cargo.FindAll(rb => rb.name == "Crate_2" || rb.name == "Crate_3").ToArray();
+        cutscene.debrisMaterial = crates[0];
+        cutscene.doorLeft = doorL != null ? doorL.transform : null;
+        cutscene.doorRight = doorR != null ? doorR.transform : null;
+        // the van body is a kinematic rigidbody so loose cargo collides properly while it slides and spins
+        var body = root.AddComponent<Rigidbody>();
+        body.isKinematic = true;
+        body.interpolation = RigidbodyInterpolation.Interpolate;
+        cutscene.vanBody = body;
         NightStreetSet(root.transform, cutscene);
     }
 
@@ -287,8 +297,9 @@ public static class StatueSceneBuilder
         var lampGlow = Glow("LampGlow", new Color(1f, 0.75f, 0.45f), 6f);
         foreach (var m in new[] { asphalt, facade }) EditorUtility.SetDirty(m);
 
+        // the street is not parented to the van, so the van can slide and spin across it in the crash
         var root = new GameObject("NightStreet").transform;
-        root.SetParent(van, false);
+        root.SetPositionAndRotation(van.position, van.rotation);
         var segs = new Transform[segments];
         var lamps = new List<Light>();
         var block = new MaterialPropertyBlock();
@@ -343,7 +354,7 @@ public static class StatueSceneBuilder
         // just the headlights of a car far behind (no body: at night that's all you'd see)
         var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 30f);
         var car = new GameObject("DistantHeadlights").transform;
-        car.SetParent(van, false);
+        car.SetParent(root, false);
         car.localPosition = new Vector3(-0.9f, road, 26f);
         foreach (int side in new[] { -1, 1 })
             NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.45f, 0.3f, 0.2f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
@@ -360,7 +371,7 @@ public static class StatueSceneBuilder
         cutscene.distantCar = car;
 
         var moon = new GameObject("Moon").AddComponent<Light>();
-        moon.transform.SetParent(van, false);
+        moon.transform.SetParent(root, false);
         moon.transform.localRotation = Quaternion.Euler(32f, 200f, 0f);
         moon.type = LightType.Directional;
         moon.color = new Color(0.55f, 0.65f, 1f);

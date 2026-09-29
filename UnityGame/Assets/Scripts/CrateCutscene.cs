@@ -4,7 +4,8 @@ using UnityEngine.InputSystem;
 // 13-second night cutscene from inside a crate stacked in the front corner of a van's cargo area, looking
 // out through a missing slat at the other crates and, through the rear-door windows, the street, its lamps
 // and a car's headlights far behind. A failing ceiling lamp flickers over the cargo. Then headlights flare,
-// tyres screech and the van is hit side-on: the cargo is thrown about, the light dies, fade out.
+// tyres screech and the van is hit side-on: it slides sideways across the road and spins, leaning hard; the
+// rear doors burst open, the crates by the doors break apart and the rest of the cargo is thrown about.
 // Plays on start; press C to watch it again. Sound (engine, bumps, screech, crash) is synthesised at runtime.
 public class CrateCutscene : MonoBehaviour
 {
@@ -15,6 +16,10 @@ public class CrateCutscene : MonoBehaviour
     public NightStreet street;
     public Transform distantCar;          // a pair of headlights far behind the van, keeping pace in the dark
     public Rigidbody[] cargo;             // loose crates that tumble in the crash
+    public Rigidbody[] breakable;         // crates that burst into planks on impact
+    public Material debrisMaterial;
+    public Transform doorLeft, doorRight; // rear door leaves, pivoting on their hinges
+    public Rigidbody vanBody;             // kinematic body the crash moves (the street stays put)
     public bool playOnStart = true;
     public float duration = 13f;
     public float cruiseSpeed = 11f;       // m/s the street slides by
@@ -38,6 +43,10 @@ public class CrateCutscene : MonoBehaviour
     Vector3[] cargoPos;
     Quaternion[] cargoRot;
     int nextBump;
+    Vector3 vanStartPos;
+    Quaternion vanStartRot;
+    readonly System.Collections.Generic.List<GameObject> debris = new System.Collections.Generic.List<GameObject>();
+    static readonly Vector3 SpinPivot = new Vector3(0f, 0f, -1.8f);   // middle of the cargo area, van-local
 
     public bool Playing => time >= 0f;
 
@@ -75,6 +84,8 @@ public class CrateCutscene : MonoBehaviour
             cargoRot[i] = cargo[i].transform.localRotation;
         }
         if (moon != null) moon.enabled = false;
+        vanStartPos = van.position;
+        vanStartRot = van.rotation;
         if (playOnStart) Play();
     }
 
@@ -133,7 +144,12 @@ public class CrateCutscene : MonoBehaviour
         if (moon != null) moon.enabled = true;
         if (street != null) street.speed = cruiseSpeed;
 
-        // put the cargo back where it was loaded, held in place until the crash
+        // reset the van, doors and cargo; clear the wreckage of the last run
+        van.SetPositionAndRotation(vanStartPos, vanStartRot);
+        SetDoors(0f);
+        foreach (var d in debris) Destroy(d);
+        debris.Clear();
+        foreach (var b in breakable) b.gameObject.SetActive(true);
         for (int i = 0; i < cargo.Length; i++)
         {
             cargo[i].isKinematic = true;
@@ -271,13 +287,14 @@ public class CrateCutscene : MonoBehaviour
             crashed = true;
             fx.PlayOneShot(crashClip, 1f);
             engine.Stop();
-            // the other crates break loose and are thrown across the cargo area
+            // the crates break loose; the ones by the doors burst apart
             foreach (var rb in cargo)
             {
                 rb.isKinematic = false;
-                rb.AddForce(van.TransformDirection(new Vector3(-6f, 2.5f, Random.Range(-1f, 1f))), ForceMode.VelocityChange);
+                rb.AddForce(van.TransformDirection(new Vector3(-2.5f, 2f, Random.Range(0.5f, 2.5f))), ForceMode.VelocityChange);
                 rb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.VelocityChange);
             }
+            foreach (var rb in breakable) Shatter(rb);
         }
 
         // --- a car far behind, headlights on, drifting between lanes
@@ -285,6 +302,55 @@ public class CrateCutscene : MonoBehaviour
             distantCar.localPosition = distantStart + new Vector3(Mathf.Sin(t * 0.35f) * 1.6f, 0f, Mathf.Sin(t * 0.5f) * 5f);
 
         fill.intensity = afterCrash ? 0.03f : 0.12f;  // just enough to make out the cargo
+    }
+
+    // The crash moves the van body: shoved sideways across the road, the back swinging round, leaning hard
+    // and dropping back. Done in FixedUpdate on a kinematic rigidbody so the loose cargo reacts to it.
+    void FixedUpdate()
+    {
+        if (!Playing || vanBody == null) return;
+        float s = time - Impact;
+        if (s <= 0f) return;
+        float slide = 3.4f * (1f - Mathf.Exp(-s * 2.2f));
+        float yaw = 42f * (1f - Mathf.Exp(-s * 1.8f));
+        float lean = 22f * Mathf.Sin(Mathf.Clamp01(s / 1.1f) * Mathf.PI) + 3f * Mathf.Clamp01(s - 1.1f);
+        var rot = vanStartRot * Quaternion.Euler(0f, yaw, -lean);
+        var pivot = vanStartPos + vanStartRot * (SpinPivot + new Vector3(slide, 0f, 0f));
+        vanBody.MovePosition(pivot - rot * SpinPivot);
+        vanBody.MoveRotation(rot);
+        // the rear doors burst open, swing wide and bounce off their stops
+        float open = Mathf.Clamp01(1f - Mathf.Exp(-s * 7f)) + 0.12f * Mathf.Sin(s * 9f) * Mathf.Exp(-s * 2f);
+        SetDoors(open);
+    }
+
+    // 0 = closed, 1 = swung wide open outward (the leaves' hinges are at the van's rear corners)
+    void SetDoors(float open)
+    {
+        if (doorLeft != null) doorLeft.localRotation = Quaternion.Euler(0f, 115f * open, 0f);
+        if (doorRight != null) doorRight.localRotation = Quaternion.Euler(0f, -115f * open, 0f);
+    }
+
+    // Swap a crate for a burst of loose planks flying apart.
+    void Shatter(Rigidbody crate)
+    {
+        var c = crate.transform;
+        var centre = c.TransformPoint(new Vector3(0f, 0.6f, 0f));
+        crate.gameObject.SetActive(false);
+        for (int i = 0; i < 16; i++)
+        {
+            var plank = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            plank.name = "Plank";
+            plank.GetComponent<MeshRenderer>().sharedMaterial = debrisMaterial;
+            plank.transform.position = centre + Random.insideUnitSphere * 0.45f;
+            plank.transform.rotation = Random.rotation;
+            plank.transform.localScale = new Vector3(Random.Range(0.4f, 1.1f), 0.022f, Random.Range(0.09f, 0.17f));
+            var rb = plank.AddComponent<Rigidbody>();
+            rb.mass = 3f;
+            rb.linearVelocity = (plank.transform.position - centre).normalized * Random.Range(2f, 5f)
+                                + van.TransformDirection(new Vector3(-1.5f, 1.5f, 1.5f));
+            rb.angularVelocity = Random.insideUnitSphere * 12f;
+            debris.Add(plank);
+        }
     }
 
     static void SetFlyCamera(Camera cam, bool on)
