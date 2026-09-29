@@ -202,32 +202,45 @@ public static class StatueSceneBuilder
         EditorUtility.SetDirty(steel);
         EditorUtility.SetDirty(floor);
 
-        AddMesh(root.transform, "Cargo", $"{CutsceneFolder}/VanCargo.fbx", steel, floor);
+        var shell = AddMesh(root.transform, "Cargo", $"{CutsceneFolder}/VanCargo.fbx", steel, floor);
+        if (shell != null)  // walls and floor the loose crates can crash into
+            shell.AddComponent<MeshCollider>().sharedMesh = shell.GetComponent<MeshFilter>().sharedMesh;
         var doorL = AddMesh(root.transform, "Door_L", $"{CutsceneFolder}/VanDoor_L.fbx", steel);
         var doorR = AddMesh(root.transform, "Door_R", $"{CutsceneFolder}/VanDoor_R.fbx", steel);
-        if (doorL != null) doorL.transform.localPosition = new Vector3(1.2f, 0f, 0f);
-        if (doorR != null) doorR.transform.localPosition = new Vector3(-1.2f, 0f, 0f);
+        foreach (var (door, x) in new[] { (doorL, 1.2f), (doorR, -1.2f) })
+        {
+            if (door == null) continue;
+            door.transform.localPosition = new Vector3(x, 0f, 0f);
+            door.AddComponent<MeshCollider>().sharedMesh = door.GetComponent<MeshFilter>().sharedMesh;
+        }
 
         const float floorTop = 0.024f, lowHeight = 0.36f;
-        // the stash: the player's crate (one slat missing, facing the doors) on two flat crates,
-        // which lifts the peep slot to the height of the rear-door window
+        // the stash: the player's crate stacked on two flat crates near the doors
         var stash = new Vector3(0.5f, floorTop, -1.15f);
         Crate("Crate_Low_1", root.transform, stash, 0f, crates, "Crate_Low", null);
         Crate("Crate_Low_2", root.transform, stash + Vector3.up * lowHeight, 2f, crates, "Crate_Low", null);
-        var hero = Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates,
-                         "Crate_Peek", "Crate_Stencil_Back");
-        // more cargo: the van is exactly two crates wide, so the rest is stacked alongside and forward
-        Crate("Crate_2", root.transform, new Vector3(-0.56f, floorTop, -1.2f), 3f, crates);
-        Crate("Crate_Low_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -1.2f), -4f, crates, "Crate_Low", null);
-        Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop, -2.45f), 4f, crates);
-        Crate("Crate_4", root.transform, new Vector3(0.5f, floorTop, -2.75f), -3f, crates);
-        Crate("Crate_Low_4", root.transform, new Vector3(0.5f, floorTop + CrateHeight, -2.75f), 5f, crates, "Crate_Low", null);
+        var hero = Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates);
+        // the rest of the cargo, seen through the slats; loose enough to be thrown about in the crash
+        var cargo = new List<Rigidbody>();
+        void Loose(GameObject c, float mass)
+        {
+            if (c == null) return;
+            var rb = c.AddComponent<Rigidbody>();
+            rb.mass = mass;
+            rb.isKinematic = true;
+            cargo.Add(rb);
+        }
+        Loose(Crate("Crate_2", root.transform, new Vector3(-0.56f, floorTop, -1.2f), 3f, crates), 60f);
+        Loose(Crate("Crate_Low_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -1.2f), -4f, crates, "Crate_Low", null), 25f);
+        Loose(Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop, -2.45f), 4f, crates), 60f);
+        Loose(Crate("Crate_4", root.transform, new Vector3(0.5f, floorTop, -2.75f), -3f, crates), 60f);
+        Loose(Crate("Crate_Low_4", root.transform, new Vector3(0.5f, floorTop + CrateHeight, -2.75f), 5f, crates, "Crate_Low", null), 25f);
         if (hero == null) return;
 
-        // eye just behind the missing slat, looking out toward the rear doors (+Z)
+        // crouched inside the player's crate, looking through the slats toward the rear doors (+Z)
         var eye = new GameObject("Eye").transform;
         eye.SetParent(hero.transform, false);
-        eye.localPosition = new Vector3(0f, 0.73f, 0.33f);
+        eye.localPosition = new Vector3(0f, 0.62f, -0.1f);
 
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
@@ -241,13 +254,12 @@ public static class StatueSceneBuilder
         cutscene.cutsceneCamera = cam;
         cutscene.eye = eye;
         cutscene.van = root.transform;
-        cutscene.doorLeft = doorL != null ? doorL.transform : null;
-        cutscene.doorRight = doorR != null ? doorR.transform : null;
+        cutscene.cargo = cargo.ToArray();
         NightStreetSet(root.transform, cutscene);
     }
 
     // The night street behind the van: road, pavements, lit building fronts and lamp posts on looping
-    // 20 m segments, a car following with its headlights on, and a moon. Van-local: +Z is behind the van.
+    // 20 m segments, and a moon. Van-local: +Z is behind the van.
     static void NightStreetSet(Transform van, CrateCutscene cutscene)
     {
         const float road = -0.62f;   // road surface below the cargo floor
@@ -267,8 +279,6 @@ public static class StatueSceneBuilder
         facade.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
         var poleMat = GetMaterial("LampPole", new Color(0.08f, 0.08f, 0.09f), 0.4f, 0.8f);
         var lampGlow = Glow("LampGlow", new Color(1f, 0.75f, 0.45f), 6f);
-        var carPaint = GetMaterial("CarPaint", new Color(0.05f, 0.06f, 0.08f), 0.8f, 0.5f);
-        var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 8f);
         foreach (var m in new[] { asphalt, facade }) EditorUtility.SetDirty(m);
 
         var root = new GameObject("NightStreet").transform;
@@ -324,25 +334,6 @@ public static class StatueSceneBuilder
         street.segmentLength = segLen;
         street.lampLights = lamps.ToArray();
 
-        // the car following the van
-        var car = new GameObject("FollowingCar").transform;
-        car.SetParent(van, false);
-        car.localPosition = new Vector3(0.2f, road, 15f);
-        NoCollider(Part(PrimitiveType.Cube, "Body", car, new Vector3(0f, 0.6f, 0f), new Vector3(1.9f, 0.75f, 4.4f), carPaint));
-        NoCollider(Part(PrimitiveType.Cube, "Cabin", car, new Vector3(0f, 1.2f, 0.4f), new Vector3(1.7f, 0.55f, 2.2f), carPaint));
-        foreach (int side in new[] { -1, 1 })
-            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.65f, 0.65f, -2.2f), new Vector3(0.28f, 0.16f, 0.1f), headGlow));
-        var beams = new GameObject("Headlights").AddComponent<Light>();
-        beams.transform.SetParent(car, false);
-        beams.transform.localPosition = new Vector3(0f, 0.7f, -2.3f);
-        beams.transform.LookAt(van.TransformPoint(new Vector3(0.5f, 1.5f, -1f)));
-        beams.type = LightType.Spot;
-        beams.spotAngle = 38f;
-        beams.range = 32f;
-        beams.intensity = 18f;
-        beams.color = new Color(0.9f, 0.94f, 1f);
-        beams.shadows = LightShadows.Soft;
-
         var moon = new GameObject("Moon").AddComponent<Light>();
         moon.transform.SetParent(van, false);
         moon.transform.localRotation = Quaternion.Euler(32f, 200f, 0f);
@@ -353,8 +344,6 @@ public static class StatueSceneBuilder
         moon.enabled = false;
 
         cutscene.street = street;
-        cutscene.followCar = car;
-        cutscene.carHeadlights = beams;
         cutscene.moon = moon;
     }
 
