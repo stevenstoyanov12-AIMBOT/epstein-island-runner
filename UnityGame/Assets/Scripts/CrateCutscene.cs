@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// 13-second night cutscene from inside a crate stacked in the back of a van, looking out through the slats.
-// An eerie drive: a failing ceiling lamp flickers over the other crates, street lamps sweep past the rear
-// window, droning and groaning sounds under the engine. Then headlights flare, tyres screech and the van
-// is hit side-on: the crate tips over, the cargo tumbles, the light dies, and it fades out to ringing ears.
-// Plays on start; press C to watch it again. All sound is synthesised at runtime.
+// 13-second night cutscene from inside a crate stacked at the front of a van's cargo area, looking through
+// the slats past the other crates and out of the rear-door windows at the street, its lamps and a car's
+// headlights far behind. A failing ceiling lamp flickers over the cargo. Then headlights flare, tyres
+// screech and the van is hit side-on: the crate tips over, the cargo tumbles, the light dies, fade out.
+// Plays on start; press C to watch it again. Sound (engine, bumps, screech, crash) is synthesised at runtime.
 public class CrateCutscene : MonoBehaviour
 {
     public Camera cutsceneCamera;
@@ -13,6 +13,7 @@ public class CrateCutscene : MonoBehaviour
     public Transform van;                 // van root; lights are placed relative to it
     public Light moon;                    // night light for the street, enabled only during the cutscene
     public NightStreet street;
+    public Transform distantCar;          // headlights far behind the van, keeping pace in the dark
     public Rigidbody[] cargo;             // loose crates that tumble in the crash
     public bool playOnStart = true;
     public float duration = 13f;
@@ -25,13 +26,14 @@ public class CrateCutscene : MonoBehaviour
 
     Light[] lamps;
     Light ceiling, oncoming, fill;
-    AudioSource engine, drone, fx;
-    AudioClip bumpClip, screechClip, crashClip, ringClip, groanClip, heartClip;
+    AudioSource engine, fx;
+    AudioClip bumpClip, screechClip, crashClip;
     Camera previousCamera;
     Light[] disabledSuns;
     Color ambientSky, ambientEquator, ambientGround, fogColor;
     bool fog, crashed, screeched;
-    float fogDensity, time = -1f, fade, nextGroan, nextHeart;
+    float fogDensity, time = -1f, fade;
+    Vector3 distantStart;
     FogMode fogMode;
     Vector3[] cargoPos;
     Quaternion[] cargoRot;
@@ -59,15 +61,11 @@ public class CrateCutscene : MonoBehaviour
 
         engine = Source(true);
         engine.clip = SynthEngine();
-        drone = Source(true);
-        drone.clip = SynthDrone();
         fx = Source(false);
         bumpClip = SynthBump();
         screechClip = SynthScreech();
         crashClip = SynthCrash();
-        ringClip = SynthRing();
-        groanClip = SynthGroan();
-        heartClip = SynthHeartbeat();
+        if (distantCar != null) distantStart = distantCar.localPosition;
 
         cargoPos = new Vector3[cargo.Length];
         cargoRot = new Quaternion[cargo.Length];
@@ -131,7 +129,7 @@ public class CrateCutscene : MonoBehaviour
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.ExponentialSquared;
         RenderSettings.fogColor = NightSky;
-        RenderSettings.fogDensity = 0.03f;
+        RenderSettings.fogDensity = 0.016f;
         if (moon != null) moon.enabled = true;
         if (street != null) street.speed = cruiseSpeed;
 
@@ -147,21 +145,16 @@ public class CrateCutscene : MonoBehaviour
         oncoming.enabled = ceiling.enabled = fill.enabled = true;
         time = 0f;
         nextBump = 0;
-        nextGroan = 2.4f;
-        nextHeart = 1.5f;
         crashed = screeched = false;
-        engine.volume = 0.35f;
+        engine.volume = 0.55f;
         engine.pitch = 1f;
         engine.Play();
-        drone.volume = 0f;
-        drone.Play();
     }
 
     void Stop()
     {
         time = -1f;
         engine.Stop();
-        drone.Stop();
         foreach (var l in lamps) l.enabled = false;
         oncoming.enabled = ceiling.enabled = fill.enabled = false;
         foreach (var s in disabledSuns) s.enabled = true;
@@ -203,7 +196,7 @@ public class CrateCutscene : MonoBehaviour
         bool afterCrash = sinceCrash > 0f;
 
         // --- camera: breathing, rumble, bumps, a gentle turn and glances at the other crates
-        var offset = new Vector3(0f, Mathf.Sin(t * (afterCrash ? 3.2f : 1.6f)) * 0.006f, 0f);
+        var offset = new Vector3(0f, Mathf.Sin(t * 1.6f) * 0.006f, 0f);
         float rumble = afterCrash ? 0f : 1f;
         offset += new Vector3(Mathf.PerlinNoise(t * 9f, 0f) - 0.5f, Mathf.PerlinNoise(0f, t * 11f) - 0.5f, 0f) * 0.006f * rumble;
         float pitch = 0f, roll = (Mathf.PerlinNoise(t * 3f, 5f) - 0.5f) * 1.2f * rumble;
@@ -225,11 +218,11 @@ public class CrateCutscene : MonoBehaviour
         float lean = Mathf.Sin(Mathf.Clamp01((t - 3f) / 2.2f) * Mathf.PI);
         roll += lean * 4f;
         offset.x += lean * 0.025f;
-        // look toward the other stacks on the left, back to the doors, then a nervous glance right
-        float glance = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 2.8f) / 0.7f)) * -55f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 5.0f) / 0.9f)) * 55f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 6.9f) / 0.6f)) * 25f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 8.0f) / 0.6f)) * -25f;
+        // look down the cargo at the other crates, across to the left stack, and back to the window
+        float glance = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 3.0f) / 0.8f)) * -24f
+                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 5.2f) / 0.9f)) * 24f
+                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 7.0f) / 0.6f)) * 10f
+                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 8.0f) / 0.6f)) * -10f;
         // headlights flare in the rear window: snap to look at them
         if (t > Headlights && !afterCrash) glance = Mathf.Lerp(glance, 12f, Mathf.Clamp01((t - Headlights) / 0.3f));
 
@@ -280,7 +273,6 @@ public class CrateCutscene : MonoBehaviour
         {
             crashed = true;
             fx.PlayOneShot(crashClip, 1f);
-            fx.PlayOneShot(ringClip, 0.5f);
             engine.Stop();
             // the other crates break loose and are thrown across the cargo area
             foreach (var rb in cargo)
@@ -291,19 +283,10 @@ public class CrateCutscene : MonoBehaviour
             }
         }
 
-        // --- eerie sound bed: drone swells, metal groans and a heartbeat that races after the crash
-        drone.volume = afterCrash ? Mathf.Lerp(0.5f, 0.2f, sinceCrash / 2f) : Mathf.Lerp(0f, 0.45f, t / 3f);
-        drone.pitch = afterCrash ? 0.8f : 1f;
-        if (!afterCrash && t >= nextGroan)
-        {
-            fx.PlayOneShot(groanClip, 0.35f);
-            nextGroan += 2.3f;
-        }
-        if (t >= nextHeart)
-        {
-            fx.PlayOneShot(heartClip, afterCrash ? 0.9f : 0.45f);
-            nextHeart += afterCrash ? 0.45f : 0.95f;
-        }
+        // --- a car far behind, headlights on, drifting between lanes
+        if (distantCar != null)
+            distantCar.localPosition = distantStart + new Vector3(Mathf.Sin(t * 0.35f) * 1.6f, 0f, Mathf.Sin(t * 0.5f) * 5f);
+
         fill.intensity = afterCrash ? 0.02f : 0.05f;
     }
 
@@ -375,54 +358,6 @@ public class CrateCutscene : MonoBehaviour
         return Clip("Engine", d);
     }
 
-    static AudioClip SynthDrone()
-    {
-        // 8 s loop of slowly beating, detuned low tones with a breathy swell: unsettling, not musical
-        var d = new float[Rate * 8];
-        var rng = new System.Random(5);
-        float n = 0f;
-        for (int i = 0; i < d.Length; i++)
-        {
-            float t = (float)i / Rate;
-            n += (Noise(rng) - n) * 0.01f;
-            float tones = Mathf.Sin(2 * Mathf.PI * 55f * t) + Mathf.Sin(2 * Mathf.PI * 55.5f * t)
-                          + 0.7f * Mathf.Sin(2 * Mathf.PI * 77.75f * t) + 0.5f * Mathf.Sin(2 * Mathf.PI * 116.5f * t);
-            float swell = 0.5f + 0.5f * Mathf.Sin(2 * Mathf.PI * t / 8f);
-            d[i] = tones * 0.4f * (0.6f + 0.4f * swell) + n * 6f * swell;
-        }
-        return Clip("Drone", d, 0.25f, 0.8f);
-    }
-
-    static AudioClip SynthGroan()
-    {
-        // metal flexing: a slow downward glide with rough overtones
-        var d = new float[(int)(Rate * 1.6f)];
-        float phase = 0f;
-        for (int i = 0; i < d.Length; i++)
-        {
-            float t = (float)i / Rate;
-            float f = Mathf.Lerp(310f, 170f, t / 1.6f) + 12f * Mathf.Sin(t * 19f);
-            phase += 2 * Mathf.PI * f / Rate;
-            float env = Mathf.Clamp01(t * 3f) * Mathf.Clamp01((1.6f - t) * 2f);
-            d[i] = (Mathf.Sin(phase) + 0.5f * Mathf.Sin(phase * 2.01f) + 0.3f * Mathf.Sign(Mathf.Sin(phase * 3f))) * env;
-        }
-        return Clip("Groan", d, 0.3f, 0.7f);
-    }
-
-    static AudioClip SynthHeartbeat()
-    {
-        var d = new float[(int)(Rate * 0.5f)];
-        for (int i = 0; i < d.Length; i++)
-        {
-            float t = (float)i / Rate;
-            float lub = Mathf.Sin(2 * Mathf.PI * 48f * t) * Mathf.Exp(-t * 25f);
-            float t2 = t - 0.18f;
-            float dub = t2 > 0f ? Mathf.Sin(2 * Mathf.PI * 40f * t2) * Mathf.Exp(-t2 * 30f) * 0.7f : 0f;
-            d[i] = lub + dub;
-        }
-        return Clip("Heartbeat", d, 0.5f);
-    }
-
     static AudioClip SynthBump()
     {
         var d = new float[(int)(Rate * 0.7f)];
@@ -481,17 +416,5 @@ public class CrateCutscene : MonoBehaviour
             d[i] = boom + crunch + metal + shards + splinter;
         }
         return Clip("Crash", d, 0.55f, 1f);
-    }
-
-    static AudioClip SynthRing()
-    {
-        // ringing ears after the impact
-        var d = new float[(int)(Rate * 3.2f)];
-        for (int i = 0; i < d.Length; i++)
-        {
-            float t = (float)i / Rate;
-            d[i] = Mathf.Sin(2 * Mathf.PI * 6200f * t) * Mathf.Clamp01(t * 2f) * Mathf.Clamp01((3.2f - t) * 0.8f);
-        }
-        return Clip("Ringing", d, 1f, 0.35f);
     }
 }

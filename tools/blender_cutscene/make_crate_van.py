@@ -220,7 +220,7 @@ def build_door(side):
 
     side -1 is the leaf on Blender's -X side. Returns the object (origin at the hinge)."""
     W, H, t = VAN_W, VAN_H, 0.05
-    gap, win_w, win_z0, win_z1 = 0.012, 0.36, 1.25, 1.72
+    gap, win_w, win_z0, win_z1 = 0.012, 0.62, 1.12, 1.78
     x0, x1 = -W / 2, W / 2
     a, b = (x0 - t, -gap / 2) if side < 0 else (gap / 2, x1 + t)
     hinge = Vector((a if side < 0 else b, 0, 0))

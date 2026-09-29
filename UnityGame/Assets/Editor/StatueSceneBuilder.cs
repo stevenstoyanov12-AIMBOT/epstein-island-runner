@@ -215,12 +215,13 @@ public static class StatueSceneBuilder
         }
 
         const float floorTop = 0.024f, lowHeight = 0.36f;
-        // the stash: the player's crate stacked on two flat crates near the doors
-        var stash = new Vector3(0.5f, floorTop, -1.15f);
+        // the player's crate is stacked on two flat crates at the front of the cargo area, so from inside
+        // it you look down the van over the other crates and out of the rear-door windows
+        var stash = new Vector3(0.5f, floorTop, -3f);
         Crate("Crate_Low_1", root.transform, stash, 0f, crates, "Crate_Low", null);
         Crate("Crate_Low_2", root.transform, stash + Vector3.up * lowHeight, 2f, crates, "Crate_Low", null);
         var hero = Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates);
-        // the rest of the cargo, seen through the slats; loose enough to be thrown about in the crash
+        // the rest of the cargo, kept below the line of sight to the windows; loose for the crash
         var cargo = new List<Rigidbody>();
         void Loose(GameObject c, float mass)
         {
@@ -230,17 +231,17 @@ public static class StatueSceneBuilder
             rb.isKinematic = true;
             cargo.Add(rb);
         }
-        Loose(Crate("Crate_2", root.transform, new Vector3(-0.56f, floorTop, -1.2f), 3f, crates), 60f);
-        Loose(Crate("Crate_Low_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -1.2f), -4f, crates, "Crate_Low", null), 25f);
-        Loose(Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop, -2.45f), 4f, crates), 60f);
-        Loose(Crate("Crate_4", root.transform, new Vector3(0.5f, floorTop, -2.75f), -3f, crates), 60f);
-        Loose(Crate("Crate_Low_4", root.transform, new Vector3(0.5f, floorTop + CrateHeight, -2.75f), 5f, crates, "Crate_Low", null), 25f);
+        Loose(Crate("Crate_2", root.transform, new Vector3(0.5f, floorTop, -1.3f), -3f, crates), 60f);
+        Loose(Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop, -1.25f), 4f, crates), 60f);
+        Loose(Crate("Crate_4", root.transform, new Vector3(-0.56f, floorTop, -2.75f), 3f, crates), 60f);
+        Loose(Crate("Crate_Low_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -2.75f), -6f, crates, "Crate_Low", null), 25f);
+        Loose(Crate("Crate_Low_4", root.transform, new Vector3(-0.5f, floorTop, -0.35f), 12f, crates, "Crate_Low", null), 25f);
         if (hero == null) return;
 
-        // crouched inside the player's crate, looking through the slats toward the rear doors (+Z)
+        // crouched close to the crate's slats, looking down the van toward the rear doors (+Z)
         var eye = new GameObject("Eye").transform;
         eye.SetParent(hero.transform, false);
-        eye.localPosition = new Vector3(0f, 0.62f, -0.1f);
+        eye.localPosition = new Vector3(0f, 0.62f, 0.3f);
 
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
@@ -333,6 +334,25 @@ public static class StatueSceneBuilder
         street.segments = segs;
         street.segmentLength = segLen;
         street.lampLights = lamps.ToArray();
+
+        // a car far behind with its headlights on
+        var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 10f);
+        var car = new GameObject("DistantCar").transform;
+        car.SetParent(van, false);
+        car.localPosition = new Vector3(-1.2f, road, 42f);
+        foreach (int side in new[] { -1, 1 })
+            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.7f, 0.65f, 0f), new Vector3(0.3f, 0.18f, 0.12f), headGlow));
+        var beams = new GameObject("Beams").AddComponent<Light>();
+        beams.transform.SetParent(car, false);
+        beams.transform.localPosition = new Vector3(0f, 0.7f, -0.2f);
+        beams.transform.localRotation = Quaternion.Euler(4f, 180f, 0f);  // along the road toward the van
+        beams.type = LightType.Spot;
+        beams.spotAngle = 50f;
+        beams.range = 22f;                                                 // lights the road, never reaches the van
+        beams.intensity = 6f;
+        beams.color = new Color(0.9f, 0.94f, 1f);
+        beams.shadows = LightShadows.None;
+        cutscene.distantCar = car;
 
         var moon = new GameObject("Moon").AddComponent<Light>();
         moon.transform.SetParent(van, false);
