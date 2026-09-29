@@ -1,0 +1,7 @@
+bpy
+numpy
+scipy
+scikit-image
+trimesh
+fast-simplification
+pillow

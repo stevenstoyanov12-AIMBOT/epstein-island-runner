@@ -61,33 +61,51 @@ public static class StatueSceneBuilder
         Debug.Log($"Statue scene built and saved to {ScenePath}");
     }
 
-    static readonly (string name, Color color)[] LeafColours =
-    {
-        ("Red", new Color(0.72f, 0.16f, 0.08f)),
-        ("Orange", new Color(0.90f, 0.40f, 0.08f)),
-        ("Amber", new Color(0.93f, 0.60f, 0.12f)),
-        ("Yellow", new Color(0.95f, 0.78f, 0.22f)),
-    };
+    const string TreeFolder = "Assets/Models/Trees";
 
-    // Bark plus one leaf mesh per colour; leaves are thin, so their material renders both sides.
+    // Blender-built tree (tools/blender_tree): displaced bark with albedo + normal maps,
+    // and maple-leaf cards cut out of a texture atlas with alpha clipping, rendered two-sided.
     static void AutumnTree(string name, Transform parent, Vector3 position)
     {
         var root = new GameObject(name);
         root.transform.SetParent(parent, false);
         root.transform.localPosition = position;
 
-        var bark = GetMaterial("Bark", new Color(0.36f, 0.26f, 0.19f), 0.1f, 0f);
-        var trunk = AddMesh(root.transform, "Bark", "Assets/Models/Trees/Tree_Bark.obj", bark);
+        var bark = GetMaterial("Bark", Color.white, 0.1f, 0f);
+        bark.SetTexture("_BaseMap", LoadTexture($"{TreeFolder}/Textures/bark_albedo.png", false));
+        bark.SetTexture("_BumpMap", LoadTexture($"{TreeFolder}/Textures/bark_normal.png", true));
+        bark.EnableKeyword("_NORMALMAP");
+
+        var leaves = GetMaterial("Leaves", Color.white, 0.3f, 0f);
+        leaves.SetTexture("_BaseMap", LoadTexture($"{TreeFolder}/Textures/leaves_atlas.png", false));
+        leaves.SetTexture("_BumpMap", LoadTexture($"{TreeFolder}/Textures/leaves_normal.png", true));
+        leaves.EnableKeyword("_NORMALMAP");
+        leaves.SetFloat("_AlphaClip", 1f);
+        leaves.SetFloat("_Cutoff", 0.5f);
+        leaves.EnableKeyword("_ALPHATEST_ON");
+        leaves.SetFloat("_Cull", (float)CullMode.Off);
+        leaves.doubleSidedGI = true;
+        EditorUtility.SetDirty(leaves);
+
+        var trunk = AddMesh(root.transform, "Bark", $"{TreeFolder}/Tree_Bark.fbx", bark);
         if (trunk != null)
             trunk.AddComponent<MeshCollider>().sharedMesh = trunk.GetComponent<MeshFilter>().sharedMesh;
+        AddMesh(root.transform, "Leaves", $"{TreeFolder}/Tree_Leaves.fbx", leaves);
+        AddMesh(root.transform, "FallenLeaves", $"{TreeFolder}/Tree_FallenLeaves.fbx", leaves);
+    }
 
-        foreach (var (colour, tint) in LeafColours)
+    static Texture2D LoadTexture(string path, bool normalMap)
+    {
+        if (normalMap && AssetImporter.GetAtPath(path) is TextureImporter importer
+            && importer.textureType != TextureImporterType.NormalMap)
         {
-            var leaf = GetMaterial($"Leaf_{colour}", tint, 0.25f, 0f);
-            leaf.SetFloat("_Cull", (float)CullMode.Off);
-            leaf.doubleSidedGI = true;
-            AddMesh(root.transform, $"Leaves_{colour}", $"Assets/Models/Trees/Tree_Leaves_{colour}.obj", leaf);
+            importer.textureType = TextureImporterType.NormalMap;
+            importer.SaveAndReimport();
         }
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        if (tex == null)
+            Debug.LogError($"Missing texture {path}");
+        return tex;
     }
 
     static GameObject AddMesh(Transform parent, string name, string path, Material material)
