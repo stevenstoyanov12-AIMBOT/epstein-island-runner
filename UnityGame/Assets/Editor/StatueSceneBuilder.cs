@@ -622,7 +622,7 @@ public static class StatueSceneBuilder
             for (int s = 0; s < segments; s++)
             {
                 int a = r * (segments + 1) + s, b = a + segments + 1;
-                tris.AddRange(new[] { a, a + 1, b, a + 1, b + 1, b });
+                tris.AddRange(new[] { a, b, a + 1, a + 1, b, b + 1 });   // wound so the faces point outward
             }
         var m = new Mesh();
         m.SetVertices(verts);
