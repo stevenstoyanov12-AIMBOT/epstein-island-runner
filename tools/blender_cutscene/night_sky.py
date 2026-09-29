@@ -56,8 +56,9 @@ def galactic(d):
 
 
 def sky_background(w, h):
-    """Gradient, city glow and the Milky Way's diffuse light, computed at quarter resolution."""
-    sw, sh = w // 4, h // 4
+    """Gradient, city glow and the Milky Way's diffuse light (computed at half resolution): mottled star
+    clouds, warm toward the galactic core and bluer at the band's edges, broken by broad soft dust clouds."""
+    sw, sh = w // 2, h // 2
     d, lat = directions(sw, sh)
     flat = d.reshape(-1, 3)
     up = np.clip(lat, 0, None)
@@ -70,37 +71,52 @@ def sky_background(w, h):
 
     b, along = galactic(flat)
     b, along = b.reshape(sh, sw), along.reshape(sh, sw)
-    width = 0.16 + 0.06 * (along + 1)                                   # broader toward the core
-    band = np.exp(-(b / width) ** 2) * (0.45 + 0.55 * np.clip(along, 0, 1) ** 1.5)
-    clouds = fbm(flat * 4.0, 5, 3).reshape(sh, sw) * 0.5 + 0.5
-    fine = fbm(flat * 14.0, 4, 4).reshape(sh, sw) * 0.5 + 0.5
-    glow = band * (0.45 + 0.8 * clouds * fine)
-    # dust lanes: dark filaments hugging the band's centre line
-    lanes = np.clip(1 - np.abs(fbm(flat * 7.0, 4, 5).reshape(sh, sw)) * 4, 0, 1) ** 2
-    dust = np.exp(-(b / (width * 0.45)) ** 2) * lanes * (0.4 + 0.6 * np.clip(along, 0, 1))
-    glow = glow * (1 - 0.85 * dust)
-    tint = np.array([0.78, 0.8, 1.0]) + np.array([0.25, 0.12, -0.15]) * np.clip(along, 0, 1)[..., None]
-    col = col + glow[..., None] * tint * 0.085 * (lat[..., None] > -0.02)
-    big = np.stack([ndimage.zoom(col[..., c], 4, order=3) for c in range(3)], -1)
-    return big[:h, :w]
+    corewards = np.clip(along, 0, 1)
+    width = 0.15 + 0.07 * (along + 1)                                   # broader toward the core
+    band = np.exp(-(b / width) ** 2) * (0.35 + 0.65 * corewards ** 1.5)
+    # star clouds: patchy, clumpy brightness at several scales
+    warp = fbm(flat * 2.0, 3, 6).reshape(sh, sw)
+    big = fbm(flat * 5.0 + warp.reshape(-1, 1) * 0.6, 5, 3).reshape(sh, sw) * 0.5 + 0.5
+    mid = fbm(flat * 16.0, 4, 4).reshape(sh, sw) * 0.5 + 0.5
+    grain = fbm(flat * 60.0, 2, 7).reshape(sh, sw) * 0.5 + 0.5
+    clouds = np.clip(big ** 2.2 * 1.8, 0, 1.4) * (0.55 + 0.6 * mid) * (0.8 + 0.4 * grain)
+    glow = band * (0.2 + 1.2 * clouds)
+    # dust: broad, soft dark clouds along the middle of the band with ragged edges, not thin lines
+    dust_field = fbm(flat * 3.2 + warp.reshape(-1, 1) * 0.8, 5, 5).reshape(sh, sw) + 0.25 * (mid - 0.5)
+    dust = np.clip((dust_field - 0.02) / 0.35, 0, 1)
+    dust = dust * dust * (3 - 2 * dust)
+    dust *= np.exp(-(b / (width * 0.55)) ** 2) * (0.5 + 0.5 * corewards)
+    glow = glow * (1 - 0.9 * dust)
+    # colour: warm gold toward the core, blue-white out at the band's edges
+    edge = np.clip(np.abs(b) / width, 0, 1)[..., None]
+    warm = np.array([1.0, 0.82, 0.6])
+    cool = np.array([0.65, 0.78, 1.0])
+    tint = warm * (corewards[..., None] * (1 - edge)) + cool * (1 - corewards[..., None] * (1 - edge))
+    col = col + glow[..., None] * tint * 0.14 * (lat[..., None] > -0.02)
+    big_img = np.stack([ndimage.zoom(col[..., c], 2, order=3) for c in range(3)], -1)
+    return big_img[:h, :w]
 
 
 def stars(w, h, rng):
     """Splat stars into a linear-light image; bright stars get a soft glow."""
-    n_field, n_band = 45000, 30000
+    n_field, n_band = 45000, 140000
     d = rng.normal(size=(n_field + n_band * 3, 3))
     d /= np.linalg.norm(d, axis=1, keepdims=True)
     b, _ = galactic(d)
-    keep = np.concatenate([np.ones(n_field, bool), rng.random(n_band * 3) < np.exp(-(b[n_field:] / 0.2) ** 2)])
+    keep = np.concatenate([np.ones(n_field, bool), rng.random(n_band * 3) < np.exp(-(b[n_field:] / 0.17) ** 2)])
+    in_band = np.concatenate([np.zeros(n_field, bool), np.ones(n_band * 3, bool)])[keep]
     d = d[keep]
     # a cluster of young, hot blue stars born inside the nebula
     cl = NEBULA_DIR + rng.normal(0, 0.035, (1500, 3))
     d = np.vstack([d, cl / np.linalg.norm(cl, axis=1, keepdims=True)])
-    d = d[d[:, 1] > -0.05]                                   # none below the horizon
+    in_band = np.concatenate([in_band, np.zeros(len(cl), bool)])
+    above = d[:, 1] > -0.05                                  # none below the horizon
+    d, in_band = d[above], in_band[above]
     n = len(d)
     # power-law brightness: most stars faint, a handful brilliant
     mag = rng.pareto(1.4, n) + 1.0
     lum = np.clip(0.01 * mag ** 2.0, 0, 8)
+    lum[in_band] *= 0.45                                     # the band's stars: a fine, faint grain
     # fade toward the horizon where the air is thick and the city glow washes them out
     alt = np.arcsin(d[:, 1])
     lum *= np.clip(alt / 0.25, 0.15, 1) ** 1.5
@@ -126,56 +142,77 @@ def stars(w, h, rng):
 
 
 def nebula(img, w, h):
-    """Half-Life style emission nebula: soft, glowing, stretched clouds of vivid gas - magenta and violet
-    with teal veils at the edges and a hot gold-white heart - a few bright filaments and broad dark dust
-    lanes, fading out along an irregular edge. About 70 degrees across."""
+    """Half-Life style emission nebula, about 70 degrees across and stretched diagonally over the sky:
+    deep violet outer gas, hot pink and orange inner layers and a white-gold core with a young star cluster;
+    long wispy streaks along its length, bright ionisation fronts at the edges of the glowing gas, cyan
+    veils, a few dark dust knots near the core and broad dust lanes."""
+    rng = np.random.default_rng(9)
     d, _ = directions(w, h)
     ang = np.arccos(np.clip(d @ NEBULA_DIR, -1, 1))
     reach = np.radians(38)
     region = ang < reach
     dd = d[region]
-    tilt = np.radians(28)                     # the cloud's long axis runs diagonally across the sky
+    tilt = np.radians(28)
     e1 = np.cross(NEBULA_DIR, [0, 1, 0])
     e1 /= np.linalg.norm(e1)
     e2 = np.cross(e1, NEBULA_DIR)
     e1, e2 = e1 * np.cos(tilt) + e2 * np.sin(tilt), -e1 * np.sin(tilt) + e2 * np.cos(tilt)
     x = (dd @ e1) / np.sin(reach)
-    y = (dd @ e2) / np.sin(reach) * 1.8      # squashed across its width: an elongated cloud
-    p = np.stack([x * 1.4, y * 1.4, np.full_like(x, 0.37)], -1)
+    y = (dd @ e2) / np.sin(reach) * 1.8
+    z0 = np.full_like(x, 0.37)
+    p = np.stack([x * 1.4, y * 1.4, z0], -1)
+    streak = np.stack([x * 0.9, y * 3.4, z0], -1)            # stretched along the cloud's long axis
 
-    # gentle domain warping: large billows rather than marbled turbulence
     q = np.stack([fbm(p * 0.7, 4, 31), fbm(p * 0.7 + [5.2, 1.3, 0], 4, 32), np.zeros_like(x)], -1)
     r = np.stack([fbm(p + 1.4 * q + [1.7, 9.2, 0], 4, 33), fbm(p + 1.4 * q + [8.3, 2.8, 0], 4, 34), np.zeros_like(x)], -1)
-    billow = fbm(p * 0.9 + 1.2 * r, 5, 35) * 0.5 + 0.5
+    billow = fbm(p * 0.9 + 1.2 * r, 6, 35) * 0.5 + 0.5
 
     rad = np.sqrt(x ** 2 + y ** 2)
     edge = rad * (1 + 0.5 * fbm(p * 0.8 + q, 3, 36))
     fade = np.clip((reach - ang[region]) / (reach * 0.35), 0, 1)
-    fade = fade * fade * (3 - 2 * fade)          # no hard cut-off where the drawn region ends
+    fade = fade * fade * (3 - 2 * fade)
     body = np.clip(1 - edge, 0, 1) ** 1.3 * fade
-    heart = np.exp(-(rad / 0.28) ** 2)
+    puffs = fbm(p * 2.2 + 2.0 * r, 5, 43) * 0.5 + 0.5
+    density = (billow ** 1.6) * (0.55 + 0.9 * puffs ** 2) * body
 
-    # soft glowing gas
-    glow = (billow ** 1.8) * body
-    # a handful of bright, soft filaments where the warped noise folds
-    fil = (1 - np.abs(fbm(p * 1.6 + 1.6 * r, 4, 37))) ** 5 * body
-    # outer veil of teal, strongest toward the cloud's edge
-    veil = (fbm(p * 1.1 + 2.0 * q + [3, 7, 0], 4, 38) * 0.5 + 0.5) ** 2 * np.clip(1 - np.abs(edge - 0.65) / 0.35, 0, 1) * fade
+    # long wisps and fine streaks running along the cloud
+    wisp = (1 - np.abs(fbm(streak * 1.2 + 2.6 * r + 1.5 * q, 5, 40))) ** 4 * body
+    fine = (1 - np.abs(fbm(streak * 3.5 + 3.5 * r, 4, 41))) ** 9 * body
+    # ionisation fronts: bright rims where the glowing gas thins out
+    front = np.exp(-((density - 0.32) / 0.07) ** 2) * body
+    veil = (fbm(p * 1.1 + 2.0 * q + [3, 7, 0], 4, 38) * 0.5 + 0.5) ** 2 * np.clip(1 - np.abs(edge - 0.62) / 0.5, 0, 1) ** 2 * fade
 
-    violet = np.array([0.4, 0.05, 1.0])
-    magenta = np.array([1.0, 0.08, 0.55])
-    teal = np.array([0.0, 0.85, 0.85])
-    gold = np.array([1.0, 0.78, 0.42])
-    mix = np.clip(q[:, 0] * 1.4 + 0.5, 0, 1)[:, None]
-    gas = violet * (1 - mix) + magenta * mix
+    # temperature: hot in the middle, cool at the edges, broken up by the gas
+    temp = np.clip(0.95 - rad * 1.7 + 0.35 * q[:, 0] + 0.25 * (billow - 0.5), 0, 1)[:, None]
+    deep = np.array([0.22, 0.08, 0.85])
+    pink = np.array([1.0, 0.12, 0.5])
+    orange = np.array([1.0, 0.5, 0.18])
+    white = np.array([1.0, 0.92, 0.78])
+    cyan = np.array([0.05, 0.9, 1.0])
+    col = np.where(temp < 0.4, deep + (pink - deep) * (temp / 0.4),
+                   np.where(temp < 0.75, pink + (orange - pink) * ((temp - 0.4) / 0.35),
+                            orange + (white - orange) * ((temp - 0.75) / 0.25)))
 
-    light = gas * glow[:, None] * 1.1
-    light += (gas * 0.8 + 0.2) * fil[:, None] * 0.8
-    light += teal * veil[:, None] * 0.6
-    light += gold * (heart * (0.6 + 0.6 * billow) * fade)[:, None] * 1.0
-    # broad dust lanes silhouetted against the glow, dimming the stars behind them too
-    lanes = np.clip((1 - np.abs(fbm(p * 0.9 + 1.3 * r + [4, 4, 0], 4, 39))) ** 4 * 1.8 - 0.55, 0, 1) * body
-    img[region] = img[region] * (1 - 0.6 * lanes[:, None]) + light * (1 - 0.8 * lanes[:, None])
+    heart = np.exp(-(rad / 0.13) ** 2)
+    bloom = np.exp(-(rad / 0.6) ** 2) * fade
+    light = col * density[:, None] * 1.7
+    light += col * wisp[:, None] * 0.4 + (col * 0.5 + 0.5) * fine[:, None] * 0.25
+    light += (col * 0.6 + 0.4) * front[:, None] * 0.55
+    light += cyan * veil[:, None] * 0.55
+    light += white * (heart * (0.8 + 0.5 * billow))[:, None] * 0.6 + np.array([1.0, 0.3, 0.6]) * bloom[:, None] * 0.1
+
+    # dark dust: a few dense knots near the core (with lit rims) and broad lanes across the cloud
+    knots = np.zeros_like(x)
+    for _ in range(3):
+        cx, cy = rng.uniform(-0.4, 0.4), rng.uniform(-0.2, 0.2)
+        size = rng.uniform(0.05, 0.1)
+        # ragged, irregular blobs rather than neat ovals
+        k = np.sqrt((x - cx) ** 2 + ((y - cy) / 1.6) ** 2) / size * (1 + 0.7 * fbm(p * 5 + [cx * 9, cy * 9, 0], 3, 42))
+        knots = np.maximum(knots, np.clip(1.1 - k, 0, 1) ** 1.5 * 0.7)
+    lanes = np.clip((1 - np.abs(fbm(p * 0.9 + 1.3 * r + [4, 4, 0], 4, 39))) ** 4 * 1.8 - 0.6, 0, 1) * body
+    dark = np.clip(np.maximum(knots, lanes * 0.8), 0, 1)
+    light = light * (1 - 0.65 * dark[:, None])
+    img[region] = img[region] * (1 - 0.65 * dark[:, None]) + light
     return img
 
 
