@@ -42,11 +42,11 @@ x, y, z = co[:, 0], co[:, 1], co[:, 2]; d = -y; ax = np.abs(x)
 col = np.tile(HAIR, (len(co), 1))                                        # default: hair (sides/back)
 
 # helmet: above the brim line, measured from the side view (front tip high, sloping down to the back)
-brim = np.interp(d, [-0.6, -0.35, -0.1, 0.05, 0.14], [0.55, 0.56, 0.59, 0.645, 0.72])
+brim = np.interp(d, [-0.6, -0.35, -0.2, -0.1, 0.05, 0.14], [0.36, 0.40, 0.50, 0.59, 0.645, 0.72])   # the helmet comes down low at the back
 brim = brim - 0.05 * np.clip((ax - 0.2) / 0.1, 0, 1)                     # a little lower at the sides
 helmet = z > brim
 col[helmet] = HELMET
-col[helmet & (nrm[:, 2] < -0.3)] = HELMET_DK                             # underside of the brim
+col[helmet & (nrm[:, 2] < -0.3) & (d > 0.0)] = HELMET_DK                 # underside of the front brim only
 ang = np.arctan2(z - 0.86, x); r = np.hypot(x, z - 0.86)
 star = helmet & (d > 0.0) & (r < 0.075 * (0.55 + 0.45 * np.cos(5 * (ang - math.pi / 2))))
 col[star] = STAR
@@ -71,8 +71,6 @@ col[lens & (np.abs((z - 0.56) - 0.5 * (ax - 0.13)) < 0.01)] = LENS_HI
 nose = glass & (ax < 0.05) & (z < 0.535)   # nose tip z 0.46-0.52; the bridge bar is z 0.55-0.61
 col[nose] = SKIN
 # the mouth as in the drawing: a small, slightly down-turned line, with a hint of lower lip
-mouth_z = 0.398 - 2.0 * ax ** 2
-col[face & (ax < 0.045) & (np.abs(z - mouth_z) < 0.0035) & (d > 0.02)] = MOUTH
 # ear-side chin strap
 col[~helmet & (x > 0.22) & (z > 0.3) & (z < 0.49) & (d > -0.06)] = STRAP
 # the leaf in the mouth
@@ -119,6 +117,31 @@ if REF:
         lm.materials.append(mt)
         lens_objs.append(lo)
 
+    # the mouth, cut 1:1 from the drawing (its line and little lower lip) and laid on the lips: the model has
+    # too few vertices around the mouth to paint such a thin line
+    crop = ref.crop((138, 244, 186, 278)).resize((480, 340), Image.LANCZOS).convert("RGB")
+    px = np.asarray(crop).astype(float)
+    lum = px.mean(-1)
+    skin_lum = np.percentile(lum, 80)                                       # the plain skin around the lines
+    alpha = np.clip((skin_lum - lum - 8) / 40.0, 0, 1) ** 0.8   # only the drawn lines, no skin halo
+    rgba = np.dstack([px, alpha * 255]).astype(np.uint8)
+    mouth_path = os.path.join(out_dir, "soldier_mouth.png")
+    Image.fromarray(rgba, "RGBA").save(mouth_path)
+    w, h = 0.096, 0.068
+    cx, cz, md = -0.006, 0.405, 0.0875                                      # centre on the lips, just proud of them
+    verts = [(cx - w / 2, -md, cz - h / 2), (cx + w / 2, -md, cz - h / 2), (cx + w / 2, -md, cz + h / 2), (cx - w / 2, -md, cz + h / 2)]
+    mm = bpy.data.meshes.new("Mouth"); mm.from_pydata(verts, [], [(0, 1, 2, 3)])
+    uv = mm.uv_layers.new(name="UVMap")
+    for li, (u, v) in zip(range(4), ((0, 0), (1, 0), (1, 1), (0, 1))):
+        uv.data[li].uv = (u, v)
+    mo = bpy.data.objects.new("Mouth", mm); bpy.context.collection.objects.link(mo)
+    mt = bpy.data.materials.new("Mouth"); mt.use_nodes = True; t = mt.node_tree; bs = t.nodes["Principled BSDF"]
+    img = t.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(mouth_path)
+    t.links.new(img.outputs["Color"], bs.inputs["Base Color"]); t.links.new(img.outputs["Alpha"], bs.inputs["Alpha"])
+    if hasattr(mt, "surface_render_method"): mt.surface_render_method = "BLENDED"
+    mm.materials.append(mt)
+    lens_objs.append(mo)
+
 m = bpy.data.materials.new("Soldier"); m.use_nodes = True; nt = m.node_tree; b = nt.nodes["Principled BSDF"]
 vc = nt.nodes.new("ShaderNodeVertexColor"); vc.layer_name = "Col"
 nt.links.new(vc.outputs["Color"], b.inputs["Base Color"]); b.inputs["Roughness"].default_value = 0.75
@@ -134,7 +157,7 @@ sun.rotation_euler = (math.radians(40), 0, math.radians(25)); sc.collection.obje
 cam = bpy.data.objects.new("C", bpy.data.cameras.new("C")); sc.collection.objects.link(cam); sc.camera = cam; cam.data.lens = 85
 sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.use_denoising = True
 sc.render.resolution_x = sc.render.resolution_y = 500; sc.view_settings.view_transform = "Standard"
-for name, ang in (("front", 0), ("three", 35), ("side", 80), ("close", 0)):
+for name, ang in (("front", 0), ("three", 35), ("side", 80), ("close", 0), ("back", 180)):
     a = math.radians(ang); cam.location = (3.2 * math.sin(a), -3.2 * math.cos(a), 0.58)
     cam.data.lens = 260 if name == "close" else 85
     cam.rotation_euler = (Vector((0, 0, 0.56)) - cam.location).to_track_quat("-Z", "Y").to_euler()
