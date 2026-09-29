@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// 10-second cutscene: hidden in a crate in the back of a moving van, looking out through the slats.
-// Street lamps sweep light through the gaps, the van rumbles, hits bumps and takes a turn, then brakes,
-// the doors open and daylight floods in before fading out. Plays on start; press C to watch it again.
+// 13-second night cutscene: hidden in a crate stacked on two others in the back of a moving van,
+// peering out through a missing slat and the rear-door window at the street sliding away behind.
+// Street lamps sweep light through the gaps, a car's headlights follow, the van rumbles, hits bumps and
+// takes two turns, then brakes; the doors open and a flashlight finds the crate before fading out.
+// Plays on start; press C to watch it again.
 // Sound is synthesised at runtime, muffled as if heard from inside the crate.
 public class CrateCutscene : MonoBehaviour
 {
@@ -11,12 +13,18 @@ public class CrateCutscene : MonoBehaviour
     public Transform eye;                 // crouched eye position inside the crate
     public Transform van;                 // van root; lamps and door light are placed relative to it
     public Transform doorLeft, doorRight; // rear door leaves, pivoting on their hinges
+    public Light moon;                    // night light for the street, enabled only during the cutscene
+    public NightStreet street;
+    public Transform followCar;           // car behind the van; its headlights shine in through the window
+    public Light carHeadlights;
     public bool playOnStart = true;
-    public float duration = 10f;
+    public float duration = 13f;
+    public float cruiseSpeed = 11f;       // m/s the street slides by
 
-    static readonly float[] LampTimes = { 1.1f, 2.7f, 4.3f, 5.8f };
-    static readonly float[] BumpTimes = { 2.1f, 3.9f, 5.4f, 6.3f };
-    const float BrakeStart = 7.1f, DoorsOpen = 8.5f, FadeOut = 9.1f;
+    static readonly float[] LampTimes = { 1.1f, 2.5f, 3.9f, 5.3f, 6.7f, 8.1f, 9.3f };
+    static readonly float[] BumpTimes = { 2.1f, 3.9f, 5.4f, 7.3f, 8.6f };
+    const float BrakeStart = 10.1f, DoorsOpen = 11.4f, FadeOut = 12.1f;
+    static readonly Color NightSky = new Color(0.02f, 0.03f, 0.06f);
 
     Light[] lamps;
     Light doorLight, fill;
@@ -24,7 +32,12 @@ public class CrateCutscene : MonoBehaviour
     AudioClip bumpClip, brakeClip, doorClip;
     Camera previousCamera;
     Light[] disabledSuns;
-    Color ambientSky, ambientEquator, ambientGround;
+    Color ambientSky, ambientEquator, ambientGround, fogColor, cameraBackground;
+    bool fog;
+    float fogDensity;
+    FogMode fogMode;
+    CameraClearFlags cameraClear;
+    Vector3 carStart;
     float time = -1f, fade;
     int nextBump;
     bool braked, doorsOpened;
@@ -37,7 +50,7 @@ public class CrateCutscene : MonoBehaviour
         lamps = new Light[LampTimes.Length];
         for (int i = 0; i < lamps.Length; i++)
             lamps[i] = MakeLight($"PassingLamp{i}", LightType.Spot, new Color(1f, 0.72f, 0.42f), 70f);
-        doorLight = MakeLight("DoorDaylight", LightType.Spot, new Color(0.85f, 0.9f, 1f), 100f);
+        doorLight = MakeLight("Flashlight", LightType.Spot, new Color(0.85f, 0.92f, 1f), 32f);
         fill = MakeLight("CrateFill", LightType.Point, new Color(0.5f, 0.55f, 0.7f), 0f);
         fill.transform.position = eye.position + eye.forward * 0.2f;
         fill.range = 1.2f;
@@ -52,6 +65,9 @@ public class CrateCutscene : MonoBehaviour
         bumpClip = SynthBump();
         brakeClip = SynthBrake();
         doorClip = SynthDoor();
+        if (followCar != null) carStart = followCar.localPosition;
+        if (moon != null) moon.enabled = false;
+        if (carHeadlights != null) carHeadlights.enabled = false;
 
         if (playOnStart) Play();
     }
@@ -92,7 +108,24 @@ public class CrateCutscene : MonoBehaviour
         ambientSky = RenderSettings.ambientSkyColor;
         ambientEquator = RenderSettings.ambientEquatorColor;
         ambientGround = RenderSettings.ambientGroundColor;
-        RenderSettings.ambientSkyColor = RenderSettings.ambientEquatorColor = RenderSettings.ambientGroundColor = new Color(0.01f, 0.01f, 0.015f);
+        RenderSettings.ambientSkyColor = RenderSettings.ambientEquatorColor = RenderSettings.ambientGroundColor = new Color(0.01f, 0.012f, 0.02f);
+        // night: dark blue sky, a moon, and haze so the street fades into the dark
+        fog = RenderSettings.fog;
+        fogColor = RenderSettings.fogColor;
+        fogDensity = RenderSettings.fogDensity;
+        fogMode = RenderSettings.fogMode;
+        RenderSettings.fog = true;
+        RenderSettings.fogMode = FogMode.ExponentialSquared;
+        RenderSettings.fogColor = NightSky;
+        RenderSettings.fogDensity = 0.03f;
+        cameraClear = cutsceneCamera.clearFlags;
+        cameraBackground = cutsceneCamera.backgroundColor;
+        cutsceneCamera.clearFlags = CameraClearFlags.SolidColor;
+        cutsceneCamera.backgroundColor = NightSky;
+        if (moon != null) moon.enabled = true;
+        if (carHeadlights != null) carHeadlights.enabled = true;
+        if (followCar != null) followCar.localPosition = carStart;
+        if (street != null) street.speed = cruiseSpeed;
 
         foreach (var l in lamps) l.enabled = true;
         doorLight.enabled = fill.enabled = true;
@@ -114,6 +147,15 @@ public class CrateCutscene : MonoBehaviour
         RenderSettings.ambientSkyColor = ambientSky;
         RenderSettings.ambientEquatorColor = ambientEquator;
         RenderSettings.ambientGroundColor = ambientGround;
+        RenderSettings.fog = fog;
+        RenderSettings.fogColor = fogColor;
+        RenderSettings.fogDensity = fogDensity;
+        RenderSettings.fogMode = fogMode;
+        cutsceneCamera.clearFlags = cameraClear;
+        cutsceneCamera.backgroundColor = cameraBackground;
+        if (moon != null) moon.enabled = false;
+        if (carHeadlights != null) carHeadlights.enabled = false;
+        if (street != null) street.speed = 0f;
         cutsceneCamera.enabled = false;
         if (previousCamera != null)
         {
@@ -160,9 +202,11 @@ public class CrateCutscene : MonoBehaviour
             fx.PlayOneShot(bumpClip, 0.9f);
             nextBump++;
         }
-        float turn = Mathf.Clamp01((t - 3f) / 2.2f);
-        roll += Mathf.Sin(turn * Mathf.PI) * 4.5f;                       // leaning through a left turn
-        offset.x += Mathf.Sin(turn * Mathf.PI) * 0.03f;
+        float turn1 = Mathf.Clamp01((t - 3f) / 2.2f), turn2 = Mathf.Clamp01((t - 6.4f) / 1.8f);
+        float lean = Mathf.Sin(turn1 * Mathf.PI) - 0.7f * Mathf.Sin(turn2 * Mathf.PI);  // left, then right
+        roll += lean * 4.5f;
+        offset.x += lean * 0.03f;
+        float speed = cruiseSpeed;
         if (t > BrakeStart)
         {
             float k = t - BrakeStart;
@@ -170,15 +214,18 @@ public class CrateCutscene : MonoBehaviour
             offset.z -= Mathf.Sin(Mathf.Clamp01(k / 1.1f) * Mathf.PI) * 0.05f;
             engine.pitch = Mathf.Lerp(1f, 0.55f, k / 1.2f);
             engine.volume = Mathf.Lerp(0.55f, 0.2f, k / 1.2f);
+            speed = cruiseSpeed * Mathf.Clamp01(1f - k / 1.1f);
             if (!braked) { fx.PlayOneShot(brakeClip, 0.5f); braked = true; }
         }
-        float glance = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 3.4f) / 0.6f)) * -22f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 5f) / 0.8f)) * 30f
-                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 6.6f) / 0.8f)) * -8f;
+        if (street != null) street.speed = speed;
+        // peering out of the slot: small, wary glances rather than big head turns
+        float glance = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 3.4f) / 0.6f)) * -7f
+                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 5.2f) / 0.8f)) * 12f
+                       + Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 7.6f) / 0.8f)) * -5f;
         if (t > DoorsOpen) glance *= Mathf.Clamp01(1f - (t - DoorsOpen) / 0.4f);  // snap to the doors
         var ct = cutsceneCamera.transform;
         ct.position = eye.TransformPoint(offset);
-        ct.rotation = eye.rotation * Quaternion.Euler(pitch - 4f, glance, roll);
+        ct.rotation = eye.rotation * Quaternion.Euler(pitch - 2f, glance, roll);
 
         // --- street lamps sweeping past the rear windows, one after another
         for (int i = 0; i < lamps.Length; i++)
@@ -186,24 +233,35 @@ public class CrateCutscene : MonoBehaviour
             float k = (t - LampTimes[i]) / 1.3f;                        // 0..1 while this lamp passes
             var l = lamps[i];
             bool active = k > 0f && k < 1f && t < BrakeStart + 0.6f;
-            l.intensity = active ? Mathf.Sin(k * Mathf.PI) * 60f : 0f;
-            // high enough that the beam lines up with the rear-door windows on its way to the crate
-            l.transform.localPosition = new Vector3(Mathf.Lerp(-3.5f, 3.5f, k), 3.4f, 3.5f);
-            l.transform.LookAt(eye.position + Vector3.up * 0.2f);
+            l.intensity = active ? Mathf.Sin(k * Mathf.PI) * 45f : 0f;
+            // at a height where the beam passes through the rear-door window on its way to the crate
+            l.transform.localPosition = new Vector3(Mathf.Lerp(-3.5f, 3.5f, k), 2.5f, 3.5f);
+            l.transform.LookAt(eye.position);
         }
 
-        // --- doors open: a clunk, then daylight pours in through the slats
-        doorLight.transform.localPosition = new Vector3(0f, 1.6f, 2.5f);
-        doorLight.transform.LookAt(eye.position);
+        // --- the car behind: follows with its lights on, drifts in the lane, then turns off
+        if (followCar != null)
+        {
+            float away = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 8.2f) / 1.6f));
+            followCar.localPosition = carStart + new Vector3(Mathf.Sin(t * 0.7f) * 0.4f + away * 9f, 0f,
+                                                             Mathf.Sin(t * 0.45f) * 2f + away * 6f);
+            followCar.localRotation = Quaternion.Euler(0f, away * 70f + lean * 3f, 0f);
+            if (carHeadlights != null) carHeadlights.intensity = 18f * (1f - away);
+        }
+
+        // --- doors open: a clunk, the doors swing out and a flashlight finds the crate
+        var sweep = new Vector3(Mathf.Sin(t * 2.3f) * 0.25f, Mathf.Sin(t * 1.7f) * 0.15f, 0f);
+        doorLight.transform.localPosition = new Vector3(0.3f, 1.7f, 2.2f);
+        doorLight.transform.LookAt(eye.position + sweep * Mathf.Clamp01(1f - (t - DoorsOpen) / 0.8f));
         if (t > DoorsOpen)
         {
             if (!doorsOpened) { fx.PlayOneShot(doorClip, 1f); doorsOpened = true; }
-            doorLight.intensity = Mathf.SmoothStep(0f, 140f, (t - DoorsOpen - 0.15f) / 0.5f);
+            doorLight.intensity = Mathf.SmoothStep(0f, 70f, (t - DoorsOpen - 0.3f) / 0.4f);
             SetDoors(Mathf.SmoothStep(0f, 1f, (t - DoorsOpen - 0.1f) / 0.9f));
         }
         else
             doorLight.intensity = 0f;
-        fill.intensity = 0.06f + (t > DoorsOpen ? 0.4f : 0f);
+        fill.intensity = 0.05f + (t > DoorsOpen ? 0.15f : 0f);
     }
 
     // 0 = closed, 1 = swung open outward (the leaves' hinges are at the van's rear corners)

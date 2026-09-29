@@ -51,7 +51,7 @@ public static class StatueSceneBuilder
         Crate("Crate_Plaza_1", env, new Vector3(2.6f, 0.1f, 1.2f), 20f, crates);
         Crate("Crate_Plaza_2", env, new Vector3(3.5f, 0.1f, 2.1f), -12f, crates);
         Crate("Crate_Plaza_3", env, new Vector3(2.7f, 0.1f + CrateHeight, 1.25f), 8f, crates);
-        CutsceneVan(new Vector3(40f, 0f, 0f), crates);
+        CutsceneVan(new Vector3(200f, 0f, 0f), crates);  // far off, out of sight of the plaza
 
         // Camera looking at the plaza
         var cam = new GameObject("Main Camera");
@@ -171,14 +171,16 @@ public static class StatueSceneBuilder
         return new[] { wood, nails, stencil };
     }
 
-    static GameObject Crate(string name, Transform parent, Vector3 position, float yaw, Material[] m)
+    static GameObject Crate(string name, Transform parent, Vector3 position, float yaw, Material[] m,
+                            string mesh = "Crate", string stencilMesh = "Crate_Stencil")
     {
-        var crate = AddMesh(parent, name, $"{CutsceneFolder}/Crate.fbx", m[0], m[1]);
+        var crate = AddMesh(parent, name, $"{CutsceneFolder}/{mesh}.fbx", m[0], m[1]);
         if (crate == null) return null;
         crate.transform.localPosition = position;
         crate.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
         crate.AddComponent<BoxCollider>();
-        var stencil = AddMesh(crate.transform, "Stencil", $"{CutsceneFolder}/Crate_Stencil.fbx", m[2]);
+        if (stencilMesh == null) return crate;
+        var stencil = AddMesh(crate.transform, "Stencil", $"{CutsceneFolder}/{stencilMesh}.fbx", m[2]);
         if (stencil != null)
             stencil.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
         return crate;
@@ -206,24 +208,33 @@ public static class StatueSceneBuilder
         if (doorL != null) doorL.transform.localPosition = new Vector3(1.2f, 0f, 0f);
         if (doorR != null) doorR.transform.localPosition = new Vector3(-1.2f, 0f, 0f);
 
-        const float floorTop = 0.024f;
-        var hero = Crate("Crate_Player", root.transform, new Vector3(0.5f, floorTop, -1.15f), 0f, crates);
-        // the van is exactly two crates wide, so the others are stacked further forward
-        Crate("Crate_2", root.transform, new Vector3(-0.56f, floorTop, -2.45f), 4f, crates);
-        Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -2.47f), -6f, crates);
+        const float floorTop = 0.024f, lowHeight = 0.36f;
+        // the stash: the player's crate (one slat missing, facing the doors) on two flat crates,
+        // which lifts the peep slot to the height of the rear-door window
+        var stash = new Vector3(0.5f, floorTop, -1.15f);
+        Crate("Crate_Low_1", root.transform, stash, 0f, crates, "Crate_Low", null);
+        Crate("Crate_Low_2", root.transform, stash + Vector3.up * lowHeight, 2f, crates, "Crate_Low", null);
+        var hero = Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates,
+                         "Crate_Peek", "Crate_Stencil_Back");
+        // more cargo: the van is exactly two crates wide, so the rest is stacked alongside and forward
+        Crate("Crate_2", root.transform, new Vector3(-0.56f, floorTop, -1.2f), 3f, crates);
+        Crate("Crate_Low_3", root.transform, new Vector3(-0.56f, floorTop + CrateHeight, -1.2f), -4f, crates, "Crate_Low", null);
+        Crate("Crate_3", root.transform, new Vector3(-0.56f, floorTop, -2.45f), 4f, crates);
         Crate("Crate_4", root.transform, new Vector3(0.5f, floorTop, -2.75f), -3f, crates);
+        Crate("Crate_Low_4", root.transform, new Vector3(0.5f, floorTop + CrateHeight, -2.75f), 5f, crates, "Crate_Low", null);
         if (hero == null) return;
 
-        // crouched eye height inside the player's crate, looking toward the rear doors
+        // eye just behind the missing slat, looking out toward the rear doors (+Z)
         var eye = new GameObject("Eye").transform;
         eye.SetParent(hero.transform, false);
-        eye.localPosition = new Vector3(-0.05f, 0.62f, -0.2f);
+        eye.localPosition = new Vector3(0f, 0.73f, 0.33f);
 
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
         var cam = camGo.AddComponent<Camera>();
         cam.fieldOfView = 70f;
         cam.nearClipPlane = 0.02f;
+        cam.farClipPlane = 200f;
         cam.enabled = false;
 
         var cutscene = root.AddComponent<CrateCutscene>();
@@ -232,6 +243,135 @@ public static class StatueSceneBuilder
         cutscene.van = root.transform;
         cutscene.doorLeft = doorL != null ? doorL.transform : null;
         cutscene.doorRight = doorR != null ? doorR.transform : null;
+        NightStreetSet(root.transform, cutscene);
+    }
+
+    // The night street behind the van: road, pavements, lit building fronts and lamp posts on looping
+    // 20 m segments, a car following with its headlights on, and a moon. Van-local: +Z is behind the van.
+    static void NightStreetSet(Transform van, CrateCutscene cutscene)
+    {
+        const float road = -0.62f;   // road surface below the cargo floor
+        const int segments = 6;
+        const float segLen = 20f;
+        var rng = new System.Random(12);
+
+        var asphalt = GetMaterial("Asphalt", Color.white, 0.25f, 0f);
+        asphalt.SetTexture("_BaseMap", LoadTexture($"{CutsceneFolder}/Textures/asphalt.png", false));
+        asphalt.SetTextureScale("_BaseMap", new Vector2(1f, 5f));
+        var pavement = GetMaterial("Pavement", new Color(0.22f, 0.22f, 0.23f), 0.15f, 0f);
+        var facade = GetMaterial("Facade", Color.white, 0.2f, 0f);
+        facade.SetTexture("_BaseMap", LoadTexture($"{CutsceneFolder}/Textures/facade_albedo.png", false));
+        facade.SetTexture("_EmissionMap", LoadTexture($"{CutsceneFolder}/Textures/facade_emission.png", false));
+        facade.SetColor("_EmissionColor", Color.white * 1.6f);
+        facade.EnableKeyword("_EMISSION");
+        facade.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        var poleMat = GetMaterial("LampPole", new Color(0.08f, 0.08f, 0.09f), 0.4f, 0.8f);
+        var lampGlow = Glow("LampGlow", new Color(1f, 0.75f, 0.45f), 6f);
+        var carPaint = GetMaterial("CarPaint", new Color(0.05f, 0.06f, 0.08f), 0.8f, 0.5f);
+        var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 8f);
+        foreach (var m in new[] { asphalt, facade }) EditorUtility.SetDirty(m);
+
+        var root = new GameObject("NightStreet").transform;
+        root.SetParent(van, false);
+        var segs = new Transform[segments];
+        var lamps = new List<Light>();
+        var block = new MaterialPropertyBlock();
+        for (int i = 0; i < segments; i++)
+        {
+            var seg = new GameObject($"Segment{i}").transform;
+            seg.SetParent(root, false);
+            seg.localPosition = new Vector3(0f, 0f, i * segLen);
+            segs[i] = seg;
+            NoCollider(Part(PrimitiveType.Cube, "Road", seg, new Vector3(0f, road - 0.05f, segLen / 2f), new Vector3(8f, 0.1f, segLen), asphalt));
+            foreach (int side in new[] { -1, 1 })
+            {
+                NoCollider(Part(PrimitiveType.Cube, "Pavement", seg, new Vector3(side * 5f, road + 0.07f, segLen / 2f), new Vector3(2f, 0.24f, segLen), pavement));
+                // two or three buildings per side, of different heights
+                float z = 0f;
+                while (z < segLen - 1f)
+                {
+                    float w = Mathf.Min(segLen - z, 5f + (float)rng.NextDouble() * 5f);
+                    float h = 6f + (float)rng.NextDouble() * 12f;
+                    var b = NoCollider(Part(PrimitiveType.Cube, "Building", seg,
+                        new Vector3(side * 10f, road + h / 2f, z + w / 2f), new Vector3(8f, h, w - 0.3f), facade));
+                    block.SetVector("_BaseMap_ST", new Vector4(w / 8f, h / 16f, (float)rng.NextDouble(), 0f));
+                    b.GetComponent<MeshRenderer>().SetPropertyBlock(block);
+                    z += w;
+                }
+            }
+            // one lamp post per segment, alternating sides
+            int ls = i % 2 == 0 ? 1 : -1;
+            var lampRoot = new GameObject("LampPost").transform;
+            lampRoot.SetParent(seg, false);
+            lampRoot.localPosition = new Vector3(ls * 4.4f, road, segLen / 2f);
+            NoCollider(Part(PrimitiveType.Cylinder, "Pole", lampRoot, new Vector3(0f, 2.6f, 0f), new Vector3(0.14f, 2.6f, 0.14f), poleMat));
+            NoCollider(Part(PrimitiveType.Cube, "Arm", lampRoot, new Vector3(-ls * 0.6f, 5.15f, 0f), new Vector3(1.3f, 0.08f, 0.08f), poleMat));
+            NoCollider(Part(PrimitiveType.Sphere, "Lamp", lampRoot, new Vector3(-ls * 1.15f, 5.02f, 0f), new Vector3(0.35f, 0.18f, 0.35f), lampGlow));
+            var light = new GameObject("LampLight").AddComponent<Light>();
+            light.transform.SetParent(lampRoot, false);
+            light.transform.localPosition = new Vector3(-ls * 1.15f, 4.9f, 0f);
+            light.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            light.type = LightType.Spot;
+            light.spotAngle = 110f;
+            light.range = 9f;
+            light.intensity = 7f;
+            light.color = new Color(1f, 0.72f, 0.42f);
+            light.shadows = LightShadows.None;
+            lamps.Add(light);
+        }
+        var street = root.gameObject.AddComponent<NightStreet>();
+        street.segments = segs;
+        street.segmentLength = segLen;
+        street.lampLights = lamps.ToArray();
+
+        // the car following the van
+        var car = new GameObject("FollowingCar").transform;
+        car.SetParent(van, false);
+        car.localPosition = new Vector3(0.2f, road, 15f);
+        NoCollider(Part(PrimitiveType.Cube, "Body", car, new Vector3(0f, 0.6f, 0f), new Vector3(1.9f, 0.75f, 4.4f), carPaint));
+        NoCollider(Part(PrimitiveType.Cube, "Cabin", car, new Vector3(0f, 1.2f, 0.4f), new Vector3(1.7f, 0.55f, 2.2f), carPaint));
+        foreach (int side in new[] { -1, 1 })
+            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.65f, 0.65f, -2.2f), new Vector3(0.28f, 0.16f, 0.1f), headGlow));
+        var beams = new GameObject("Headlights").AddComponent<Light>();
+        beams.transform.SetParent(car, false);
+        beams.transform.localPosition = new Vector3(0f, 0.7f, -2.3f);
+        beams.transform.LookAt(van.TransformPoint(new Vector3(0.5f, 1.5f, -1f)));
+        beams.type = LightType.Spot;
+        beams.spotAngle = 38f;
+        beams.range = 32f;
+        beams.intensity = 18f;
+        beams.color = new Color(0.9f, 0.94f, 1f);
+        beams.shadows = LightShadows.Soft;
+
+        var moon = new GameObject("Moon").AddComponent<Light>();
+        moon.transform.SetParent(van, false);
+        moon.transform.localRotation = Quaternion.Euler(32f, 200f, 0f);
+        moon.type = LightType.Directional;
+        moon.color = new Color(0.55f, 0.65f, 1f);
+        moon.intensity = 0.35f;
+        moon.shadows = LightShadows.Soft;
+        moon.enabled = false;
+
+        cutscene.street = street;
+        cutscene.followCar = car;
+        cutscene.carHeadlights = beams;
+        cutscene.moon = moon;
+    }
+
+    static Material Glow(string name, Color color, float strength)
+    {
+        var m = GetMaterial(name, color, 0.5f, 0f);
+        m.SetColor("_EmissionColor", color * strength);
+        m.EnableKeyword("_EMISSION");
+        m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    static GameObject NoCollider(GameObject go)
+    {
+        Object.DestroyImmediate(go.GetComponent<Collider>());
+        return go;
     }
 
     // A bust mesh (base at its origin, facing -Z) on a 1 m stone pedestal standing on the plaza.

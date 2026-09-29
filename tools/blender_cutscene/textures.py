@@ -124,9 +124,50 @@ def metal(out, w=1024, h=1024):
     Image.fromarray(normal_map(0.4 * tone - 0.6 * scratches + 0.5 * rust, 3.0)).save(os.path.join(out, "metal_normal.png"))
 
 
+def facade(out, w=512, h=1024):
+    """Night-time building front: dark brick with a grid of windows, some lit (emission map)."""
+    rng = np.random.default_rng(31)
+    brick = 0.12 + 0.05 * noise2(w, h, 20, 40, 3, 32, tile_x=False)
+    col = np.dstack([brick * 1.1, brick * 0.85, brick * 0.75])
+    emit = np.zeros((h, w, 3))
+    cols, rows = 4, 8
+    cw, ch = w / cols, h / rows
+    for r in range(rows):
+        for c in range(cols):
+            x0, y0 = int(c * cw + cw * 0.22), int(r * ch + ch * 0.2)
+            x1, y1 = int((c + 1) * cw - cw * 0.22), int((r + 1) * ch - ch * 0.25)
+            col[y0 - 4:y1 + 4, x0 - 4:x1 + 4] = 0.2          # window frame
+            col[y0:y1, x0:x1] = 0.03                          # dark glass
+            if rng.random() < 0.35:
+                warm = np.array([1.0, 0.72, 0.38]) if rng.random() < 0.75 else np.array([0.55, 0.7, 1.0])
+                glow = warm * rng.uniform(0.5, 1.0)
+                emit[y0:y1, x0:x1] = glow
+                col[y0:y1, x0:x1] = glow * 0.6
+                if rng.random() < 0.5:                        # half-drawn blind
+                    split = y0 + int((y1 - y0) * rng.uniform(0.2, 0.6))
+                    emit[y0:split, x0:x1] *= 0.25
+    Image.fromarray((np.clip(col, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out, "facade_albedo.png"))
+    Image.fromarray((np.clip(emit, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out, "facade_emission.png"))
+
+
+def asphalt(out, w=512, h=1024):
+    """Road surface along v: worn asphalt with a dashed centre line and faint tyre tracks."""
+    base = 0.09 + 0.03 * noise2(w, h, 60, 120, 3, 41, tile_x=False)
+    x = np.arange(w) / w
+    tracks = np.exp(-((x[None, :] - 0.3) / 0.05) ** 2) + np.exp(-((x[None, :] - 0.7) / 0.05) ** 2)
+    base = base - 0.02 * tracks
+    col = np.dstack([base, base, base * 1.05])
+    y = np.arange(h) / h
+    dash = ((y * 4) % 1 < 0.5)[:, None] & (np.abs(x - 0.5) < 0.012)[None, :]
+    col[dash] = [0.75, 0.68, 0.4]
+    Image.fromarray((np.clip(col, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out, "asphalt.png"))
+
+
 if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "textures"
     os.makedirs(out, exist_ok=True)
     wood(out)
     stencil(out)
     metal(out)
+    facade(out)
+    asphalt(out)

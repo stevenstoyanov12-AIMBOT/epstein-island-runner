@@ -65,60 +65,69 @@ def nail(bm, rng, pos, normal):
         f.material_index = 1
 
 
-def crate_face(bm, uv, rng, centre, normal, up, size, top=False, solid=False, diagonal=False):
-    """One side of the crate: slats with gaps, a frame of thicker boards on top, optional diagonal brace."""
+def crate_face(bm, uv, rng, centre, normal, up, width, height, count=6, solid=False, diagonal=False, missing=None):
+    """One side of a crate: slats with gaps, a frame of thicker boards on top, optional diagonal brace.
+
+    width runs along up x normal, height along up. `missing` leaves out that slat (a peep slot)."""
     n, u = Vector(normal).normalized(), Vector(up).normalized()
     r = u.cross(n).normalized()
     c = Vector(centre)
-    frame_w, frame_t, slat_t = 0.1, 0.028, 0.02
-    inner = size - 2 * frame_t
+    frame_w = min(0.1, height * 0.3)
+    frame_t, slat_t = 0.028, 0.02
+    inner_w, inner_h = width - 2 * frame_t, height - 2 * frame_t
     slat_c = c - n * (frame_t + slat_t / 2)            # slats sit just inside the frame
-    count = 6
     gap = 0.0 if solid else 0.016
-    h = (inner - gap * (count - 1)) / count
+    h = (inner_h - gap * (count - 1)) / count
     for i in range(count):
-        off = -inner / 2 + h / 2 + i * (h + gap)
-        board(bm, uv, rng, slat_c + u * off, r, u, inner, h - 0.002, slat_t)
+        if i == missing:
+            continue
+        off = -inner_h / 2 + h / 2 + i * (h + gap)
+        board(bm, uv, rng, slat_c + u * off, r, u, inner_w, h - 0.002, slat_t)
     # frame boards, flush with the outside
     fc = c - n * frame_t / 2
-    L = size - 2 * frame_t
+    Lw, Lh = inner_w, inner_h
     for s in (-1, 1):
-        board(bm, uv, rng, fc + u * s * (L / 2 - frame_w / 2), r, u, L, frame_w, frame_t)
-        board(bm, uv, rng, fc + r * s * (L / 2 - frame_w / 2), u, r, L - 2 * frame_w, frame_w, frame_t)
+        board(bm, uv, rng, fc + u * s * (Lh / 2 - frame_w / 2), r, u, Lw, frame_w, frame_t)
+        board(bm, uv, rng, fc + r * s * (Lw / 2 - frame_w / 2), u, r, Lh - 2 * frame_w, frame_w, frame_t)
         for t in (-1, 1):  # nails at the frame corners
-            nail(bm, rng, c + u * s * (L / 2 - frame_w / 2) + r * t * (L / 2 - 0.03), n)
-            nail(bm, rng, c + r * s * (L / 2 - frame_w / 2) + u * t * (L / 2 - frame_w - 0.03), n)
+            nail(bm, rng, c + u * s * (Lh / 2 - frame_w / 2) + r * t * (Lw / 2 - 0.03), n)
+            nail(bm, rng, c + r * s * (Lw / 2 - frame_w / 2) + u * t * (Lh / 2 - frame_w - 0.03), n)
     if diagonal:
-        d = (r + u).normalized()
+        span = r * (Lw - 2 * frame_w) + u * (Lh - 2 * frame_w)
+        d = span.normalized()
         across = d.cross(n)
-        length = math.sqrt(2) * (L - 2 * frame_w) + 0.02
+        length = span.length + 0.02
         board(bm, uv, rng, fc, d, across, length, frame_w * 0.95, frame_t * 0.9)
         for t in (-0.42, 0, 0.42):
             nail(bm, rng, c + d * t * length, n)
 
 
-def build_crate(rng):
+PEEK_SLAT = 3   # slat left out of the player's crate, at crouched eye height
+PEEK_EYE = 0.73  # height of that slot above the crate's base (skids included)
+LOW_CRATE = 0.30  # body height of the flat crates the player's crate is stacked on
+
+
+def build_crate(rng, name, sx=CRATE, sy=CRATE, sz=CRATE, slats=6, diagonal=True, peek=False):
+    """Crate of outer size sx x sy x sz standing on skids (0.06 m). peek: one slat missing on the -Y side."""
     bm = bmesh.new()
     uv = bm.loops.layers.uv.new("UVMap")
-    s = CRATE
-    h = s / 2
-    c = Vector((0, 0, h))
-    crate_face(bm, uv, rng, c + Vector((h, 0, 0)), (1, 0, 0), (0, 0, 1), s, diagonal=True)
-    crate_face(bm, uv, rng, c + Vector((-h, 0, 0)), (-1, 0, 0), (0, 0, 1), s, diagonal=True)
-    crate_face(bm, uv, rng, c + Vector((0, h, 0)), (0, 1, 0), (0, 0, 1), s)
-    crate_face(bm, uv, rng, c + Vector((0, -h, 0)), (0, -1, 0), (0, 0, 1), s)
-    crate_face(bm, uv, rng, c + Vector((0, 0, h)), (0, 0, 1), (0, 1, 0), s)
-    crate_face(bm, uv, rng, c + Vector((0, 0, -h)), (0, 0, -1), (0, 1, 0), s, solid=True)
+    c = Vector((0, 0, sz / 2))
+    crate_face(bm, uv, rng, c + Vector((sx / 2, 0, 0)), (1, 0, 0), (0, 0, 1), sy, sz, slats, diagonal=diagonal)
+    crate_face(bm, uv, rng, c + Vector((-sx / 2, 0, 0)), (-1, 0, 0), (0, 0, 1), sy, sz, slats, diagonal=diagonal)
+    crate_face(bm, uv, rng, c + Vector((0, sy / 2, 0)), (0, 1, 0), (0, 0, 1), sx, sz, slats)
+    crate_face(bm, uv, rng, c + Vector((0, -sy / 2, 0)), (0, -1, 0), (0, 0, 1), sx, sz, slats,
+               missing=PEEK_SLAT if peek else None)
+    crate_face(bm, uv, rng, c + Vector((0, 0, sz / 2)), (0, 0, 1), (0, 1, 0), sx, sy, 6, solid=not peek)
+    crate_face(bm, uv, rng, c + Vector((0, 0, -sz / 2)), (0, 0, -1), (0, 1, 0), sx, sy, 6, solid=True)
     # skids under the crate so it sits on runners like a real shipping crate
     for x in (-0.4, 0, 0.4):
-        board(bm, uv, rng, (x, 0, -0.03), (0, 1, 0), (1, 0, 0), s, 0.09, 0.06)
-    bm.verts.ensure_lookup_table()
+        board(bm, uv, rng, (x * sx / CRATE, 0, -0.03), (0, 1, 0), (1, 0, 0), sy, 0.09, 0.06)
     for v in bm.verts:
         v.co.z += 0.06
-    me = bpy.data.meshes.new("Crate")
+    me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()
-    obj = bpy.data.objects.new("Crate", me)
+    obj = bpy.data.objects.new(name, me)
     bpy.context.collection.objects.link(obj)
     bev = obj.modifiers.new("Bevel", "BEVEL")
     bev.width = 0.0035
@@ -129,7 +138,7 @@ def build_crate(rng):
     return obj
 
 
-def build_stencil():
+def build_stencil(name="Crate_Stencil", sides=(1, -1)):
     """Decal quads carrying the stencil texture, just outside the slats of the two plain sides."""
     bm = bmesh.new()
     uv = bm.loops.layers.uv.new("UVMap")
@@ -137,17 +146,17 @@ def build_stencil():
     y = s / 2 - 0.028 + 0.007    # just outside the slats (inside the frame), clear of their hand-built wobble
     w, hgt = 0.86, 0.43
     zc = s / 2 + 0.06 + 0.03
-    for side in (1, -1):
+    for side in sides:
         pts = [(-w / 2, -hgt / 2), (w / 2, -hgt / 2), (w / 2, hgt / 2), (-w / 2, hgt / 2)]
         # seen from outside, 'right' is -X on the +Y side and +X on the -Y side
         vs = [bm.verts.new((-px * side, y * side, zc + pz)) for px, pz in pts]
         f = bm.faces.new(vs)
         for loop, (u, v) in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
             loop[uv].uv = (u, v)
-    me = bpy.data.meshes.new("Crate_Stencil")
+    me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()
-    obj = bpy.data.objects.new("Crate_Stencil", me)
+    obj = bpy.data.objects.new(name, me)
     bpy.context.collection.objects.link(obj)
     return obj
 
@@ -302,6 +311,8 @@ def main():
     textures.wood(tex)
     textures.stencil(tex)
     textures.metal(tex)
+    textures.facade(tex)
+    textures.asphalt(tex)
 
     wood = material("CrateWood", tex, "wood_albedo.png", "wood_normal.png")
     floor = material("FloorWood", tex, "wood_albedo.png", "wood_normal.png", tint=(0.45, 0.4, 0.36, 1))
@@ -312,21 +323,27 @@ def main():
     nails.node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 1.0
     stencil = material("Stencil", tex, "stencil.png", alpha=True)
 
-    crate = build_crate(rng)
-    crate.data.materials.append(wood)
-    crate.data.materials.append(nails)
+    crate = build_crate(rng, "Crate")
+    peek = build_crate(rng, "Crate_Peek", peek=True)
+    low = build_crate(rng, "Crate_Low", sz=LOW_CRATE, slats=2, diagonal=False)
+    for o in (crate, peek, low):
+        o.data.materials.append(wood)
+        o.data.materials.append(nails)
     sten = build_stencil()
-    sten.data.materials.append(stencil)
+    sten_back = build_stencil("Crate_Stencil_Back", sides=(1,))   # the peek crate's slot side stays bare
+    for o in (sten, sten_back):
+        o.data.materials.append(stencil)
     van = build_van(rng)
     van.data.materials.append(steel)
     van.data.materials.append(floor)
     doors = [build_door(-1), build_door(1)]
     for d in doors:
         d.data.materials.append(steel)
-    for o in [crate, sten, van] + doors:
+    parts = [crate, peek, low, sten, sten_back, van] + doors
+    for o in parts:
         print(f"{o.name}: {sum(len(p.vertices) - 2 for p in o.data.polygons)} tris")
 
-    # --- previews: the crate outside in soft light, then the view from inside the crate in the van
+    # --- previews: the stash outside in soft light, then the view out through the peep slot
     world = bpy.data.worlds.new("World")
     bpy.context.scene.world = world
     world.use_nodes = True
@@ -337,36 +354,42 @@ def main():
     sun.data.energy = 3
     sun.rotation_euler = (math.radians(45), 0, math.radians(30))
     bpy.context.collection.objects.link(sun)
+    base = 0.024 + 2 * (LOW_CRATE + 0.06)
+    stash = Vector((-0.5, 1.15, 0))
+    low.location = stash + Vector((0, 0, 0.024))
+    low2 = low.copy()
+    bpy.context.collection.objects.link(low2)
+    low2.location = stash + Vector((0, 0, 0.024 + LOW_CRATE + 0.06))
+    for o in (peek, sten_back):
+        o.location = stash + Vector((0, 0, base))
+    crate.hide_render = sten.hide_render = True
     for o in [van] + doors:
         o.hide_render = True
     os.makedirs(args.preview, exist_ok=True)
-    camera((2.2, -2.4, 1.6), (0, 0, 0.55), 35)
-    render(os.path.join(args.preview, "crate.png"), args.samples)
+    camera(stash + Vector((2.4, -3.2, 1.9)), stash + Vector((0, 0, 1.0)), 32)
+    render(os.path.join(args.preview, "stash.png"), args.samples)
 
-    # inside: crate near the rear doors, dark van, a street lamp shining through the rear window
+    # from inside the top crate, through the missing slat and out of the rear-door window
     for o in [van] + doors:
         o.hide_render = False
     sun.hide_render = True
     bg.inputs["Strength"].default_value = 0.03
-    crate_pos = Vector((-0.5, 1.15, 0.024))
-    for o in (crate, sten):
-        o.location = crate_pos
-    lamp = bpy.data.objects.new("StreetLamp", bpy.data.lights.new("StreetLamp", "SPOT"))
-    lamp.data.energy = 6000
-    lamp.data.color = (1.0, 0.72, 0.4)
-    lamp.data.spot_size = math.radians(70)
-    lamp.data.shadow_soft_size = 0.05
-    lamp.location = (0.8, -2.0, 2.2)
-    lamp.rotation_euler = (Vector((-0.6, 1.8, -0.9))).to_track_quat("-Z", "Y").to_euler()
-    bpy.context.collection.objects.link(lamp)
-    eye = crate_pos + Vector((0.05, 0.2, 0.62))
-    camera(eye, eye + Vector((0.15, -1.0, 0.05)), 18)
-    render(os.path.join(args.preview, "inside_crate.png"), args.samples)
-    bpy.data.objects.remove(lamp)
-    for o in (crate, sten):
-        o.location = (0, 0, 0)
+    street = bpy.data.objects.new("StreetGlow", bpy.data.lights.new("StreetGlow", "AREA"))
+    street.data.energy = 3000
+    street.data.size = 4
+    street.data.color = (1.0, 0.75, 0.45)
+    street.location = (0, -4.0, 2.5)
+    street.rotation_euler = (math.radians(-60), 0, 0)
+    bpy.context.collection.objects.link(street)
+    eye = stash + Vector((0, -CRATE / 2 + 0.25, base + PEEK_EYE))
+    camera(eye, eye + Vector((0, -1.0, 0)), 16)
+    render(os.path.join(args.preview, "peek_view.png"), args.samples)
+    bpy.data.objects.remove(street)
+    bpy.data.objects.remove(low2)
+    for o in parts:
+        o.location = (0, 0, 0) if o not in doors else o.location
 
-    for o in [crate, sten, van] + doors:
+    for o in parts:
         loc = o.location.copy()
         o.location = (0, 0, 0)   # export the mesh around its own origin (the hinge for the doors)
         bpy.ops.object.select_all(action="DESELECT")
