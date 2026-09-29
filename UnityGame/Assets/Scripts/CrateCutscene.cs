@@ -14,6 +14,7 @@ public class CrateCutscene : MonoBehaviour
     public Transform van;                 // van root; lights are placed relative to it
     public Light moon;                    // night light for the street, enabled only during the cutscene
     public NightStreet street;
+    public Material nightSky;             // star-filled skybox with the nebula, used while the cutscene plays
     public Transform distantCar;          // a pair of headlights far behind the van, keeping pace in the dark
     public Rigidbody[] cargo;             // loose crates that tumble in the crash
     public Rigidbody[] breakable;         // crates that burst into planks on impact
@@ -36,6 +37,7 @@ public class CrateCutscene : MonoBehaviour
     Camera previousCamera;
     Light[] disabledSuns;
     Color ambientSky, ambientEquator, ambientGround, fogColor;
+    Material daySky;
     bool fog, crashed, screeched;
     float fogDensity, time = -1f, fade;
     Vector3 distantStart;
@@ -53,7 +55,7 @@ public class CrateCutscene : MonoBehaviour
     void Start()
     {
         cutsceneCamera.enabled = false;
-        cutsceneCamera.clearFlags = CameraClearFlags.SolidColor;
+        cutsceneCamera.clearFlags = nightSky != null ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor;
         cutsceneCamera.backgroundColor = NightSky;
         lamps = new Light[LampTimes.Length];
         for (int i = 0; i < lamps.Length; i++)
@@ -143,6 +145,8 @@ public class CrateCutscene : MonoBehaviour
         RenderSettings.fogColor = NightSky;
         RenderSettings.fogDensity = 0.016f;
         if (moon != null) moon.enabled = true;
+        daySky = RenderSettings.skybox;
+        if (nightSky != null) RenderSettings.skybox = nightSky;
         if (street != null)
         {
             street.speed = cruiseSpeed;
@@ -187,6 +191,7 @@ public class CrateCutscene : MonoBehaviour
         RenderSettings.fogDensity = fogDensity;
         RenderSettings.fogMode = fogMode;
         if (moon != null) moon.enabled = false;
+        RenderSettings.skybox = daySky;
         if (street != null)
         {
             street.speed = 0f;

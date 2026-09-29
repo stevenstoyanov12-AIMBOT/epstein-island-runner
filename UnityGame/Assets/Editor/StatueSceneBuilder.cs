@@ -391,9 +391,44 @@ public static class StatueSceneBuilder
 
         cutscene.street = street;
         cutscene.moon = moon;
+        cutscene.nightSky = NightSkybox();
     }
 
     // Self-lit material: unlit, so it shows at full brightness in the dark whatever the lighting.
+    // Star-filled panoramic skybox with the Milky Way, a moon and the nebula (tools/blender_cutscene/night_sky.py).
+    static Material NightSkybox()
+    {
+        string texPath = $"{CutsceneFolder}/Textures/night_sky.png";
+        if (AssetImporter.GetAtPath(texPath) is TextureImporter importer)
+        {
+            // full resolution and no mipmaps so the stars stay sharp pinpoints
+            bool changed = importer.maxTextureSize != 4096 || importer.mipmapEnabled
+                           || importer.textureCompression != TextureImporterCompression.CompressedHQ;
+            importer.maxTextureSize = 4096;
+            importer.mipmapEnabled = false;
+            importer.textureCompression = TextureImporterCompression.CompressedHQ;
+            importer.wrapModeU = TextureWrapMode.Repeat;
+            importer.wrapModeV = TextureWrapMode.Clamp;
+            if (changed) importer.SaveAndReimport();
+        }
+        string path = $"{MaterialFolder}/NightSky.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        var shader = Shader.Find("Skybox/Panoramic");
+        if (m == null)
+        {
+            m = new Material(shader);
+            AssetDatabase.CreateAsset(m, path);
+        }
+        m.shader = shader;
+        m.SetTexture("_MainTex", AssetDatabase.LoadAssetAtPath<Texture2D>(texPath));
+        m.SetFloat("_Mapping", 1f);      // latitude-longitude layout
+        m.SetFloat("_ImageType", 0f);    // full 360 degrees
+        m.SetFloat("_Exposure", 1f);
+        m.SetFloat("_Rotation", 0f);
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
     static Material Glow(string name, Color color, Texture2D texture = null)
     {
         string path = $"{MaterialFolder}/{name}.mat";
