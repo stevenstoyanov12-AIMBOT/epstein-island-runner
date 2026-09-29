@@ -191,7 +191,8 @@ public class LaserEye
         // dead straight and steady, like a security laser; just a faint hum in its brightness
         float flicker = 0.95f + 0.1f * Mathf.PerlinNoise(Time.time * 25f, noiseSeed);
         float snap = Mathf.Exp(-age * 12f);                    // the extra-bright flash as it fires
-        foreach (var l in new[] { core, glow, haze })
+        haze.enabled = false;                                 // pure lasers: no haze
+        foreach (var l in new[] { core, glow })
         {
             l.SetPosition(0, from);
             l.SetPosition(1, to);
@@ -200,22 +201,17 @@ public class LaserEye
         }
         core.widthMultiplier = (0.006f + 0.01f * snap) * flicker * fade;
         glow.widthMultiplier = (0.02f + 0.03f * snap) * flicker * fade;
-        haze.widthMultiplier = (0.06f + 0.08f * snap) * Mathf.Sqrt(fade);
 
         SetFlare(flare, flareMat, (0.16f + 0.25f * snap) * flicker * fade, new Color(1f, 0.85f, 0.75f, 1f));
         eyeLight.intensity = (4f + 6f * snap) * fade;
         eyeLight.range = 1.5f;
 
         bool landed = hitSomething && len >= full.magnitude - 0.01f && fade > 0.3f;
-        impactFlare.gameObject.SetActive(landed);
-        SetEmission(sparks, landed ? 90f * fade : 0f);
-        SetEmission(smoke, landed ? 14f * fade : 0f);
-        impactLight.intensity = landed ? (3f + 3f * Random.value) * fade : 0f;
+        // pure lasers: no sparks, smoke or glow where it lands, just the burn mark
         if (!landed) return;
         var impact = impactFlare.parent;
         impact.position = hit + normal * 0.02f;
         impact.rotation = Quaternion.LookRotation(normal);
-        SetFlare(impactFlare, impactFlareMat, (0.25f + 0.15f * Random.value) * fade, new Color(1f, 0.75f, 0.45f, 1f));
         if (Time.time - lastScorch > 0.06f)
         {
             lastScorch = Time.time;

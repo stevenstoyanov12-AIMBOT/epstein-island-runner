@@ -75,7 +75,17 @@ public static class StatueSceneBuilder
         cam.GetComponent<Camera>().GetUniversalAdditionalCameraData().renderPostProcessing = true;
         cam.AddComponent<AudioListener>();
         cam.AddComponent<FlyCamera>();
-        cam.AddComponent<GazeTarget>();   // the statue can hear you shoot (left click) and fire back
+        // you can be targeted too, but only if you switch on Test Shooting on this component (then left click
+        // makes noise); by default the statue hunts the practice dummies so you can watch
+        cam.AddComponent<GazeTarget>().testShooting = false;
+        foreach (var (pos, yaw) in new[] { (new Vector3(-6f, 0.1f, 4f), 20f), (new Vector3(6f, 0.1f, 5f), -25f) })
+        {
+            var dummy = new GameObject("PracticeDummy");
+            dummy.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
+            Part(PrimitiveType.Capsule, "Body", dummy.transform, new Vector3(0f, 0.9f, 0f), new Vector3(0.5f, 0.9f, 0.5f), stone);
+            dummy.AddComponent<GazeTarget>().aimOffset = new Vector3(0f, 1.3f, 0f);
+            dummy.AddComponent<PracticeDummy>();
+        }
         // player eye height, looking past the bust to the tree
         cam.transform.position = new Vector3(0f, 1.7f, -4f);
         cam.transform.LookAt(bust.transform.position + Vector3.up * 1.6f);
