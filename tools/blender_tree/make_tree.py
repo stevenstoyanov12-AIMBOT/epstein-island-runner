@@ -58,6 +58,8 @@ def tube_bmesh(bm, uv_layer, weight_layer, pts, radii):
     seglen = np.linalg.norm(np.diff(pts, axis=0), axis=1).sum()
     spacing = np.clip(r0 * 0.35, 0.012, 0.12)
     per_seg = max(2, int(seglen / spacing / (len(pts) - 1)))
+    if r0 < 0.012:  # leafy twigs: few sides and rings, they are only a few millimetres thick
+        sides, per_seg = 4, 2
     path = catmull_rom(pts, per_seg)
     rad = np.interp(np.linspace(0, 1, len(path)), np.linspace(0, 1, len(radii)), radii)
     tang = np.gradient(path, axis=0)
@@ -141,6 +143,61 @@ def random_rotation(rng):
     return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
                      [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
                      [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+
+
+def leaf_frame(direction, rng):
+    """Rotation whose local +Y (leaf tip) follows `direction` and whose face turns up to the light."""
+    y = direction / np.linalg.norm(direction)
+    up = np.array([0, 0, 1.0]) + rng.normal(0, 0.35, 3)
+    z = up - y * (up @ y)
+    if np.linalg.norm(z) < 1e-3:
+        z = np.cross(y, [1.0, 0, 0])
+    z /= np.linalg.norm(z)
+    x = np.cross(y, z)
+    return np.column_stack([x, y, z])
+
+
+def sprout_twigs(skel, rng, leaf_target):
+    """Add short leafy twigs along the thinnest branches and attach every leaf by its stem.
+
+    Returns (twig skeletons, leaf placements). Leaves sit at nodes along each twig, alternating
+    sides, pointing outward and drooping slightly, with the stem end touching the twig."""
+    hosts = [catmull_rom(p, 4) for p, _, d in skel if d >= 4]
+    top = max(h[:, 2].max() for h in hosts)
+    candidates = []
+    for path in hosts:
+        seg = np.linalg.norm(np.diff(path, axis=0), axis=1)
+        arc = np.concatenate([[0], np.cumsum(seg)])
+        for t in np.arange(0.06, arc[-1], 0.09):
+            i = min(np.searchsorted(arc, t), len(path) - 1)
+            tangent = path[min(i + 1, len(path) - 1)] - path[max(i - 1, 0)]
+            candidates.append((path[i], tangent / np.linalg.norm(tangent)))
+    per_twig = leaf_target / len(candidates)
+    twigs, placements = [], []
+    for base, tangent in candidates:
+        side = np.cross(tangent, rng.normal(size=3))
+        side /= np.linalg.norm(side)
+        d = tangent * 0.6 + side * 0.8 + np.array([0, 0, 0.15])
+        d /= np.linalg.norm(d)
+        length = rng.uniform(0.14, 0.26)
+        bend = np.array([0, 0, -0.04]) + rng.normal(0, 0.02, 3)
+        pts = np.array([base, base + d * length * 0.5 + bend * 0.3, base + d * length + bend])
+        twigs.append((pts, np.array([0.009, 0.006, 0.004]), 6))
+        n_leaves = rng.poisson(per_twig)
+        for k in range(n_leaves):
+            t = 1.0 if k == 0 else rng.uniform(0.3, 1.0)       # one leaf at the tip, the rest along it
+            node = pts[0] + (pts[2] - pts[0]) * t
+            out_dir = d if k == 0 else d * 0.5 + np.cross(d, [0, 0, 1.0]) * (1 if k % 2 else -1)
+            out_dir = out_dir + np.array([0, 0, -0.35]) + rng.normal(0, 0.2, 3)  # leaves droop
+            R = leaf_frame(out_dir, rng)
+            size = rng.uniform(0.09, 0.14)
+            stem = rng.uniform(0.015, 0.035)
+            # card origin is 12% up the leaf from its stem end, so offset along the leaf axis
+            pos = node + R[:, 1] * (stem + 0.12 * size)
+            h = np.clip((pos[2] - 2.0) / (top - 2.0), 0, 1)
+            cell = int(np.clip(rng.normal(h * 3.3, 0.9), 0, 3.999))
+            placements.append((pos, R, size, cell))
+    return twigs, placements
 
 
 def build_leaves(name, placements, rng):
@@ -275,6 +332,9 @@ def main():
     yz = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])  # (x, y, z)_yup -> (x, -z, y)_zup
     skel_z = [(pts @ yz.T, radii, depth) for pts, radii, depth in skel]
 
+    # short twigs sprout from the thin branches and carry the leaves on stems
+    twiglets, placements = sprout_twigs(skel_z, rng, args.leaves)
+    skel_z += twiglets
     bark = build_bark(skel_z)
     disp_tex = bpy.data.textures.new("BarkHeight", "IMAGE")
     disp_tex.image = bpy.data.images.load(os.path.join(tex, "bark_height.png"))
@@ -290,16 +350,6 @@ def main():
     bpy.ops.object.shade_smooth()
     bark.data.materials.append(bark_material(tex))
 
-    # leaves around the thinnest twigs; colour cell by height (reds low, yellows high)
-    twigs = np.concatenate([catmull_rom(p, 3)[2:] for p, _, d in skel_z if d >= 4])
-    top = twigs[:, 2].max()
-    placements = []
-    for _ in range(args.leaves):
-        a = twigs[rng.integers(len(twigs))]
-        pos = a + rng.normal(0, 0.14, 3)
-        h = np.clip((pos[2] - 2.0) / (top - 2.0), 0, 1)
-        cell = int(np.clip(rng.normal(h * 3.3, 0.9), 0, 3.999))
-        placements.append((pos, random_rotation(rng), rng.uniform(0.09, 0.14), cell))
     crown = build_leaves("Tree_Leaves", placements, rng)
     fallen = []
     for _ in range(args.fallen):
