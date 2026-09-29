@@ -574,7 +574,7 @@ public static class StatueSceneBuilder
             // matched to the eye openings on a face-on render of the original bust (tools/blender_eyes/fit_test.py
             // --noeyes vs with eyes). The bust is turned 180 degrees in its pivot, so the mesh's x is negated here:
             // mesh eyes at x -0.039 / +0.030 become +0.039 / -0.030.
-            eye.localPosition = new Vector3(i == 0 ? -0.030f : 0.039f, 0.5995f, 0.067f);
+            eye.localPosition = new Vector3(i == 0 ? -0.030f : 0.034f, 0.5995f, i == 0 ? 0.067f : 0.066f);
             var pivot = new GameObject("PupilPivot").transform;
             pivot.SetParent(eye, false);
             MeshPart(pivot, "Iris", irisCap, irisMat);
