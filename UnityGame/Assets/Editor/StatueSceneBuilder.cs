@@ -310,7 +310,7 @@ public static class StatueSceneBuilder
             NoCollider(Part(PrimitiveType.Cube, "Road", seg, new Vector3(0f, road - 0.05f, segLen / 2f), new Vector3(8f, 0.1f, segLen), asphalt));
             foreach (int side in new[] { -1, 1 })
             {
-                NoCollider(Part(PrimitiveType.Cube, "Pavement", seg, new Vector3(side * 5f, road + 0.07f, segLen / 2f), new Vector3(2f, 0.24f, segLen), pavement));
+                NoCollider(Part(PrimitiveType.Cube, "Pavement", seg, new Vector3(side * 6.5f, road + 0.07f, segLen / 2f), new Vector3(5f, 0.24f, segLen), pavement));
                 // two or three buildings per side, of different heights
                 float z = 0f;
                 while (z < segLen - 1f)
@@ -318,7 +318,7 @@ public static class StatueSceneBuilder
                     float w = Mathf.Min(segLen - z, 5f + (float)rng.NextDouble() * 5f);
                     float h = 6f + (float)rng.NextDouble() * 12f;
                     var b = NoCollider(Part(PrimitiveType.Cube, "Building", seg,
-                        new Vector3(side * 10f, road + h / 2f, z + w / 2f), new Vector3(8f, h, w - 0.3f), facade));
+                        new Vector3(side * 13f, road + h / 2f, z + w / 2f), new Vector3(8f, h, w - 0.3f), facade));
                     block.SetVector("_BaseMap_ST", new Vector4(w / 8f, h / 16f, (float)rng.NextDouble(), 0f));
                     b.GetComponent<MeshRenderer>().SetPropertyBlock(block);
                     z += w;

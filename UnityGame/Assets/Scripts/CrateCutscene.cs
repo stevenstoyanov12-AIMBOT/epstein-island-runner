@@ -312,8 +312,9 @@ public class CrateCutscene : MonoBehaviour
         if (!Playing || vanBody == null) return;
         float s = time - Impact;
         if (s <= 0f) return;
-        float slide = 3.4f * (1f - Mathf.Exp(-s * 2.2f));
-        float yaw = 42f * (1f - Mathf.Exp(-s * 1.8f));
+        // kept small enough that the open doors still look down the road, not into the buildings
+        float slide = 2f * (1f - Mathf.Exp(-s * 2.2f));
+        float yaw = 14f * (1f - Mathf.Exp(-s * 1.8f));
         float lean = 22f * Mathf.Sin(Mathf.Clamp01(s / 1.1f) * Mathf.PI) + 3f * Mathf.Clamp01(s - 1.1f);
         var rot = vanStartRot * Quaternion.Euler(0f, yaw, -lean);
         var pivot = vanStartPos + vanStartRot * (SpinPivot + new Vector3(slide, 0f, 0f));
