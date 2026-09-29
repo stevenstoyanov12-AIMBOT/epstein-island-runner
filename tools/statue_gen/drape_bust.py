@@ -62,8 +62,9 @@ def drape_field(p, d, neck, width):
 
 
 def bullet_damage(p, f, neck, rng, count):
-    """Chip bullet craters with hairline cracks into the front of the cloth (never above the neckline)."""
-    surf = np.flatnonzero((np.abs(f) < 0.002) & (p[:, 2] < np.median(p[:, 2])) & (p[:, 1] < neck - 0.06))
+    """Chip bullet craters with hairline cracks into the front and back of the cloth (never above the neckline)."""
+    mid = np.median(p[:, 2])
+    surf = np.flatnonzero((np.abs(f) < 0.002) & (p[:, 1] < neck - 0.06))
     rng.shuffle(surf)
     hits = []
     for i in surf:
@@ -74,7 +75,7 @@ def bullet_damage(p, f, neck, rng, count):
     for c in hits:
         near = np.flatnonzero(length(p - c) < 0.08)
         pp, dd = p[near], f[near]
-        n = np.array([0.0, 0.0, -1.0])  # the front faces -Z
+        n = np.array([0.0, 0.0, -1.0 if c[2] < mid else 1.0])  # front faces -Z, back +Z
         r = rng.uniform(0.008, 0.014)
         jag = 0.25 * r * fbm(pp * 350.0, 2, int(rng.integers(1000)))
         core = sphere(pp, c + n * 0.2 * r, 0.75 * r) + jag
@@ -100,7 +101,7 @@ def main():
     ap.add_argument("--tris", type=int, default=60000)
     ap.add_argument("--preview", default="previews")
     ap.add_argument("--seed", type=int, default=3)
-    ap.add_argument("--hits", type=int, default=9, help="bullet impacts on the cloth")
+    ap.add_argument("--hits", type=int, default=16, help="bullet impacts on the cloth")
     args = ap.parse_args()
 
     bust = trimesh.load(os.path.join(STATUES, f"{args.name}.obj"), force="mesh")
@@ -123,6 +124,7 @@ def main():
     os.makedirs(args.preview, exist_ok=True)
     render(both, os.path.join(args.preview, f"{args.name}_draped_front.png"), yaw=0)
     render(both, os.path.join(args.preview, f"{args.name}_draped_three_quarter.png"), yaw=-35)
+    render(both, os.path.join(args.preview, f"{args.name}_draped_back.png"), yaw=180)
     print(f"{args.name}_Drape: {len(drape.faces)} tris")
 
 
