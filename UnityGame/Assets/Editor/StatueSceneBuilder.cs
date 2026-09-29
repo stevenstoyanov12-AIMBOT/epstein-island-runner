@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 // Builds the "Statue Garden" scene (draped portrait bust and an autumn tree): Tools > Build Statue Scene.
 public static class StatueSceneBuilder
@@ -71,6 +72,7 @@ public static class StatueSceneBuilder
         var cam = new GameObject("Main Camera");
         cam.tag = "MainCamera";
         cam.AddComponent<Camera>().fieldOfView = 60f;
+        cam.GetComponent<Camera>().GetUniversalAdditionalCameraData().renderPostProcessing = true;
         cam.AddComponent<AudioListener>();
         cam.AddComponent<FlyCamera>();
         cam.AddComponent<GazeTarget>();   // the statue can hear you shoot (left click) and fire back
@@ -78,6 +80,7 @@ public static class StatueSceneBuilder
         cam.transform.position = new Vector3(0f, 1.7f, -4f);
         cam.transform.LookAt(bust.transform.position + Vector3.up * 1.6f);
 
+        Bloom();
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddToBuildSettings(ScenePath);
         Debug.Log($"Statue scene built and saved to {ScenePath}");
@@ -267,6 +270,7 @@ public static class StatueSceneBuilder
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
         var cam = camGo.AddComponent<Camera>();
+        cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
         cam.fieldOfView = 72f;
         cam.nearClipPlane = 0.05f;
         cam.farClipPlane = 200f;
@@ -406,6 +410,26 @@ public static class StatueSceneBuilder
         cutscene.street = street;
         cutscene.moon = moon;
         cutscene.nightSky = NightSkybox();
+    }
+
+    // Scene-wide bloom: only very bright (HDR) things - the lasers, headlights - spill a soft glow around them.
+    static void Bloom()
+    {
+        string path = $"{MaterialFolder}/PostFX.asset";
+        AssetDatabase.DeleteAsset(path);
+        var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+        AssetDatabase.CreateAsset(profile, path);
+        var bloom = profile.Add<UnityEngine.Rendering.Universal.Bloom>(true);
+        bloom.threshold.Override(1.1f);
+        bloom.intensity.Override(1.6f);
+        bloom.scatter.Override(0.7f);
+        bloom.tint.Override(new Color(1f, 0.9f, 0.9f));
+        AssetDatabase.AddObjectToAsset(bloom, profile);
+        AssetDatabase.SaveAssets();
+        var volume = new GameObject("PostFX").AddComponent<Volume>();
+        volume.isGlobal = true;
+        volume.priority = 10f;
+        volume.sharedProfile = profile;
     }
 
     // Self-lit material: unlit, so it shows at full brightness in the dark whatever the lighting.

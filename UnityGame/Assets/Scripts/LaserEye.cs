@@ -1,19 +1,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// All the visuals for one of the statue's laser eyes: the charge-up (sparks swirling in, a pulsing flare,
-// a tightening aim line, the eye lighting up the face), the beam itself (white-hot core in a red glow with
-// energy pulses running along it and a heat shimmer), and what happens where it lands (sparks, smoke,
-// flickering light and scorch marks that slowly fade). StatueGaze drives it; it holds no game logic.
+// All the visuals for one of the statue's laser eyes: sparks spiralling in and a thin aim line while it charges, the beam itself - a
+// museum-security-style laser: a dead-straight white-hot core inside a red glow and a wide faint red haze, all
+// drawn as additive HDR light so the scene's bloom makes it shine - and what happens where it lands (sparks,
+// smoke, flickering light and scorch marks that slowly fade). StatueGaze drives it; it holds no game logic.
 public class LaserEye
 {
     readonly Transform eye;
-    readonly LineRenderer core, glow, aim;
-    readonly ParticleSystem charge, sparks, smoke;
+    readonly LineRenderer core, glow, haze, aim;
+    readonly ParticleSystem sparks, smoke;
     readonly Light eyeLight, impactLight;
     readonly Transform flare, impactFlare;
     readonly Material flareMat, impactFlareMat;
     float beamLength, lastScorch;
+    // charge motes: tiny sparks that spiral into the eye while it charges (animated here, so they can't stray)
+    const int MoteCount = 28;
+    readonly Transform[] motes = new Transform[MoteCount];
+    readonly float[] motePhase = new float[MoteCount], moteSpeed = new float[MoteCount];
+    readonly Quaternion[] moteTilt = new Quaternion[MoteCount];
     readonly float noiseSeed = Random.Range(0f, 100f);   // each eye flickers differently
 
     static Texture2D softDot, beamTex, scorchTex;
@@ -29,10 +34,30 @@ public class LaserEye
         var root = new GameObject("Laser").transform;
         root.SetParent(eye, false);
 
-        glow = Line(root, "BeamGlow", beamTex, new Color(1f, 0.1f, 0.05f, 0.55f));
-        core = Line(root, "BeamCore", beamTex, new Color(1f, 0.95f, 0.85f, 1f));
-        aim = Line(root, "AimLine", softDot, new Color(1f, 0.2f, 0.1f, 0.5f));
+        // three layers, widest first; HDR colours (above 1) are what the bloom picks up
+        haze = Line(root, "BeamHaze", Additive(beamTex, new Color(1.2f, 0.05f, 0.03f, 1f)), new Color(1f, 1f, 1f, 0.35f));
+        glow = Line(root, "BeamGlow", Additive(beamTex, new Color(6f, 0.35f, 0.15f, 1f)), Color.white);
+        core = Line(root, "BeamCore", Additive(beamTex, new Color(8f, 6f, 5.5f, 1f)), Color.white);
+        aim = Line(root, "AimLine", Additive(softDot, new Color(2f, 0.1f, 0.05f, 1f)), new Color(1f, 1f, 1f, 0.5f));
         aim.positionCount = 2;
+
+        var moteMat = Additive(softDot, new Color(5f, 0.6f, 0.25f, 1f));
+        for (int i = 0; i < MoteCount; i++)
+        {
+            var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            q.name = "ChargeMote";
+            Object.DestroyImmediate(q.GetComponent<Collider>());
+            q.transform.SetParent(root, false);
+            var r = q.GetComponent<MeshRenderer>();
+            r.sharedMaterial = moteMat;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            q.AddComponent<Billboard>();
+            q.SetActive(false);
+            motes[i] = q.transform;
+            motePhase[i] = Random.value;
+            moteSpeed[i] = Random.Range(1.6f, 2.6f);          // spirals per second
+            moteTilt[i] = Quaternion.Euler(Random.Range(-35f, 35f), Random.Range(-35f, 35f), Random.Range(0f, 360f));
+        }
 
         flare = Quad(root, "EyeFlare", out flareMat);
         flare.localPosition = new Vector3(0f, 0f, 0.03f);          // just in front of the face, not inside it
@@ -43,23 +68,6 @@ public class LaserEye
         eyeLight.range = 0.6f;
         eyeLight.color = new Color(1f, 0.2f, 0.1f);
         eyeLight.intensity = 0f;
-
-        charge = Particles(root, "ChargeSparks", false);
-        var m = charge.main;
-        m.startLifetime = 0.35f;
-        m.startSpeed = -1f;                                     // emitted on a sphere, flying inward to the eye
-        m.startSize = new ParticleSystem.MinMaxCurve(0.006f, 0.016f);
-        m.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.25f, 0.1f), new Color(1f, 0.7f, 0.4f));
-        m.simulationSpace = ParticleSystemSimulationSpace.Local;
-        var sh = charge.shape;
-        sh.shapeType = ParticleSystemShapeType.Sphere;
-        sh.radius = 0.35f;
-        sh.radiusThickness = 0f;
-        var orbit = charge.velocityOverLifetime;             // a swirl as they fall in
-        orbit.enabled = true;
-        orbit.orbitalZ = 6f;
-        orbit.space = ParticleSystemSimulationSpace.Local;
-        FadeOut(charge);
 
         var impact = new GameObject("Impact").transform;       // in world space; moved every frame
         impact.SetParent(root, false);
@@ -72,13 +80,13 @@ public class LaserEye
         impactLight.intensity = 0f;
 
         sparks = Particles(impact, "Sparks", true);
-        m = sparks.main;
+        var m = sparks.main;
         m.startLifetime = new ParticleSystem.MinMaxCurve(0.25f, 0.6f);
         m.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 5f);
         m.startSize = new ParticleSystem.MinMaxCurve(0.008f, 0.02f);
         m.gravityModifier = 1.2f;
         m.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.9f, 0.5f), new Color(1f, 0.4f, 0.1f));
-        sh = sparks.shape;
+        var sh = sparks.shape;
         sh.shapeType = ParticleSystemShapeType.Cone;
         sh.angle = 55f;
         sh.radius = 0.02f;
@@ -127,8 +135,8 @@ public class LaserEye
     public void SetIdle()
     {
         Idle(0f);
-        core.enabled = glow.enabled = aim.enabled = false;
-        SetEmission(charge, 0f);
+        core.enabled = glow.enabled = haze.enabled = aim.enabled = false;
+        foreach (var mt in motes) mt.gameObject.SetActive(false);
         SetEmission(sparks, 0f);
         SetEmission(smoke, 0f);
         impactLight.intensity = 0f;
@@ -136,15 +144,25 @@ public class LaserEye
         beamLength = 0f;
     }
 
-    // Charging, k from 0 to 1: sparks pour in faster, the flare pulses quicker and whiter, the aim line tightens.
+    // Charging, k from 0 to 1: only a thin aim line, which steadies and brightens as the charge completes.
     public void Charge(float k, Vector3 target)
     {
-        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * Mathf.Lerp(6f, 40f, k * k));
-        SetFlare(flare, flareMat, Mathf.Lerp(0.04f, 0.13f, k) * (0.8f + 0.3f * pulse),
-                 Color.Lerp(new Color(1f, 0.2f, 0.08f, 0.6f), new Color(1f, 0.9f, 0.8f, 1f), k * k));
-        eyeLight.intensity = Mathf.Lerp(0.5f, 4f, k) * (0.8f + 0.4f * pulse);
-        eyeLight.range = Mathf.Lerp(0.5f, 1.2f, k);
-        SetEmission(charge, Mathf.Lerp(20f, 160f, k));
+        // motes spiral in toward the eye from a disc in front of the face; more of them, faster, as it charges
+        int shown = Mathf.RoundToInt(Mathf.Lerp(6, MoteCount, k));
+        var centre = eye.position + eye.forward * 0.015f;
+        for (int i = 0; i < MoteCount; i++)
+        {
+            bool on = i < shown;
+            motes[i].gameObject.SetActive(on);
+            if (!on) continue;
+            float t = Mathf.Repeat(Time.time * moteSpeed[i] * (0.8f + 0.8f * k) + motePhase[i], 1f);  // 0 far .. 1 in the eye
+            float radius = 0.22f * Mathf.Pow(1f - t, 1.4f);
+            float angle = (motePhase[i] + t * 1.75f) * Mathf.PI * 2f;
+            var local = moteTilt[i] * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * radius
+                        + Vector3.forward * radius * 0.6f;   // they come in from in front, not from inside the head
+            motes[i].position = centre + eye.rotation * local;
+            motes[i].localScale = Vector3.one * Mathf.Lerp(0.004f, 0.012f, t) * (0.7f + 0.6f * k);
+        }
 
         // aim line: a faint, jittering thread that narrows and steadies as the charge completes
         aim.enabled = Random.value > 0.25f * (1f - k);      // flickers early on
@@ -161,7 +179,7 @@ public class LaserEye
     public void Beam(Vector3 hit, Vector3 normal, bool hitSomething, float age, float fade)
     {
         aim.enabled = false;
-        SetEmission(charge, 0f);
+        foreach (var mt in motes) mt.gameObject.SetActive(false);
         var from = eye.position;
         var full = hit - from;
         // the beam lunges out in a tenth of a second instead of appearing all at once
@@ -170,15 +188,19 @@ public class LaserEye
         var dir = full.normalized;
         var to = from + dir * len;
 
-        float flicker = 0.85f + 0.3f * Mathf.PerlinNoise(Time.time * 30f, noiseSeed);
+        // dead straight and steady, like a security laser; just a faint hum in its brightness
+        float flicker = 0.95f + 0.1f * Mathf.PerlinNoise(Time.time * 25f, noiseSeed);
         float snap = Mathf.Exp(-age * 12f);                    // the extra-bright flash as it fires
-        WobbleLine(core, from, to, 0.004f, Time.time);
-        WobbleLine(glow, from, to, 0.012f, Time.time + 3f);
-        core.enabled = glow.enabled = true;
-        core.widthMultiplier = (0.018f + 0.03f * snap) * flicker * fade;
-        glow.widthMultiplier = (0.09f + 0.2f * snap) * flicker * Mathf.Sqrt(fade);
-        foreach (var l in new[] { core, glow })                // energy pulses racing along the beam
-            l.material.mainTextureOffset = new Vector2(-Time.time * 6f, 0f);
+        foreach (var l in new[] { core, glow, haze })
+        {
+            l.SetPosition(0, from);
+            l.SetPosition(1, to);
+            l.enabled = true;
+            l.material.mainTextureOffset = new Vector2(-Time.time * 2f, 0f);   // a slow shimmer along it
+        }
+        core.widthMultiplier = (0.008f + 0.012f * snap) * flicker * fade;
+        glow.widthMultiplier = (0.03f + 0.05f * snap) * flicker * fade;
+        haze.widthMultiplier = (0.14f + 0.2f * snap) * Mathf.Sqrt(fade);
 
         SetFlare(flare, flareMat, (0.16f + 0.25f * snap) * flicker * fade, new Color(1f, 0.85f, 0.75f, 1f));
         eyeLight.intensity = (4f + 6f * snap) * fade;
@@ -247,36 +269,40 @@ public class LaserEye
 
     // --- helpers ------------------------------------------------------------------------------------
 
-    static void WobbleLine(LineRenderer l, Vector3 from, Vector3 to, float amp, float t)
-    {
-        int n = l.positionCount;
-        var d = to - from;
-        var side = Vector3.Cross(d.normalized, Vector3.up);
-        if (side.sqrMagnitude < 0.01f) side = Vector3.right;
-        side.Normalize();
-        var up = Vector3.Cross(side, d.normalized);
-        for (int i = 0; i < n; i++)
-        {
-            float f = i / (float)(n - 1);
-            float w = amp * Mathf.Sin(f * Mathf.PI);           // heat shimmer, strongest mid-beam
-            l.SetPosition(i, from + d * f + side * Mathf.Sin(t * 37f + i * 1.7f) * w + up * Mathf.Sin(t * 29f + i * 2.3f) * w);
-        }
-    }
-
-    static LineRenderer Line(Transform parent, string name, Texture2D tex, Color color)
+    static LineRenderer Line(Transform parent, string name, Material material, Color color)
     {
         var l = new GameObject(name).AddComponent<LineRenderer>();
         l.transform.SetParent(parent, false);
-        l.material = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex };
+        l.material = material;
         l.textureMode = LineTextureMode.Tile;
-        l.positionCount = 12;
+        l.positionCount = 2;
         l.startColor = color;
         l.endColor = new Color(color.r, color.g, color.b, color.a * 0.85f);
-        l.numCapVertices = 4;
+        l.numCapVertices = 0;
         l.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         l.receiveShadows = false;
         l.enabled = false;
         return l;
+    }
+
+    // Additive, HDR-tinted material: adds light on top of whatever is behind it, like a real beam.
+    static Material Additive(Texture2D tex, Color hdr)
+    {
+        var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        if (shader == null)
+            return new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, color = hdr };
+        var m = new Material(shader);
+        m.SetTexture("_BaseMap", tex);
+        m.SetColor("_BaseColor", hdr);
+        m.SetFloat("_Surface", 1f);                                   // transparent
+        m.SetFloat("_Blend", 2f);                                     // additive
+        m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
+        m.SetFloat("_ZWrite", 0f);
+        m.SetFloat("_Cull", 0f);
+        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        return m;
     }
 
     static Transform Quad(Transform parent, string name, out Material mat)
@@ -313,7 +339,8 @@ public class LaserEye
         var e = ps.emission;
         e.rateOverTime = 0f;
         var r = go.GetComponent<ParticleSystemRenderer>();
-        r.material = new Material(Shader.Find("Sprites/Default")) { mainTexture = softDot };
+        r.material = world && name == "Sparks" ? Additive(softDot, new Color(3f, 2f, 1.2f, 1f))
+                                                 : new Material(Shader.Find("Sprites/Default")) { mainTexture = softDot };
         r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         ps.Play();
         return ps;
@@ -362,7 +389,7 @@ public class LaserEye
                 float across = Mathf.Abs((y + 0.5f) / 32f - 0.5f) * 2f;
                 float falloff = Mathf.Pow(Mathf.Clamp01(1f - across), 1.6f);
                 float along = x / 128f;
-                float pulse = 0.75f + 0.25f * Mathf.Sin(along * Mathf.PI * 2f * 3f) + 0.15f * Mathf.Sin(along * Mathf.PI * 2f * 7f);
+                float pulse = 0.92f + 0.08f * Mathf.Sin(along * Mathf.PI * 2f * 3f);
                 beamTex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(falloff * pulse)));
             }
         beamTex.Apply();
