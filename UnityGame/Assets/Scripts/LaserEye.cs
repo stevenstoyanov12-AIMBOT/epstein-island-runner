@@ -111,6 +111,9 @@ public class LaserEye
         grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 2.5f));
         FadeOut(smoke);
 
+        // no glow on the face itself: only the beams come out of the eyes
+        flare.gameObject.SetActive(false);
+        eyeLight.enabled = false;
         SetIdle();
     }
 
