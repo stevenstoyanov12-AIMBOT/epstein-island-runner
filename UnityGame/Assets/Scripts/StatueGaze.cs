@@ -25,20 +25,24 @@ public class StatueGaze : MonoBehaviour
     GazeTarget target;
     Light gazeLight;
     Renderer[] eyeRenderers;
+    Quaternion[] eyeRest;
     LineRenderer[] aimLines, beams;
     AudioSource whine, zap;
-    static readonly Color Dim = new Color(0.6f, 0.05f, 0.05f), Bright = new Color(1f, 0.1f, 0.05f), White = new Color(1f, 0.95f, 0.9f);
+    // eye tint (multiplies the eye texture) and gaze-cone colours
+    static readonly Color Dim = new Color(0.55f, 0.35f, 0.35f), Bright = new Color(1f, 0.25f, 0.2f), White = new Color(1f, 1f, 1f);
 
     void Start()
     {
         sweepYaw = head.eulerAngles.y;
         eyeRenderers = new Renderer[eyes.Length];
+        eyeRest = new Quaternion[eyes.Length];
         aimLines = new LineRenderer[eyes.Length];
         beams = new LineRenderer[eyes.Length];
         var lineMat = new Material(Shader.Find("Sprites/Default"));
         for (int i = 0; i < eyes.Length; i++)
         {
             eyeRenderers[i] = eyes[i].GetComponent<Renderer>();
+            eyeRest[i] = eyes[i].localRotation;
             aimLines[i] = Line(eyes[i], lineMat, 0.008f);
             beams[i] = Line(eyes[i], lineMat, 0.06f);
         }
@@ -70,6 +74,24 @@ public class StatueGaze : MonoBehaviour
         lr.positionCount = 2;
         lr.enabled = false;
         return lr;
+    }
+
+    void LateUpdate()
+    {
+        // eyes swivel in their sockets: fixed on the target when it has one, otherwise rolling round in
+        // slow, full circles (each eye a little out of step with the other)
+        for (int i = 0; i < eyes.Length; i++)
+        {
+            Quaternion look;
+            if (target != null && state != State.Cooldown)
+                look = Quaternion.LookRotation(eyes[i].parent.InverseTransformDirection(target.AimPoint - eyes[i].position));
+            else
+            {
+                float a = Time.time * 1.3f + i * 0.5f;
+                look = Quaternion.Euler(Mathf.Sin(a) * 40f, Mathf.Cos(a) * 40f, 0f);
+            }
+            eyes[i].localRotation = Quaternion.Slerp(eyes[i].localRotation, look * eyeRest[i], Time.deltaTime * 12f);
+        }
     }
 
     void Update()

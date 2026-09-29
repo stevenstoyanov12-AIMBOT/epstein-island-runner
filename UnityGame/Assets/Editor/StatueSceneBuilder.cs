@@ -553,12 +553,15 @@ public static class StatueSceneBuilder
     {
         var head = bustRoot.Find("Head");
         if (head == null) return;
-        var eyeMat = Glow("StatueEyes", new Color(0.6f, 0.05f, 0.05f));
+        // Blender-made eyeballs (tools/blender_eyes), self-lit so they glow, set into the eye sockets
+        var eyeMat = Glow("StatueEyes", new Color(0.6f, 0.05f, 0.05f),
+                          LoadTexture("Assets/Models/Statues/Textures/statue_eye.png", false));
         var eyes = new Transform[2];
         for (int i = 0; i < 2; i++)
         {
-            var eye = NoCollider(Part(PrimitiveType.Sphere, i == 0 ? "Eye_L" : "Eye_R", head,
-                new Vector3(i == 0 ? -0.032f : 0.032f, 0.62f, 0.095f), Vector3.one * 0.022f, eyeMat));
+            var eye = AddMesh(head, i == 0 ? "Eye_L" : "Eye_R", "Assets/Models/Statues/StatueEye.fbx", eyeMat);
+            if (eye == null) return;
+            eye.transform.localPosition = new Vector3(i == 0 ? -0.031f : 0.031f, 0.598f, 0.078f);
             eye.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
             eyes[i] = eye.transform;
         }
