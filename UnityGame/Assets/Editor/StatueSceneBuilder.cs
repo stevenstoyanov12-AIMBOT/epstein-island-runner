@@ -23,17 +23,29 @@ public static class StatueSceneBuilder
         var grass = GetMaterial("Grass", new Color(0.32f, 0.5f, 0.25f), 0.1f, 0f);
         var path = GetMaterial("Path", new Color(0.62f, 0.56f, 0.47f), 0.15f, 0f);
 
-        // Lighting
-        var sun = new GameObject("Sun").AddComponent<Light>();
+        // Night: the star-filled sky with the nebula, cool moonlight from where the moon hangs in that sky,
+        // and two warm lamps so the bust and the tree still read in the dark
+        RenderSettings.skybox = NightSkybox();
+        var sun = new GameObject("Moonlight").AddComponent<Light>();
         sun.type = LightType.Directional;
-        sun.intensity = 1.3f;
+        sun.intensity = 0.45f;
         sun.shadows = LightShadows.Soft;
-        sun.color = new Color(1f, 0.95f, 0.86f);
-        sun.transform.rotation = Quaternion.Euler(45f, -35f, 0f);
+        sun.color = new Color(0.6f, 0.7f, 1f);
+        sun.transform.rotation = Quaternion.Euler(32f, 200f, 0f);
         RenderSettings.ambientMode = AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = new Color(0.55f, 0.65f, 0.8f);
-        RenderSettings.ambientEquatorColor = new Color(0.45f, 0.45f, 0.42f);
-        RenderSettings.ambientGroundColor = new Color(0.2f, 0.22f, 0.18f);
+        RenderSettings.ambientSkyColor = new Color(0.07f, 0.09f, 0.17f);
+        RenderSettings.ambientEquatorColor = new Color(0.05f, 0.055f, 0.09f);
+        RenderSettings.ambientGroundColor = new Color(0.02f, 0.02f, 0.03f);
+        foreach (var (pos, range) in new[] { (new Vector3(-1.6f, 2.6f, -2.8f), 7f), (new Vector3(2.2f, 3.2f, 1.2f), 9f) })
+        {
+            var lamp = new GameObject("WarmLamp").AddComponent<Light>();
+            lamp.type = LightType.Point;
+            lamp.transform.position = pos;
+            lamp.range = range;
+            lamp.intensity = 4f;
+            lamp.color = new Color(1f, 0.78f, 0.5f);
+            lamp.shadows = LightShadows.Soft;
+        }
 
         // Ground and plaza
         var env = new GameObject("Environment").transform;
