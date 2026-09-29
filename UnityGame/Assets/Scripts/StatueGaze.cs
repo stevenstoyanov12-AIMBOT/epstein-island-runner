@@ -84,11 +84,15 @@ public class StatueGaze : MonoBehaviour
         {
             Quaternion look;
             if (target != null && state != State.Cooldown)
-                look = Quaternion.LookRotation(eyes[i].parent.InverseTransformDirection(target.AimPoint - eyes[i].position));
+            {
+                // turn toward the target, but only as far as the sockets allow (the back of the eye stays hidden)
+                var dir = eyes[i].parent.InverseTransformDirection(target.AimPoint - eyes[i].position);
+                look = Quaternion.RotateTowards(Quaternion.identity, Quaternion.LookRotation(dir), 18f);
+            }
             else
             {
                 float a = Time.time * 1.3f + i * 0.5f;
-                look = Quaternion.Euler(Mathf.Sin(a) * 40f, Mathf.Cos(a) * 40f, 0f);
+                look = Quaternion.Euler(Mathf.Sin(a) * 14f, Mathf.Cos(a) * 14f, 0f);
             }
             eyes[i].localRotation = Quaternion.Slerp(eyes[i].localRotation, look * eyeRest[i], Time.deltaTime * 12f);
         }

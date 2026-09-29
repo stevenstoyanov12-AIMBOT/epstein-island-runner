@@ -24,25 +24,25 @@ def eye_texture(path, w=1024, h=512):
     rng = np.random.default_rng(3)
     col = np.zeros((h, w, 3))
     # sclera: dark crimson with veins creeping toward the iris
-    col[:] = [0.35, 0.05, 0.05]
+    col[:] = [0.03, 0.0, 0.0]   # hidden inside the head; near-black so any sliver reads as socket shadow
     veins = np.zeros((h, w))
     for _ in range(40):
         a0, ph = rng.uniform(0, 1), rng.uniform(0, 6.28)
         wig = a0 + 0.006 * np.sin(theta * rng.uniform(10, 25) + ph) + 0.003 * np.sin(theta * 50 + ph)
         d = np.minimum(np.abs(U - wig), 1 - np.abs(U - wig))
         veins = np.maximum(veins, np.exp(-(d / 0.0015) ** 2) * rng.uniform(0.4, 1) * np.clip((theta - 0.45) / 0.8, 0, 1) * np.clip((2.4 - theta) / 0.8, 0, 1))
-    col = col * (1 - veins[..., None]) + np.array([0.75, 0.05, 0.03]) * veins[..., None]
+    col = col * (1 - veins[..., None]) + np.array([0.2, 0.01, 0.0]) * veins[..., None]
     # iris: glowing red with radial fibres, hot toward the pupil
-    R = 0.42
+    R = 1.15                    # the iris covers the whole cap that shows out of the socket
     iris = theta < R
     fib = 0.75 + 0.25 * np.sin(U * 2 * np.pi * 70 + 3 * np.sin(U * 2 * np.pi * 9)) * np.sin(theta * 30)
     t = np.clip(theta / R, 0, 1)
     irisc = (np.array([1.0, 0.55, 0.2]) * (1 - t)[..., None] + np.array([0.95, 0.05, 0.02]) * t[..., None]) * fib[..., None]
     col[iris] = irisc[iris]
-    ring = np.abs(theta - R) < 0.025
+    ring = np.abs(theta - R) < 0.06
     col[ring] = [0.08, 0.0, 0.0]                                   # limbal ring
-    col[theta < 0.12] = [0.01, 0.0, 0.0]                           # pupil
-    col[(theta >= 0.12) & (theta < 0.14)] = [1.0, 0.8, 0.45]       # hot rim round the pupil
+    col[theta < 0.2] = [0.01, 0.0, 0.0]                            # pupil
+    col[(theta >= 0.2) & (theta < 0.235)] = [1.0, 0.8, 0.45]       # hot rim round the pupil
     Image.fromarray((np.clip(col, 0, 1) * 255).astype(np.uint8)).save(path)
 
 

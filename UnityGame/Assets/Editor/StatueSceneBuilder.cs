@@ -563,8 +563,9 @@ public static class StatueSceneBuilder
             if (eye == null) return;
             // measured from the bust mesh: the socket hollows beside the nose bridge. The eyeball is scaled
             // down and sunk so only its front few millimetres show between the lids.
-            eye.transform.localPosition = new Vector3(i == 0 ? -0.034f : 0.034f, 0.595f, 0.0755f);
-            eye.transform.localScale = Vector3.one * 0.65f;
+            // fit checked with tools/blender_eyes/fit_test.py: only the glowing iris shows between the lids
+            eye.transform.localPosition = new Vector3(i == 0 ? -0.037f : 0.037f, 0.595f, 0.067f);
+            eye.transform.localScale = Vector3.one * 1.05f;
             eye.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
             eyes[i] = eye.transform;
         }
