@@ -621,6 +621,7 @@ public static class StatueSceneBuilder
         gaze.head = head;
         gaze.eyes = eyes;
         gaze.pupils = pupils;
+        gaze.chargeFlipbook = LoadTexture("Assets/Models/Statues/Textures/eye_charge.png", false);
     }
 
     // Radius of the eye's surface at angle theta from its front: a sphere whose front bulges like a cornea

@@ -14,6 +14,7 @@ public class StatueGaze : MonoBehaviour
     public Transform head;                    // the part that turns (the bust)
     public Transform[] eyes;                  // eye centres; beams come from here
     public Transform[] pupils;                // pivots at each eye's centre carrying the iris and pupil
+    public Texture2D chargeFlipbook;          // Blender-rendered charge-up animation (4x4 frames)
     public float turnSpeed = 140f;            // degrees per second when locking on
     public float sweepSpeed = 25f;
     public float viewAngle = 40f;             // half-angle of the gaze cone
@@ -47,7 +48,7 @@ public class StatueGaze : MonoBehaviour
         {
             var iris = eyes[i].Find("PupilPivot/Iris");   // the glowing part whose tint shows the statue's mood
             irisRenderers[i] = iris != null ? iris.GetComponent<Renderer>() : eyes[i].GetComponentInChildren<Renderer>();
-            lasers[i] = new LaserEye(eyes[i]);
+            lasers[i] = new LaserEye(eyes[i], chargeFlipbook);
         }
         // soft cone of light showing where the statue is looking
         gazeLight = new GameObject("GazeLight").AddComponent<Light>();

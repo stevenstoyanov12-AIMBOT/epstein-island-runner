@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// All the visuals for one of the statue's laser eyes: sparks spiralling in and a thin aim line while it charges, the beam itself - a
+// All the visuals for one of the statue's laser eyes: a Blender-rendered charge-up flipbook and a thin aim line while it charges, the beam itself - a
 // museum-security-style laser: a dead-straight white-hot core inside a red glow and a wide faint red haze, all
-// drawn as additive HDR light so the scene's bloom makes it shine - and what happens where it lands (sparks,
-// smoke, flickering light and scorch marks that slowly fade). StatueGaze drives it; it holds no game logic.
+// drawn as additive HDR light so the scene's bloom makes it shine. StatueGaze drives it; it holds no game logic.
 public class LaserEye
 {
     readonly Transform eye;
@@ -14,11 +13,9 @@ public class LaserEye
     readonly Transform flare, impactFlare;
     readonly Material flareMat, impactFlareMat;
     float beamLength, lastScorch;
-    // charge motes: tiny sparks that spiral into the eye while it charges (animated here, so they can't stray)
-    const int MoteCount = 28;
-    readonly Transform[] motes = new Transform[MoteCount];
-    readonly float[] motePhase = new float[MoteCount], moteSpeed = new float[MoteCount];
-    readonly Quaternion[] moteTilt = new Quaternion[MoteCount];
+    // charge-up: a 4x4 flipbook rendered in Blender (tools/blender_eyes/charge_flipbook.py), played over the eye
+    readonly Transform chargeQuad;
+    readonly Material chargeMat;
     readonly float noiseSeed = Random.Range(0f, 100f);   // each eye flickers differently
 
     static Texture2D softDot, beamTex, scorchTex;
@@ -27,7 +24,7 @@ public class LaserEye
     const int MaxScorches = 60;
     const float ScorchLife = 10f;
 
-    public LaserEye(Transform eye)
+    public LaserEye(Transform eye, Texture2D chargeFlipbook)
     {
         this.eye = eye;
         MakeTextures();
@@ -41,23 +38,13 @@ public class LaserEye
         aim = Line(root, "AimLine", Additive(softDot, new Color(2f, 0.1f, 0.05f, 1f)), new Color(1f, 1f, 1f, 0.5f));
         aim.positionCount = 2;
 
-        var moteMat = Additive(softDot, new Color(5f, 0.6f, 0.25f, 1f));
-        for (int i = 0; i < MoteCount; i++)
-        {
-            var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            q.name = "ChargeMote";
-            Object.DestroyImmediate(q.GetComponent<Collider>());
-            q.transform.SetParent(root, false);
-            var r = q.GetComponent<MeshRenderer>();
-            r.sharedMaterial = moteMat;
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            q.AddComponent<Billboard>();
-            q.SetActive(false);
-            motes[i] = q.transform;
-            motePhase[i] = Random.value;
-            moteSpeed[i] = Random.Range(1.6f, 2.6f);          // spirals per second
-            moteTilt[i] = Quaternion.Euler(Random.Range(-35f, 35f), Random.Range(-35f, 35f), Random.Range(0f, 360f));
-        }
+        chargeQuad = Quad(root, "ChargeFlipbook", out chargeMat);
+        chargeMat = Additive(chargeFlipbook != null ? chargeFlipbook : softDot, new Color(3f, 3f, 3f, 1f));
+        chargeMat.mainTextureScale = new Vector2(0.25f, 0.25f);
+        chargeQuad.GetComponent<MeshRenderer>().sharedMaterial = chargeMat;
+        chargeQuad.localPosition = new Vector3(0f, 0f, 0.025f);   // just in front of the eye
+        chargeQuad.localScale = Vector3.one * 0.08f;
+        chargeQuad.gameObject.SetActive(false);
 
         flare = Quad(root, "EyeFlare", out flareMat);
         flare.localPosition = new Vector3(0f, 0f, 0.03f);          // just in front of the face, not inside it
@@ -136,7 +123,7 @@ public class LaserEye
     {
         Idle(0f);
         core.enabled = glow.enabled = haze.enabled = aim.enabled = false;
-        foreach (var mt in motes) mt.gameObject.SetActive(false);
+        chargeQuad.gameObject.SetActive(false);
         SetEmission(sparks, 0f);
         SetEmission(smoke, 0f);
         impactLight.intensity = 0f;
@@ -147,22 +134,10 @@ public class LaserEye
     // Charging, k from 0 to 1: only a thin aim line, which steadies and brightens as the charge completes.
     public void Charge(float k, Vector3 target)
     {
-        // motes spiral in toward the eye from a disc in front of the face; more of them, faster, as it charges
-        int shown = Mathf.RoundToInt(Mathf.Lerp(6, MoteCount, k));
-        var centre = eye.position + eye.forward * 0.015f;
-        for (int i = 0; i < MoteCount; i++)
-        {
-            bool on = i < shown;
-            motes[i].gameObject.SetActive(on);
-            if (!on) continue;
-            float t = Mathf.Repeat(Time.time * moteSpeed[i] * (0.8f + 0.8f * k) + motePhase[i], 1f);  // 0 far .. 1 in the eye
-            float radius = 0.08f * Mathf.Pow(1f - t, 1.6f);   // a tight swirl hugging the eye
-            float angle = (motePhase[i] + t * 1.75f) * Mathf.PI * 2f;
-            var local = moteTilt[i] * new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * radius
-                        + Vector3.forward * radius * 0.6f;   // they come in from in front, not from inside the head
-            motes[i].position = centre + eye.rotation * local;
-            motes[i].localScale = Vector3.one * Mathf.Lerp(0.004f, 0.012f, t) * (0.7f + 0.6f * k);
-        }
+        // play the Blender charge animation over the eye: frame 0 at the start, frame 15 just before firing
+        int frame = Mathf.Min(15, Mathf.FloorToInt(k * 16f));
+        chargeMat.mainTextureOffset = new Vector2((frame % 4) * 0.25f, 0.75f - (frame / 4) * 0.25f);
+        chargeQuad.gameObject.SetActive(true);
 
         // aim line: a faint, jittering thread that narrows and steadies as the charge completes
         aim.enabled = Random.value > 0.25f * (1f - k);      // flickers early on
@@ -179,7 +154,7 @@ public class LaserEye
     public void Beam(Vector3 hit, Vector3 normal, bool hitSomething, float age, float fade)
     {
         aim.enabled = false;
-        foreach (var mt in motes) mt.gameObject.SetActive(false);
+        chargeQuad.gameObject.SetActive(false);
         var from = eye.position;
         var full = hit - from;
         // the beam lunges out in a tenth of a second instead of appearing all at once
@@ -212,11 +187,7 @@ public class LaserEye
         var impact = impactFlare.parent;
         impact.position = hit + normal * 0.02f;
         impact.rotation = Quaternion.LookRotation(normal);
-        if (Time.time - lastScorch > 0.06f)
-        {
-            lastScorch = Time.time;
-            Scorch(hit, normal);
-        }
+        // no burn marks: the lasers leave nothing behind
     }
 
     // Burn marks left where the beam dragged across things. They glow orange-hot at first, then cool and fade.
