@@ -323,26 +323,28 @@ public static class StatueSceneBuilder
                     z += w;
                 }
             }
-            // one lamp post per segment, alternating sides
-            int ls = i % 2 == 0 ? 1 : -1;
-            var lampRoot = new GameObject("LampPost").transform;
-            lampRoot.SetParent(seg, false);
-            lampRoot.localPosition = new Vector3(ls * 4.4f, road, segLen / 2f);
-            NoCollider(Part(PrimitiveType.Cylinder, "Pole", lampRoot, new Vector3(0f, 2.6f, 0f), new Vector3(0.14f, 2.6f, 0.14f), poleMat));
-            NoCollider(Part(PrimitiveType.Cube, "Arm", lampRoot, new Vector3(-ls * 0.6f, 5.15f, 0f), new Vector3(1.3f, 0.08f, 0.08f), poleMat));
-            NoCollider(Part(PrimitiveType.Sphere, "Lamp", lampRoot, new Vector3(-ls * 1.15f, 5.02f, 0f), new Vector3(0.35f, 0.18f, 0.35f), lampGlow));
-            Halo(lampRoot, new Vector3(-ls * 1.15f, 4.95f, 0f), 2.2f, new Color(1f, 0.75f, 0.45f, 0.8f));
-            var light = new GameObject("LampLight").AddComponent<Light>();
-            light.transform.SetParent(lampRoot, false);
-            light.transform.localPosition = new Vector3(-ls * 1.15f, 4.9f, 0f);
-            light.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            light.type = LightType.Spot;
-            light.spotAngle = 110f;
-            light.range = 12f;
-            light.intensity = 25f;
-            light.color = new Color(1f, 0.72f, 0.42f);
-            light.shadows = LightShadows.None;
-            lamps.Add(light);
+            // a matching pair of lamp posts facing each other across the road, one pair per segment
+            foreach (int ls in new[] { -1, 1 })
+            {
+                var lampRoot = new GameObject("LampPost").transform;
+                lampRoot.SetParent(seg, false);
+                lampRoot.localPosition = new Vector3(ls * 4.4f, road, segLen / 2f);
+                NoCollider(Part(PrimitiveType.Cylinder, "Pole", lampRoot, new Vector3(0f, 2.6f, 0f), new Vector3(0.14f, 2.6f, 0.14f), poleMat));
+                NoCollider(Part(PrimitiveType.Cube, "Arm", lampRoot, new Vector3(-ls * 0.6f, 5.15f, 0f), new Vector3(1.3f, 0.08f, 0.08f), poleMat));
+                NoCollider(Part(PrimitiveType.Sphere, "Lamp", lampRoot, new Vector3(-ls * 1.15f, 5.02f, 0f), new Vector3(0.35f, 0.18f, 0.35f), lampGlow));
+                Halo(lampRoot, new Vector3(-ls * 1.15f, 4.95f, 0f), 2.2f, new Color(1f, 0.75f, 0.45f, 0.8f));
+                var light = new GameObject("LampLight").AddComponent<Light>();
+                light.transform.SetParent(lampRoot, false);
+                light.transform.localPosition = new Vector3(-ls * 1.15f, 4.9f, 0f);
+                light.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                light.type = LightType.Spot;
+                light.spotAngle = 110f;
+                light.range = 12f;
+                light.intensity = 25f;
+                light.color = new Color(1f, 0.72f, 0.42f);
+                light.shadows = LightShadows.None;
+                lamps.Add(light);
+            }
         }
         var street = root.gameObject.AddComponent<NightStreet>();
         street.segments = segs;
@@ -357,7 +359,8 @@ public static class StatueSceneBuilder
         foreach (int side in new[] { -1, 1 })
         {
             NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.35f, 0.22f, 0.1f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
-            Halo(car, new Vector3(side * 0.75f, 0.65f, -0.3f), 2.4f, new Color(0.9f, 0.95f, 1f, 0.9f));
+            Halo(car, new Vector3(side * 0.75f, 0.65f, -0.3f), 3.4f, new Color(0.95f, 0.97f, 1f, 1f));
+            Beam(car, new Vector3(side * 0.75f, 0.65f, -0.2f), 16f);
         }
         var beams = new GameObject("Beams").AddComponent<Light>();
         beams.transform.SetParent(car, false);
@@ -366,7 +369,7 @@ public static class StatueSceneBuilder
         beams.type = LightType.Spot;
         beams.spotAngle = 45f;
         beams.range = 40f;                                                 // floods the road up to the van
-        beams.intensity = 30f;
+        beams.intensity = 70f;
         beams.color = new Color(0.9f, 0.94f, 1f);
         beams.shadows = LightShadows.Soft;                                 // so it only gets in through the windows
         cutscene.distantCar = car;
@@ -420,6 +423,58 @@ public static class StatueSceneBuilder
         r.shadowCastingMode = ShadowCastingMode.Off;
         r.receiveShadows = false;
         q.AddComponent<Billboard>();
+    }
+
+    // A visible headlight beam: an open cone of faint light through the night haze, pointing down the
+    // road toward the van (-Z), bright at the lamp and fading to nothing at its far end.
+    static void Beam(Transform parent, Vector3 localPos, float length)
+    {
+        const int sides = 16;
+        var verts = new List<Vector3>();
+        var colors = new List<Color>();
+        var tris = new List<int>();
+        for (int ring = 0; ring < 2; ring++)
+        {
+            float r = ring == 0 ? 0.12f : 2.2f;
+            float z = ring == 0 ? 0f : -length;
+            var c = new Color(0.95f, 0.97f, 1f, ring == 0 ? 0.22f : 0f);
+            for (int i = 0; i < sides; i++)
+            {
+                float a = i * Mathf.PI * 2f / sides;
+                verts.Add(new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r * 0.55f - (ring == 0 ? 0f : 0.6f), z));
+                colors.Add(c);
+            }
+        }
+        for (int i = 0; i < sides; i++)
+        {
+            int n = (i + 1) % sides;
+            tris.AddRange(new[] { i, sides + i, sides + n, i, sides + n, n });
+        }
+        var mesh = new Mesh { name = "HeadlightBeam" };
+        mesh.SetVertices(verts);
+        mesh.SetColors(colors);
+        mesh.SetTriangles(tris, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        string meshPath = $"{MaterialFolder}/HeadlightBeam.asset";
+        AssetDatabase.DeleteAsset(meshPath);
+        AssetDatabase.CreateAsset(mesh, meshPath);
+
+        string matPath = $"{MaterialFolder}/HeadlightBeam.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+        if (m == null)
+        {
+            m = new Material(Shader.Find("Sprites/Default"));  // vertex-coloured, transparent, two-sided
+            AssetDatabase.CreateAsset(m, matPath);
+        }
+        var go = new GameObject("Beam");
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = localPos;
+        go.AddComponent<MeshFilter>().sharedMesh = mesh;
+        var r2 = go.AddComponent<MeshRenderer>();
+        r2.sharedMaterial = m;
+        r2.shadowCastingMode = ShadowCastingMode.Off;
+        r2.receiveShadows = false;
     }
 
     static GameObject NoCollider(GameObject go)
