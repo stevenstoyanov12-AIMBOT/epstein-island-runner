@@ -1,19 +1,19 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// 13-second night cutscene in the back of a van, seen from the front corner of the cargo area: the player's
-// crate stacked on two others, the rest of the cargo, and through the rear-door windows the street, its lamps
+// 13-second night cutscene from inside a crate stacked in the front corner of a van's cargo area, looking
+// out through a missing slat at the other crates and, through the rear-door windows, the street, its lamps
 // and a car's headlights far behind. A failing ceiling lamp flickers over the cargo. Then headlights flare,
-// tyres screech and the van is hit side-on: every crate is thrown about, the light dies, fade out.
+// tyres screech and the van is hit side-on: the cargo is thrown about, the light dies, fade out.
 // Plays on start; press C to watch it again. Sound (engine, bumps, screech, crash) is synthesised at runtime.
 public class CrateCutscene : MonoBehaviour
 {
     public Camera cutsceneCamera;
-    public Transform eye;                 // camera mount in the van; shake and glances are applied on top
+    public Transform eye;                 // eye inside the player's crate; shake and glances are applied on top
     public Transform van;                 // van root; lights are placed relative to it
     public Light moon;                    // night light for the street, enabled only during the cutscene
     public NightStreet street;
-    public Transform distantCar;          // headlights far behind the van, keeping pace in the dark
+    public Transform distantCar;          // a pair of headlights far behind the van, keeping pace in the dark
     public Rigidbody[] cargo;             // loose crates that tumble in the crash
     public bool playOnStart = true;
     public float duration = 13f;
@@ -55,7 +55,7 @@ public class CrateCutscene : MonoBehaviour
         ceiling.range = 5f;
         ceiling.shadows = LightShadows.Soft;
         fill = MakeLight("CrateFill", LightType.Point, new Color(0.5f, 0.55f, 0.7f), 0f);
-        fill.transform.position = eye.position + eye.forward * 0.6f;
+        fill.transform.position = eye.position + eye.forward * 1.2f;
         fill.range = 3f;
         fill.shadows = LightShadows.None;
 

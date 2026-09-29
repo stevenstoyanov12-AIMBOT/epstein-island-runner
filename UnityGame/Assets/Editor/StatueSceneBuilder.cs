@@ -226,20 +226,27 @@ public static class StatueSceneBuilder
             rb.isKinematic = true;   // held in place until the crash
             cargo.Add(rb);
         }
-        var stash = new Vector3(0.55f, floorTop, -2.3f);
-        Loose(Crate("Crate_Low_1", root.transform, stash, 0f, crates, "Crate_Low", null), 25f);
-        Loose(Crate("Crate_Low_2", root.transform, stash + Vector3.up * lowHeight, 0f, crates, "Crate_Low", null), 25f);
-        Loose(Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates), 80f);
+        Loose(Crate("Crate_Low_1", root.transform, new Vector3(0.55f, floorTop, -2.3f), 0f, crates, "Crate_Low", null), 25f);
+        Loose(Crate("Crate_Low_2", root.transform, new Vector3(0.55f, floorTop + lowHeight, -2.3f), 0f, crates, "Crate_Low", null), 25f);
+        Loose(Crate("Crate_5", root.transform, new Vector3(0.55f, floorTop + 2f * lowHeight, -2.3f), 0f, crates), 80f);
         Loose(Crate("Crate_2", root.transform, new Vector3(0.55f, floorTop, -0.7f), 0f, crates), 60f);
-        Loose(Crate("Crate_3", root.transform, new Vector3(-0.6f, floorTop, -0.7f), 0f, crates), 60f);
-        Loose(Crate("Crate_4", root.transform, new Vector3(-0.6f, floorTop, -2.3f), 0f, crates), 60f);
+        Loose(Crate("Crate_3", root.transform, new Vector3(-0.6f, floorTop, -0.65f), 0f, crates), 60f);
+        Loose(Crate("Crate_Low_3", root.transform, new Vector3(-0.6f, floorTop, -1.8f), 0f, crates, "Crate_Low", null), 25f);
 
-        // camera mount high in the front corner of the cargo area: the player's crate and the rest of
-        // the cargo in view, with the rear-door windows and the street beyond
-        var eye = new GameObject("CameraMount").transform;
-        eye.SetParent(root.transform, false);
-        eye.localPosition = new Vector3(-0.85f, 1.9f, -3.45f);
-        eye.LookAt(root.transform.TransformPoint(new Vector3(0.45f, 1.2f, -1.1f)));
+        // the player hides in the front-left corner, in the crate with a missing slat, stacked on two flat
+        // crates; from there the rest of the cargo and the rear-door windows are in view
+        var stash = new Vector3(-0.6f, floorTop, -2.95f);
+        Crate("Crate_Low_P1", root.transform, stash, 0f, crates, "Crate_Low", null);
+        Crate("Crate_Low_P2", root.transform, stash + Vector3.up * lowHeight, 0f, crates, "Crate_Low", null);
+        var hero = Crate("Crate_Player", root.transform, stash + Vector3.up * 2f * lowHeight, 0f, crates,
+                         "Crate_Peek", "Crate_Stencil_Back");
+        if (hero == null) return;
+
+        // eye just behind the missing slat, looking down the van toward the cargo and the windows
+        var eye = new GameObject("Eye").transform;
+        eye.SetParent(hero.transform, false);
+        eye.localPosition = new Vector3(0f, 0.73f, 0.33f);
+        eye.LookAt(root.transform.TransformPoint(new Vector3(0.15f, 1.3f, 0f)));
 
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
@@ -333,13 +340,13 @@ public static class StatueSceneBuilder
         street.segmentLength = segLen;
         street.lampLights = lamps.ToArray();
 
-        // a car far behind with its headlights on
-        var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 10f);
-        var car = new GameObject("DistantCar").transform;
+        // just the headlights of a car far behind (no body: at night that's all you'd see)
+        var headGlow = Glow("HeadlightGlow", new Color(0.95f, 0.97f, 1f), 30f);
+        var car = new GameObject("DistantHeadlights").transform;
         car.SetParent(van, false);
-        car.localPosition = new Vector3(-1.2f, road, 42f);
+        car.localPosition = new Vector3(-0.9f, road, 26f);
         foreach (int side in new[] { -1, 1 })
-            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.7f, 0.65f, 0f), new Vector3(0.3f, 0.18f, 0.12f), headGlow));
+            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.45f, 0.3f, 0.2f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
         var beams = new GameObject("Beams").AddComponent<Light>();
         beams.transform.SetParent(car, false);
         beams.transform.localPosition = new Vector3(0f, 0.7f, -0.2f);
