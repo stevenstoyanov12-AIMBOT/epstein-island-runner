@@ -328,6 +328,21 @@ def main():
     keep = trunk_pts[:, 1] > 0.45
     branches[0] = (np.vstack([[[0, -0.03, 0], [0, 0.1, 0], [0, 0.28, 0]], trunk_pts[keep]]),
                    np.concatenate([[0.40, 0.33, 0.29], trunk_r[keep]]), 0)
+    # root the main limbs inside the top of the trunk, each on its own side and thicker there,
+    # so together they swallow the trunk's end instead of leaving a ledge around it
+    tpts, trad, _ = branches[0]
+    tip, tdir = tpts[-1], (tpts[-1] - tpts[-3]) / np.linalg.norm(tpts[-1] - tpts[-3])
+    top_r = trad[-1]
+    for i, (pts, radii, depth) in enumerate(branches):
+        if depth != 1 or np.linalg.norm(pts[0] - tip) > 1e-6:
+            continue
+        out = pts[1] - pts[0]
+        out = out - tdir * (out @ tdir)
+        out /= np.linalg.norm(out)
+        start = tip - tdir * 0.5 + out * top_r * 0.3
+        mid = tip - tdir * 0.12 + out * top_r * 0.45
+        branches[i] = (np.vstack([start, mid, pts[1:]]),
+                       np.concatenate([[top_r * 0.78, top_r * 0.74], radii[1:]]), depth)
     skel = roots(rng) + branches
     yz = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])  # (x, y, z)_yup -> (x, -z, y)_zup
     skel_z = [(pts @ yz.T, radii, depth) for pts, radii, depth in skel]
@@ -375,7 +390,7 @@ def main():
     g = ground()
     os.makedirs(args.preview, exist_ok=True)
     render(os.path.join(args.preview, "tree_full.png"), (0, -9.5, 2.6), (0, 0, 2.2), args.samples)
-    render(os.path.join(args.preview, "tree_trunk.png"), (0.6, -1.6, 1.2), (0, 0, 0.9), args.samples)
+    render(os.path.join(args.preview, "tree_trunk.png"), (0.9, -2.2, 1.9), (0, 0, 1.6), args.samples)
     render(os.path.join(args.preview, "tree_leaves.png"), (0.9, -2.2, 3.4), (0.4, 0, 3.3), args.samples)
     bpy.data.objects.remove(g)
 
