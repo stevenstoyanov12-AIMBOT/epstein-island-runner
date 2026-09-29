@@ -561,7 +561,10 @@ public static class StatueSceneBuilder
         {
             var eye = AddMesh(head, i == 0 ? "Eye_L" : "Eye_R", "Assets/Models/Statues/StatueEye.fbx", eyeMat);
             if (eye == null) return;
-            eye.transform.localPosition = new Vector3(i == 0 ? -0.031f : 0.031f, 0.598f, 0.078f);
+            // measured from the bust mesh: the socket hollows beside the nose bridge. The eyeball is scaled
+            // down and sunk so only its front few millimetres show between the lids.
+            eye.transform.localPosition = new Vector3(i == 0 ? -0.034f : 0.034f, 0.595f, 0.0755f);
+            eye.transform.localScale = Vector3.one * 0.65f;
             eye.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
             eyes[i] = eye.transform;
         }
