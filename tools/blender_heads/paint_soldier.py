@@ -32,6 +32,11 @@ bm = bmesh.new(); bm.from_mesh(me)
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z < 0.25], context="VERTS")
 bm.to_mesh(me); bm.free()
 
+# also export the cropped, unpainted head with exactly the same export settings (the grey original)
+if os.environ.get("GREY_OUT"):
+    bpy.ops.object.select_all(action="DESELECT"); obj.select_set(True)
+    bpy.ops.export_scene.fbx(filepath=os.environ["GREY_OUT"], use_selection=True, axis_forward="-Z", axis_up="Y",
+                             apply_scale_options="FBX_SCALE_UNITS")
 co = np.array([v.co[:] for v in me.vertices]); nrm = np.array([v.normal[:] for v in me.vertices])
 x, y, z = co[:, 0], co[:, 1], co[:, 2]; d = -y; ax = np.abs(x)
 col = np.tile(HAIR, (len(co), 1))                                        # default: hair (sides/back)
