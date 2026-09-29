@@ -3,9 +3,10 @@ using UnityEngine;
 
 // Leaves that break off the crown and drift slowly to the ground, swaying and tumbling,
 // then lie there for a while before shrinking away. Uses a small pool, no physics.
+// Spawn points are baked in the editor because imported meshes are not readable at runtime.
 public class FallingLeaves : MonoBehaviour
 {
-    public Mesh crown;                 // leaf mesh of the tree; leaves detach from its vertices
+    public Vector3[] spawnPoints;      // points in the crown leaves detach from (filled in by the scene builder)
     public Material leafMaterial;      // the same atlas material the tree leaves use
     public int maxLeaves = 60;
     public float leavesPerSecond = 1.5f;
@@ -22,22 +23,17 @@ public class FallingLeaves : MonoBehaviour
     }
 
     readonly List<Leaf> pool = new List<Leaf>();
-    Vector3[] spawnPoints;
     Mesh[] cellMeshes;
     float spawnTimer;
 
     void Start()
     {
-        if (crown == null || leafMaterial == null)
+        if (spawnPoints == null || spawnPoints.Length == 0 || leafMaterial == null)
         {
+            Debug.LogWarning("FallingLeaves: no spawn points or leaf material; rebuild the scene with Tools > Build Statue Scene.", this);
             enabled = false;
             return;
         }
-        // every 9th vertex is enough spawn points and spreads them over the whole crown
-        var verts = crown.vertices;
-        spawnPoints = new Vector3[verts.Length / 9];
-        for (int i = 0; i < spawnPoints.Length; i++)
-            spawnPoints[i] = verts[i * 9];
 
         // one quad per leaf colour in the 2x2 atlas
         cellMeshes = new Mesh[4];

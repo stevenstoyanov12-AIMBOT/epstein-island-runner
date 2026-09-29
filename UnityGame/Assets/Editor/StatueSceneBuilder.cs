@@ -94,7 +94,11 @@ public static class StatueSceneBuilder
         if (crown != null)
         {
             var falling = root.AddComponent<FallingLeaves>();
-            falling.crown = crown.GetComponent<MeshFilter>().sharedMesh;
+            // the editor can read imported meshes; every 9th vertex spreads points over the whole crown
+            var verts = crown.GetComponent<MeshFilter>().sharedMesh.vertices;
+            falling.spawnPoints = new Vector3[verts.Length / 9];
+            for (int i = 0; i < falling.spawnPoints.Length; i++)
+                falling.spawnPoints[i] = verts[i * 9];
             falling.leafMaterial = leaves;
         }
         AddMesh(root.transform, "FallenLeaves", $"{TreeFolder}/Tree_FallenLeaves.fbx", leaves);
