@@ -78,6 +78,9 @@ public static class StatueSceneBuilder
         // you can be targeted too, but only if you switch on Test Shooting on this component (then left click
         // makes noise); by default the statue hunts the practice dummies so you can watch
         cam.AddComponent<GazeTarget>().testShooting = false;
+        // the soldier head, grey original and painted, side by side on pedestals to the left of the bust
+        SoldierHead("Assets/Models/Characters/SoldierHead_Grey.fbx", new Vector3(-2.6f, 0f, -1.2f), false, stone);
+        SoldierHead("Assets/Models/Characters/SoldierHead.fbx", new Vector3(-1.6f, 0f, -1.2f), true, stone);
         // two Mixamo characters roam the garden, walking, running and shooting; the statue hunts them
         foreach (var pos in new[] { new Vector3(-5f, 0.1f, 4f), new Vector3(5f, 0.1f, 5f) })
             Shooter(pos);
@@ -415,6 +418,59 @@ public static class StatueSceneBuilder
         cutscene.street = street;
         cutscene.moon = moon;
         cutscene.nightSky = NightSkybox();
+    }
+
+    // A head model on a 1 m pedestal, facing the start camera. Painted heads carry vertex colours (shown with a
+    // URP particle shader, which multiplies by them) and two lens quads textured from the reference drawing.
+    static void SoldierHead(string path, Vector3 position, bool painted, Material stone)
+    {
+        var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        if (model == null)
+        {
+            Debug.LogError($"Missing head {path}");
+            return;
+        }
+        var root = new GameObject(painted ? "SoldierHead_Painted" : "SoldierHead_Grey").transform;
+        root.position = position;
+        Part(PrimitiveType.Cube, "Pedestal", root, new Vector3(0f, 0.6f, 0f), new Vector3(0.7f, 1f, 0.6f), stone);
+        var head = (GameObject)PrefabUtility.InstantiatePrefab(model);
+        head.transform.SetParent(root, false);
+        head.transform.localPosition = new Vector3(0f, 1.1f - 0.25f, 0f);   // the chin cut (0.25) sits on the pedestal
+        head.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);      // face the camera
+        foreach (var cam in head.GetComponentsInChildren<Camera>()) Object.DestroyImmediate(cam.gameObject);
+        foreach (var l in head.GetComponentsInChildren<Light>()) Object.DestroyImmediate(l.gameObject);
+        foreach (var r in head.GetComponentsInChildren<MeshRenderer>())
+        {
+            if (r.name == "Cube") { Object.DestroyImmediate(r.gameObject); continue; }   // Blender's default cube
+            if (!painted) { r.sharedMaterial = GetMaterial("HeadGrey", new Color(0.6f, 0.6f, 0.6f), 0.2f, 0f); continue; }
+            if (r.name.StartsWith("Lens"))
+            {
+                var tex = LoadTexture($"Assets/Models/Characters/soldier_{r.name.ToLower()}.png", false);
+                var m = Glow($"Soldier{r.name}", Color.white, tex);
+                m.SetFloat("_Surface", 1f);   // transparent, for the rounded lens corners
+                m.SetFloat("_Blend", 0f);
+                m.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+                m.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+                m.SetFloat("_ZWrite", 0f);
+                m.SetFloat("_Cull", 0f);
+                m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                m.renderQueue = (int)RenderQueue.Transparent;
+                r.sharedMaterial = m;
+            }
+            else
+            {
+                string mp = $"{MaterialFolder}/SoldierVertexColour.mat";
+                var vc = AssetDatabase.LoadAssetAtPath<Material>(mp);
+                if (vc == null)
+                {
+                    vc = new Material(Shader.Find("Universal Render Pipeline/Particles/Simple Lit"));
+                    AssetDatabase.CreateAsset(vc, mp);
+                }
+                vc.SetColor("_BaseColor", Color.white);
+                EditorUtility.SetDirty(vc);
+                r.sharedMaterial = vc;
+            }
+        }
     }
 
     // A roaming, shooting Mixamo character (tools/blender_character/mixamo_combine.py).
