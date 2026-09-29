@@ -144,8 +144,8 @@ def build_stencil(name="Crate_Stencil", sides=(1, -1)):
     uv = bm.loops.layers.uv.new("UVMap")
     s = CRATE
     y = s / 2 - 0.028 + 0.007    # just outside the slats (inside the frame), clear of their hand-built wobble
-    w, hgt = 1.0, 0.5   # big enough to read across the van
-    zc = s / 2 + 0.06 + 0.1
+    w, hgt = 1.0, 0.5   # big enough to read across the van, high enough to be seen over the cargo
+    zc = s / 2 + 0.06 + 0.2
     for side in sides:
         pts = [(-w / 2, -hgt / 2), (w / 2, -hgt / 2), (w / 2, hgt / 2), (-w / 2, hgt / 2)]
         # seen from outside, 'right' is -X on the +Y side and +X on the -Y side
@@ -313,6 +313,7 @@ def main():
     textures.metal(tex)
     textures.facade(tex)
     textures.asphalt(tex)
+    textures.glow(tex)
 
     wood = material("CrateWood", tex, "wood_albedo.png", "wood_normal.png")
     floor = material("FloorWood", tex, "wood_albedo.png", "wood_normal.png", tint=(0.45, 0.4, 0.36, 1))

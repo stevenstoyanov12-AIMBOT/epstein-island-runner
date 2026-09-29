@@ -364,7 +364,7 @@ public class CrateCutscene : MonoBehaviour
     {
         if (Playing)
         {
-            float bar = Screen.height * 0.11f;
+            float bar = Screen.height * 0.07f;
             GUI.color = Color.black;
             GUI.DrawTexture(new Rect(0, 0, Screen.width, bar), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0, Screen.height - bar, Screen.width, bar), Texture2D.whiteTexture);

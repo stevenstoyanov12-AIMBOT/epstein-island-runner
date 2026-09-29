@@ -82,10 +82,10 @@ def stencil(out, w=2048, h=1024):
             cx0, _, cx1, _ = d.textbbox((0, 0), ch, font=font)
             x += cx1 - cx0 + spacing
 
-    centred("BATON", big, 90, spacing=24)
-    centred("CORPORATION", mid, 470, spacing=10)
-    centred("HANDLE WITH CARE  -  THIS SIDE UP", small, 760, spacing=6)
-    d.rectangle([220, 700, w - 220, 718], fill=255)     # stencilled rule
+    centred("BATON", big, 40, spacing=24)
+    centred("CORPORATION", mid, 400, spacing=10)
+    d.rectangle([220, 612, w - 220, 630], fill=255)     # stencilled rule
+    centred("HANDLE WITH CARE  -  THIS SIDE UP", small, 660, spacing=6)
     # stencil bridges: thin vertical gaps through the letters, like a real cut stencil
     m = np.array(mask).astype(float) / 255
     bridges = np.zeros_like(m)
@@ -163,6 +163,17 @@ def asphalt(out, w=512, h=1024):
     Image.fromarray((np.clip(col, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out, "asphalt.png"))
 
 
+def glow(out, size=256):
+    """Soft round halo (white, alpha falling off from the centre) for headlights and lamp heads."""
+    y, x = np.mgrid[0:size, 0:size]
+    r = np.sqrt((x - size / 2 + 0.5) ** 2 + (y - size / 2 + 0.5) ** 2) / (size / 2)
+    a = np.clip(1 - r, 0, 1) ** 2.2
+    rgba = np.zeros((size, size, 4), np.uint8)
+    rgba[..., :3] = 255
+    rgba[..., 3] = (a * 255).astype(np.uint8)
+    Image.fromarray(rgba, "RGBA").save(os.path.join(out, "glow.png"))
+
+
 if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "textures"
     os.makedirs(out, exist_ok=True)
@@ -171,3 +182,4 @@ if __name__ == "__main__":
     metal(out)
     facade(out)
     asphalt(out)
+    glow(out)

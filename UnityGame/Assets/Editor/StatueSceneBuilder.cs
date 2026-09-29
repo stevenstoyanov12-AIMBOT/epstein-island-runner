@@ -247,7 +247,7 @@ public static class StatueSceneBuilder
         eye.SetParent(hero.transform, false);
         eye.localPosition = new Vector3(0f, 0.73f, 0.33f);
         // aimed a little low so the BATON CORPORATION crate by the doors is in frame under the windows
-        eye.LookAt(root.transform.TransformPoint(new Vector3(0.1f, 0.95f, 0f)));
+        eye.LookAt(root.transform.TransformPoint(new Vector3(0.1f, 0.85f, 0f)));
 
         var camGo = new GameObject("CutsceneCamera");
         camGo.transform.SetParent(root.transform, false);
@@ -331,14 +331,15 @@ public static class StatueSceneBuilder
             NoCollider(Part(PrimitiveType.Cylinder, "Pole", lampRoot, new Vector3(0f, 2.6f, 0f), new Vector3(0.14f, 2.6f, 0.14f), poleMat));
             NoCollider(Part(PrimitiveType.Cube, "Arm", lampRoot, new Vector3(-ls * 0.6f, 5.15f, 0f), new Vector3(1.3f, 0.08f, 0.08f), poleMat));
             NoCollider(Part(PrimitiveType.Sphere, "Lamp", lampRoot, new Vector3(-ls * 1.15f, 5.02f, 0f), new Vector3(0.35f, 0.18f, 0.35f), lampGlow));
+            Halo(lampRoot, new Vector3(-ls * 1.15f, 4.95f, 0f), 2.2f, new Color(1f, 0.75f, 0.45f, 0.8f));
             var light = new GameObject("LampLight").AddComponent<Light>();
             light.transform.SetParent(lampRoot, false);
             light.transform.localPosition = new Vector3(-ls * 1.15f, 4.9f, 0f);
             light.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             light.type = LightType.Spot;
             light.spotAngle = 110f;
-            light.range = 9f;
-            light.intensity = 7f;
+            light.range = 12f;
+            light.intensity = 25f;
             light.color = new Color(1f, 0.72f, 0.42f);
             light.shadows = LightShadows.None;
             lamps.Add(light);
@@ -354,17 +355,20 @@ public static class StatueSceneBuilder
         car.SetParent(root, false);
         car.localPosition = new Vector3(-0.9f, road, 26f);
         foreach (int side in new[] { -1, 1 })
-            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.6f, 0.4f, 0.2f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+        {
+            NoCollider(Part(PrimitiveType.Sphere, "Headlight", car, new Vector3(side * 0.75f, 0.65f, 0f), new Vector3(0.35f, 0.22f, 0.1f), headGlow)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            Halo(car, new Vector3(side * 0.75f, 0.65f, -0.3f), 2.4f, new Color(0.9f, 0.95f, 1f, 0.9f));
+        }
         var beams = new GameObject("Beams").AddComponent<Light>();
         beams.transform.SetParent(car, false);
         beams.transform.localPosition = new Vector3(0f, 0.7f, -0.2f);
         beams.transform.localRotation = Quaternion.Euler(4f, 180f, 0f);  // along the road toward the van
         beams.type = LightType.Spot;
-        beams.spotAngle = 50f;
-        beams.range = 22f;                                                 // lights the road, never reaches the van
-        beams.intensity = 6f;
+        beams.spotAngle = 45f;
+        beams.range = 40f;                                                 // floods the road up to the van
+        beams.intensity = 30f;
         beams.color = new Color(0.9f, 0.94f, 1f);
-        beams.shadows = LightShadows.None;
+        beams.shadows = LightShadows.Soft;                                 // so it only gets in through the windows
         cutscene.distantCar = car;
 
         var moon = new GameObject("Moon").AddComponent<Light>();
@@ -396,6 +400,26 @@ public static class StatueSceneBuilder
         if (texture != null) m.SetTexture("_BaseMap", texture);
         EditorUtility.SetDirty(m);
         return m;
+    }
+
+    // Soft glow halo around a light source: a camera-facing quad with a radial-gradient texture.
+    static void Halo(Transform parent, Vector3 localPos, float size, Color color)
+    {
+        string path = $"{MaterialFolder}/Halo_{ColorUtility.ToHtmlStringRGB(color)}.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m == null)
+        {
+            m = new Material(Shader.Find("Sprites/Default"));
+            AssetDatabase.CreateAsset(m, path);
+        }
+        m.mainTexture = LoadTexture($"{CutsceneFolder}/Textures/glow.png", false);
+        m.color = color;
+        EditorUtility.SetDirty(m);
+        var q = NoCollider(Part(PrimitiveType.Quad, "Halo", parent, localPos, Vector3.one * size, m));
+        var r = q.GetComponent<MeshRenderer>();
+        r.shadowCastingMode = ShadowCastingMode.Off;
+        r.receiveShadows = false;
+        q.AddComponent<Billboard>();
     }
 
     static GameObject NoCollider(GameObject go)
