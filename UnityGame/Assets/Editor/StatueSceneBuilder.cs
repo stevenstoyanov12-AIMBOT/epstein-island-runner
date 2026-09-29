@@ -14,6 +14,7 @@ public static class StatueSceneBuilder
     public static void Build()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        beamMeshBuilt = false;
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -427,6 +428,8 @@ public static class StatueSceneBuilder
 
     // A visible headlight beam: an open cone of faint light through the night haze, pointing down the
     // road toward the van (-Z), bright at the lamp and fading to nothing at its far end.
+    static bool beamMeshBuilt;
+
     static void Beam(Transform parent, Vector3 localPos, float length)
     {
         const int sides = 16;
@@ -456,9 +459,17 @@ public static class StatueSceneBuilder
         mesh.SetTriangles(tris, 0);
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
+        // both beams share one mesh asset; rebuild it only once per scene build
         string meshPath = $"{MaterialFolder}/HeadlightBeam.asset";
-        AssetDatabase.DeleteAsset(meshPath);
-        AssetDatabase.CreateAsset(mesh, meshPath);
+        var saved = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+        if (saved == null || !beamMeshBuilt)
+        {
+            AssetDatabase.DeleteAsset(meshPath);
+            AssetDatabase.CreateAsset(mesh, meshPath);
+            beamMeshBuilt = true;
+        }
+        else
+            mesh = saved;
 
         string matPath = $"{MaterialFolder}/HeadlightBeam.mat";
         var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
