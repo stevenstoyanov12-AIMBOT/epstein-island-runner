@@ -1,0 +1,71 @@
+using UnityEngine;
+
+// Very simple "choose your character" screen shown before the intro cutscene.
+// Light green background, one card per character (models get added to the cards later),
+// "CHOOSE YOUR CHARACTER" at the bottom. Click a card (or press 1-6) to pick and start.
+public class CharacterSelect : MonoBehaviour
+{
+    public static readonly string[] Names = { "cented", "orangie", "flames", "ramset", "brez", "tjr" };
+    public static string Chosen;
+    public static int ChosenIndex = -1;
+    public static System.Action OnChosen;
+    int hover = -1;
+    GUIStyle nameStyle, titleStyle;
+    static Texture2D white;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics() { Chosen = null; ChosenIndex = -1; OnChosen = null; }
+
+    // appears automatically in the intro scene (the one with the cutscene) until a character is picked
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    static void Spawn()
+    {
+        if (Chosen != null || FindAnyObjectByType<CrateCutscene>() == null) return;
+        var go = new GameObject("CharacterSelect"); go.AddComponent<CharacterSelect>();
+    }
+
+    void Update()
+    {
+        var kb = UnityEngine.InputSystem.Keyboard.current;
+        if (kb == null) return;
+        for (int i = 0; i < Names.Length; i++)
+            if (kb[(UnityEngine.InputSystem.Key)((int)UnityEngine.InputSystem.Key.Digit1 + i)].wasPressedThisFrame) Pick(i);
+    }
+
+    void Pick(int i)
+    {
+        if (Chosen != null) return;
+        ChosenIndex = i; Chosen = Names[i];
+        Cursor.lockState = CursorLockMode.None;
+        var cb = OnChosen; OnChosen = null; cb?.Invoke();
+        Destroy(gameObject);
+    }
+
+    void OnGUI()
+    {
+        if (white == null) { white = new Texture2D(1, 1); white.SetPixel(0, 0, Color.white); white.Apply(); }
+        GUI.depth = -100;
+        float W = Screen.width, H = Screen.height;
+        GUI.color = new Color(0.72f, 0.92f, 0.62f); GUI.DrawTexture(new Rect(0, 0, W, H), white);   // light green
+        if (nameStyle == null)
+        {
+            nameStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            titleStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+        }
+        nameStyle.fontSize = Mathf.RoundToInt(H / 26f); titleStyle.fontSize = Mathf.RoundToInt(H / 16f);
+        int n = Names.Length; float gap = W * 0.02f, cw = (W * 0.9f - gap * (n - 1)) / n, ch = H * 0.55f, x0 = W * 0.05f, y0 = H * 0.12f;
+        var mouse = Event.current.mousePosition; hover = -1;
+        for (int i = 0; i < n; i++)
+        {
+            var r = new Rect(x0 + i * (cw + gap), y0, cw, ch);
+            bool over = r.Contains(mouse); if (over) hover = i;
+            GUI.color = over ? new Color(1f, 1f, 1f, 0.95f) : new Color(1f, 1f, 1f, 0.6f);
+            GUI.DrawTexture(r, white);                                    // card (character model goes here later)
+            GUI.color = new Color(0.15f, 0.3f, 0.12f);
+            GUI.Label(new Rect(r.x, r.yMax - ch * 0.18f, r.width, ch * 0.18f), Names[i], nameStyle);
+            if (over && Event.current.type == EventType.MouseDown) { Pick(i); return; }
+        }
+        GUI.color = new Color(0.12f, 0.25f, 0.1f);
+        GUI.Label(new Rect(0, H * 0.78f, W, H * 0.14f), "CHOOSE YOUR CHARACTER", titleStyle);
+    }
+}

@@ -1,0 +1,382 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: G3
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: G3
+  m_GUID: 1b13e510a9eab224db862e2d9cff84f3
+  m_SerializeEntries:
+  - m_GUID: 0340777221a9f934a823fb5aa4a8e0fe
+    m_Address: Assets/Characters/Orangie/HeadC.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0bbd4f21b0a53784186e895f08379ba5
+    m_Address: Assets/Characters/Heist/PromTex/4_Object08_0.1_16_16__Image_0.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0bd9cdf84909cc544b71511058401c3a
+    m_Address: Assets/Characters/Yolo/Image_2.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11caebc7c44b89342a4dd1c0fb008c98
+    m_Address: Assets/Characters/Orangie/Rig/m3_Prom_212.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14cd462431b7c2540893cd7d03a1d152
+    m_Address: Assets/Characters/Heist/PromTex/4_Object08_0.1_16_16.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 168fe0198447d3e428c34aa93ef9ad0f
+    m_Address: Assets/ResData/SelectModels/GunPivot.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1a7d32bbe181c774b870a44a04c52720
+    m_Address: Assets/ResData/SelectModels/Pistol_Idle.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1dff61207725da340933e8735dbe9545
+    m_Address: Assets/Characters/Yolo/yolo_mesh_cut.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e80aa3860317a94f9f562399b2481da
+    m_Address: Assets/Characters/Heist/PromTex/4_Object05_0.1_16_16__Image_1.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f4cc1fd2c1760e489661ea28f5d1e5a
+    m_Address: Assets/Characters/Orangie/HeadC_Color10.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20c5f958ff440004f92a741a27a53c1b
+    m_Address: Assets/Optimized/Tex/t201.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 234c2f4930c96d64793bc3cfcda88f45
+    m_Address: Assets/Optimized/Tex/t200.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b0e8c43c28f12843b53c412d8c34aa4
+    m_Address: Assets/Characters/Orangie/HeadC_Neck.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c7b806ef609bab4e9f805a3f3216d65
+    m_Address: Assets/Characters/Heist/PromTex/4_Object01_0.1_16_16__Image_3.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 31be6afdcf1a0e540b54379b612b5adc
+    m_Address: Assets/Characters/Orangie/orangieAvatar.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 404178001ed508f4e90a8c45482fd5ce
+    m_Address: Assets/Optimized/Tex/t202.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46de1fa79b75789489742f10c7a7b7a4
+    m_Address: Assets/Characters/Heist/PromTex/4_Object06_0.1_16_16__Image_0.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4bc7bf8c7d711064087a0ef866344945
+    m_Address: Assets/ResData/SelectModels/PistolAnim.bytes
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d27bb7365ab86e4a84244aff8e1b083
+    m_Address: Assets/Optimized/Mats/m200.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4facf951f52ca5e4aae90cc2e86bd2d3
+    m_Address: Assets/Characters/Materials/Glove_Leather.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4fc82b81f473495419a8d668b4c1fb3a
+    m_Address: Assets/Characters/Yolo/Image_3.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50c5297bea3f0444fa885f9a3611bb3f
+    m_Address: Assets/Characters/Yolo/Materials/4_Object04_0.1_16_16.001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5a14ca9190945a44f893fcc876a5f1b2
+    m_Address: Assets/Characters/Yolo/Materials/4_Object01_0.1_16_16.001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e0a1c7b9d3f4a6c8b2e1f0a4d7c9b31
+    m_Address: Assets/ResData/SelectModels/orangie.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f14cc0fc056874498eef06632997e26
+    m_Address: Assets/Weapons/SilencedPistol.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a9c63991bccb7442ac727cdf6edda6f
+    m_Address: Assets/Optimized/Tex/t205.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c2003cf78abb2e4d83b6704673903c4
+    m_Address: Assets/Characters/Heist/PromTex/4_Object06_0.1_16_16.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 78dae15cf5cae7b4ba33e2e155515197
+    m_Address: Assets/Characters/Orangie/Rig/m1_HeadC_Head.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 791afc31c03740d4b82b23a02f07b351
+    m_Address: Assets/Characters/Orangie/Rig/m0_Gloves_Orangie.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7caf944850ae245478394ff4ee2d475e
+    m_Address: Assets/ResData/SelectModels/gun_attach.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85e0793b687688c488d124ba3ff5d3e5
+    m_Address: Assets/Optimized/Tex/t204.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8635dde2c5d7e9d4498f4c5c4c7675c6
+    m_Address: Assets/Characters/Rigged/tjr_mixamo.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 883ed2dcd310a5f458e5e79d478c3da8
+    m_Address: Assets/Characters/Yolo/NormalGL_632d933f-98f3-439c-80e9-78f810767578.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8b73c778f92d961439b6ac17e251c1d8
+    m_Address: Assets/Models/Characters/HeadA_Neck.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8ba827610759acf40aa8bc174fb7c2f6
+    m_Address: Assets/Characters/Orangie/Rig/m4_Prom_214.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92e6149d6d508974a812f436503f71df
+    m_Address: Assets/Models/Characters/HeadB_Neck.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 976cb26f47eeba04f88354684281a574
+    m_Address: Assets/Characters/Yolo/Materials/4_Object08_0.1_16_16.001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dbd161f7f6cc1e42ba595a13194124e
+    m_Address: Assets/Weapons/SilencedPistol.obj
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f9fd68b25d6f4c49994fcefbe27c0bd
+    m_Address: Assets/Characters/Orangie/Rig/m5_Prom_216.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a262bbd68a401834b82d988273589d85
+    m_Address: Assets/Characters/Heist/PromTex/4_Object01_0.1_16_16.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3c1e5f7b9d24680ac13579bdf246801
+    m_Address: Assets/ResData/SelectModels/Sleeves/m3_Prom_212_cut.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a97541f9ef2c93e40a50124b8f3d95ae
+    m_Address: Assets/Characters/Yolo/Materials/KidSoldier_Head.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: add68c7dcfeea4148b5a08f8f37cebf5
+    m_Address: Assets/Characters/Rigged/m2_Neck_onTjr.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: afaac5a4e48f72641af9fe2a4d4048eb
+    m_Address: Assets/Characters/Mixamo/X Bot.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b03ece38fd24a494d90a567a7adcd42d
+    m_Address: Assets/ResData/SelectModels/yolo.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4d2f6a8c0e35791bd24680ace357912
+    m_Address: Assets/ResData/SelectModels/Sleeves/m4_Prom_214_cut.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be5d9685c15084e498d8805eb5aa958b
+    m_Address: Assets/Characters/Yolo/Materials/4_Object05_0.1_16_16.001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c050d38155707274299850d209a5fc6e
+    m_Address: Assets/ResData/SelectModels/cented.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d274bfc4c5328f0418029c54e6dad6f0
+    m_Address: Assets/Characters/Rigged/m1_HeadB_Head_onTjr.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dcbd4a7280c38234aa25f04e3b6e9ead
+    m_Address: Assets/Characters/Heist/PromTex/4_Object05_0.1_16_16.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e77081e48afa988449b92ebc34698e4d
+    m_Address: Assets/Characters/Yolo/yoloAvatar.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e7d63bb7e6e4cf8449b91049c71b16e1
+    m_Address: Assets/Optimized/Tex/t203.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e881a418f3d47704f9f0ba9d43754827
+    m_Address: Assets/Characters/Yolo/Materials/4_Object06_0.1_16_16.001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e9eebab2a035e85458be30594a570d84
+    m_Address: Assets/Characters/Orangie/Rig/m2_Neck.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f08e6e32bacef684dbef4110260cdd49
+    m_Address: Assets/Optimized/Mats/m201.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f0ca5132f4d076f428b6369362bd68e8
+    m_Address: Assets/Characters/Yolo/Image_0.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4e116105525c3c4d891de718cdb1ec1
+    m_Address: Assets/Characters/Yolo/Image_1.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f72fe72c1b5b22a4fae35dc13184544e
+    m_Address: Assets/ResData/SelectModels/tjr.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8a0a7fe96ad4ef4ca65a59920a7f5d7
+    m_Address: Assets/Characters/Yolo/Color_632d933f-98f3-439c-80e9-78f810767578.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G3_1
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: fbec2a80f553f32429580439e5e21c2f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: c7a990ce7e4ee1e4baa209ce0f6abbe6, type: 2}
+    - {fileID: 11400000, guid: 662ff7a14e53f4347af72586db9dc61b, type: 2}
+    m_SchemaDisplayOrder:
+    - G3_BundledAssetGroupSchema
+    - G3_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

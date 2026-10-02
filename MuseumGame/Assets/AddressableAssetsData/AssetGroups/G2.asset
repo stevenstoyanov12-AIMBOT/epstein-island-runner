@@ -1,0 +1,1858 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: G2
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: G2
+  m_GUID: cc024ce8448a66c45b030d5437aa79bc
+  m_SerializeEntries:
+  - m_GUID: 02207e6ee4eed4c43bf00641ba5e5535
+    m_Address: Assets/Museum/HallCut/Plane.065_atlas.005_0_HallOverlap.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02e29758fceb74545ac0ec62ea83ccaa
+    m_Address: Assets/Characters/MouthChar/Mil_Gear.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 03401211b7c00584e9488804bc6f478d
+    m_Address: Assets/Shaders/VertexColorURP.shader
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 035aa37a9bfb7c2478be015d7de80a33
+    m_Address: Assets/Meshes/Babies/Solana_Baked.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 048e50a2fb119f44898b4750816c1685
+    m_Address: Assets/Museum/StreetTextures/Obs_CrateWoodDark_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0497b17e89558524a9b42f18e249bd60
+    m_Address: Assets/Materials/Statue/Marble.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 05560aefa7b15364b9e26524f29309c0
+    m_Address: Assets/Museum/TarpCut_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 066bb4113ab6e2443835bf7b78477dd7
+    m_Address: Assets/ResData/BulletCasing.obj
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09ed492506ff4f541b2fccf04c2dd0d6
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_9_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a057aad2e07ead47a2b3224603bf002
+    m_Address: Assets/Materials/Statue/Nails.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a1ff2c311b0bd64dae793fdcf17fdb2
+    m_Address: Assets/Weapons/Sniper/Sniper.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a5b5b80d62233448865712cb88413fc
+    m_Address: Assets/Museum/Materials/Scaf_Tarp_Solid.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d00ec432e93004489968edce8c21f91
+    m_Address: Assets/Museum/Scaffold_Hatched.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d396cb7be672ba40afebaf00ed001af
+    m_Address: Assets/Characters/Mixamo/CrouchIdle.anim
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ee1dd460892c7e45a7c8e9ae5e4f930
+    m_Address: Assets/ResData/FX_Wine.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ef39a02a37c2ed4d955154d76942f84
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_4_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 10befa2deab83594f9bfa3538d4146ac
+    m_Address: Assets/Props/PoliceTape/Post.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 10cf6548c482927419276532d5af20ad
+    m_Address: Assets/Props/Garden/G_TerracottaInner.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11043b9ce4e8d5d42acb271b10ccb7e8
+    m_Address: Assets/Characters/MouthChar/Mil_Uniform.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1203bc0131b971f49b18c8a89fb676a0
+    m_Address: Assets/Museum/NeonLeaf.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 121cd7634c1d66c468187c18daab2827
+    m_Address: Assets/Museum/Materials/Veh_CargoFloor.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 131cc9d21670e3344bc8da0df82e89a2
+    m_Address: Assets/Museum/StreetTextures/Scaf_Steel_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 136762277b85f334b9e2a2031358ef45
+    m_Address: Assets/Museum/HallCut/Soffit_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15ada97accc63df4eafb8a2a8933b689
+    m_Address: Assets/City/CityTile_1_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1608e75be54534e40824c6670463244c
+    m_Address: Assets/Meshes/Babies/Angel_Column.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 162691cff6880284293afd64241f3e5b
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_5_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1660a3e15245cb4499d36aad39052674
+    m_Address: Assets/Props/Garden/G_FlowerWhite.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 183b28a83368299458a1989af421f622
+    m_Address: Assets/Props/Garden/G_Grass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 187b84cc0304ef24db6a3c2c66f05022
+    m_Address: Assets/Characters/MouthChar/Textures/Image_0.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 18fe0b34a8bdc8f4b8738bc657e2c7bd
+    m_Address: Assets/City/CityTile_4_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19841aa9151e45340920e265fd4dd5bd
+    m_Address: Assets/Models/Cutscene/Crate_Stencil.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1a521acc3bf297546870736c4db676c0
+    m_Address: Assets/Models/Trees/Tree_FallenLeaves.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ca11406e1347224cb110efb0d9e94ad
+    m_Address: Assets/Materials/Statue/CrateWood.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e34992b86c106442be446600e2bc9f4
+    m_Address: Assets/City/CityTile_0_3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e6c9cff7afc87a4abaeace90e85d4bc
+    m_Address: Assets/Characters/RelaxedIdle.anim
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2048e25e3c2f1cd42977b98a8e2062b8
+    m_Address: Assets/Characters/Mixamo/Crouch_Walking_1.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2114beaccb01f684faec06c11f1ab674
+    m_Address: Assets/Museum/StreetTextures/Plaza_Stone_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21eb305eada4d884f8b611145c0339af
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_8_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22954a753ed8cce41affe7d8c8f593d9
+    m_Address: Assets/Props/Garden/G_Soil.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 229f15a5606e880468eea1e554aead3f
+    m_Address: Assets/Museum/Materials/Curb_Granite.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22c1190eb4408f642a0369011f1381eb
+    m_Address: Assets/Materials/Statue/StatuePupilRim.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24e9e2896e7371742882bd6dd79fddad
+    m_Address: Assets/Materials/Statue/StatuePupil.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24fc10398e8806e4ea96f4176ed199f1
+    m_Address: Assets/Characters/LeftArmMask.mask
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26ad3dddbe5fed34780167405abac78b
+    m_Address: Assets/Props/Garden/G_RoseDark.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26ed8b23a831a5341afe05aee38e6709
+    m_Address: Assets/Characters/MouthChar/Textures/Mil_Image_1.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2830d954e12843b4cb6efc5fa4cfc9b5
+    m_Address: Assets/City/CityTile_4_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 29438d02341ecf1418b036049e223cd6
+    m_Address: Assets/Museum/Materials/PillBadge.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2974fa89648a5ff4294e2dac00d59c6c
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_14_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2af26696da8cdfb4eb8c00fa69222085
+    m_Address: Assets/Optimized/Tex/t5.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c085dd2626d4eb408737bd9914603fd
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_6_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c2c4161e3087b74a8e164774e3cef61
+    m_Address: Assets/Characters/Materials/Suit_Lapel.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c6202e0c545c034fb3554cf21438049
+    m_Address: Assets/ResData/HeartIcon.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d0aa3006c8ef9e48a8dfd9b42e82c6a
+    m_Address: Assets/Museum/Materials/Veh_PaintRed.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2de2312e218d47249afc326094c6dc88
+    m_Address: Assets/Props/Wheel/Rim.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2e024bfbc38818149b94013db1c7ccf9
+    m_Address: Assets/Museum/StreetTextures/Obs_Coal_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3047021dd7c15914f85779455ae3ae89
+    m_Address: Assets/Materials/ArtVan_Wrecked.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 324dce9bb4c50124ab6a4fe2503cee23
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_12_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35d6b55b5053acf489a6d2e9bfbf1828
+    m_Address: Assets/Props/Wheel/TireTex.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 368f4b299317bfa49bec5383bf166088
+    m_Address: Assets/Characters/Materials/Button.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3792eedbb4b3d244dbeec003c4c11ccb
+    m_Address: Assets/City/CityTile_0_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 37e0c7e1b98ead740bc1d77114ea7bdd
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_13_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 398970bd35f5e394eb5693049bc6aa88
+    m_Address: Assets/City/CityTile_3_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 39a7a3418f86d1840be3b722730241aa
+    m_Address: Assets/Models/Statues/Bust_Portrait_Drape.obj
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 39cdad49bd14b9d4eab7a0516e392f2b
+    m_Address: Assets/Museum/Materials/Obs_Water.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a591719b4404a24b9766e9ac329e633
+    m_Address: Assets/Museum/StreetTextures/Curb_Granite_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a65f950cb19a5749bbb5e8ad794612b
+    m_Address: Assets/City/CityTile_4_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b893a87a7676fe48aded6ed42e62240
+    m_Address: Assets/Characters/Materials/Mask_Red.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3ba3f262a9d98464c825e94c199a1917
+    m_Address: Assets/Museum/Materials/Veh_PaintWhite.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c0cf8d24633b6e4ba84d9dbf9b05923
+    m_Address: Assets/Props/Garden/G_MarblePaths.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c7c134d18b460a44bf0a64c0eaabef3
+    m_Address: Assets/City/CityTile_2_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3eaa66a43f07b14409015559a0417a89
+    m_Address: Assets/Characters/Materials/Eye_Iris.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3f606062a797af64bbf307edc26d2e1d
+    m_Address: Assets/Props/Garden/G_Grass2.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40472a1547fc996408fa40197bbafd57
+    m_Address: Assets/Museum/StreetTextures/Obs_SlateStone_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 406ba2191b7b4e24cb8f680c68b410d5
+    m_Address: Assets/Props/Garden/G_FlowerPink.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40b1d393b6083e645a89b9a4707d63b3
+    m_Address: Assets/ResData/FX_GreenFire.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40f4998fcca83094eb470dba56c743bd
+    m_Address: Assets/Museum/Meshy_Head.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42ac594881effe245913757195c84590
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_10_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 450fe75a92887034297d142a675d377b
+    m_Address: Assets/Props/PoliceTape/CrimeSceneTexture.jpeg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 45b1e912dfcd0e747b0758cd5ff1653a
+    m_Address: Assets/Optimized/Tex/t6.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 45e455e14fc57144aa01ec27736cc398
+    m_Address: Assets/Museum/Materials/Plaza_Stone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46818861434acdc48a61c2e857d1dbe0
+    m_Address: Assets/Props/Garden/G_Travertine.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46d106f114f625347ae4644c251ddf44
+    m_Address: Assets/Characters/ArmsMask.mask
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46e373f331b361e4c88bc12a62f7a79e
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_11_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4705762db6d886d42908d6415c86fe61
+    m_Address: Assets/Characters/MouthChar/SniperGuard.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 474b14612d6fc1342a325fb0cc4d87e7
+    m_Address: Assets/Museum/StreetTextures/Sidewalk_Stone2_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4766cd51394b80e40a3041bf5a4d88de
+    m_Address: Assets/Museum/StreetTextures/Obs_Coal_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 494cd1f50a177d448b45dea07f416e93
+    m_Address: Assets/Models/Trees/Textures/leaves_normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4967dca7a75250d4eada7518b08defeb
+    m_Address: Assets/City/CityTile_4_3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 496856155dcaa1e45a1df61907ca2b72
+    m_Address: Assets/Textures/PortraitPanel5.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 498d1abe023bf044480e379f85f7062b
+    m_Address: Assets/City/CityTile_3_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49b06588890bad74a95db3ad2acff903
+    m_Address: Assets/Museum/StreetTextures/Obs_Marble_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b2c682bb1ef54342abbdfbed8d79a93
+    m_Address: Assets/Optimized/Mats/m2.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4c685f6462f48014883b18f1074d500d
+    m_Address: Assets/Characters/Mixamo/PistolRunHeld.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d93fe0b49f07d241bb14f063850fc3b
+    m_Address: Assets/Props/Garden/G_MarbleFloor.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f5f6cc313362034697da6d91820903a
+    m_Address: Assets/Props/PoliceTape/SkidMarks.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f9ac2f8c2205654ba86f896de2a15f0
+    m_Address: Assets/Optimized/Tex/t3.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 502c25e6c35d42b4e83a0dd4707d9e1a
+    m_Address: Assets/Materials/PedestalStone_Ansem.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50fa2b5935fcbe9489b10ab3772f55d8
+    m_Address: Assets/Museum/StreetTextures/Brazier_NoFlame.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51a8860bf07ea8f4fa5350c04737ff54
+    m_Address: Assets/Museum/Materials/Obs_HedgeShell.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51be9c49ea5d3ff4c885894385718023
+    m_Address: Assets/Props/Garden/CornicePatch.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51e539e924f3cf245ad34c7da83d160e
+    m_Address: Assets/Cars/PoliceCar.glb
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51f33635be1886045bce0360cc06e795
+    m_Address: Assets/Optimized/Mats/m0.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5246d5f63d74fc846a2ca2c658b3ab37
+    m_Address: Assets/Props/Wheel/ArtVan_Wheelless.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 567712e3e3fa35a46bafad56a8b143c3
+    m_Address: Assets/Characters/UpperMask.mask
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56b27ead4d49b9b49a9c950bf8807999
+    m_Address: Assets/Textures/CrackedGlass_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57e1ed9d6dafdd648baccd081d1dc954
+    m_Address: Assets/Optimized/Tex/t0.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 585a4e43002e71a438cf53316fa1d752
+    m_Address: Assets/Props/PoliceTape/SkidMark.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 593397a8d8109f04497d7f2d37fea09d
+    m_Address: Assets/Museum/Materials/Scaf_Tarp.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59767679371b3e54db5e23ef05243918
+    m_Address: Assets/Materials/Crack_SideWindow_mesh.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 597d70106d4c10e4da13a75aabf029e8
+    m_Address: Assets/Museum/Materials/Veh_Glass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5a7d13cd303a42f418f96e5a0944e46c
+    m_Address: Assets/Museum/Materials/Veh_BlackPlastic.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5b26dae2964ae4648a3c96fb275d2fed
+    m_Address: Assets/Museum/Materials/Lamp_Bulb.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5bd40541635f091428d2362eab2c5f4a
+    m_Address: Assets/Museum/StreetTextures/Obs_CrateWood2_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c67ca2b13da31c43a18030b89b96e40
+    m_Address: Assets/Props/Garden/G_Meadow.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5d2c7a86852a1054b85b9142efaee293
+    m_Address: Assets/Props/Garden/G_Grout.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5d744ca2b2d9c2f4489005a34ef925b1
+    m_Address: Assets/Props/Garden/G_Monument.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ffd31f148ce7794fb27e6db114f03af
+    m_Address: Assets/Models/Trees/Textures/grass.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60a42804ba00f55439aaa022ddaa805e
+    m_Address: Assets/Props/Garden/G_Iron.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61ea7827a3044654dbfd3a02a780f535
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_7_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 63198b1c09b4c5248999164660dfe98e
+    m_Address: Assets/Museum/Materials/Scaf_Steel.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 645429354ada3634498424b25f0e833a
+    m_Address: Assets/City/CityTile_2_3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6523af61cb7913d4c8f866535f9f1d47
+    m_Address: Assets/Museum/StreetTextures/Obs_SlateStone_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 656395af06e636b47924ab5f3efc386a
+    m_Address: Assets/Museum/StreetTextures/Obs_Marble_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66b8983b7c5a0e94da33b5f559efc874
+    m_Address: Assets/Museum/Materials/Obs_WaterFlow.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6701688d373a6aa43ad26a4945465157
+    m_Address: Assets/City/CityTile_0_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6756856ff32fbd54e8d1625a8b33b275
+    m_Address: Assets/City/CityTile_1_2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67721d9b1ae8ce84e948d23e5901df43
+    m_Address: Assets/Materials/Statue/StatueIris.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 679af4a199819ae458b81fa478e77f8b
+    m_Address: Assets/Museum/Materials/Statue_Gold.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6904a13d53f48f24db3ef968ff307521
+    m_Address: Assets/Museum/Materials/Obs_Coal.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b5c1f99f7172974792f4e88a4e1ca6b
+    m_Address: Assets/Props/Garden/G_Gravel.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6cb591710768558458267209afc25e1e
+    m_Address: Assets/ResData/FX_Dust.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6d004b99e2d3bfd49a659502607c75ab
+    m_Address: Assets/Models/Cutscene/Textures/wood_normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6f34a50412a1f9e438470cd7616dd008
+    m_Address: Assets/Museum/Materials/Van_Plate.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 70d95650d06919841a1bb85aea1e5ffe
+    m_Address: Assets/Props/Garden/CornicePatch.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 723f49d67dfaf0a4e9ecc035e0c448cc
+    m_Address: Assets/Models/Cutscene/Crate.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7264e52704eaea64aacbcebb17db4793
+    m_Address: Assets/Materials/Statue/StatuePupilRim.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 72f1ae2db841cbc42a29ce8666b82854
+    m_Address: Assets/Characters/Mixamo/pistol idle.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 739f1fa25f3c8e842a46078a64356c0a
+    m_Address: Assets/Museum/Materials/Veh_GlossBlack.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73b0ada7bf4fafa47a47af787d81df05
+    m_Address: Assets/Props/Garden/RedRose.glb
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 742031470a729f845b0f24fc307b09c2
+    m_Address: Assets/ResData/FX_Grit.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 763f7cb9867fc5441ba2a87340e2c0ab
+    m_Address: Assets/Museum/ScaffoldEnd_Top.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 779ef9f29b32a6640ae8cf8e9e5f3d66
+    m_Address: Assets/Museum/StreetTextures/Obs_Soil_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 782ae84b159ff4f42a1e3d3506b902ab
+    m_Address: Assets/ResData/FlameSheet.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 787498e31eac0564fbe5d5595684ce05
+    m_Address: Assets/Museum/TarpCut_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7b7235aed1f3f5b4287853cfddcf70aa
+    m_Address: Assets/Museum/BreakthroughElegance.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c654381d490b0c4d8f0baea5a80eb03
+    m_Address: Assets/Materials/NeonLeaf.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d607806f479c994fa1229126bbd7842
+    m_Address: Assets/Museum/StreetTextures/Plaza_Stone_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d73eb72d1d164645b1424d8729d74ef
+    m_Address: Assets/Museum/HallCut/EntranceLedgeCopy.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d83207c9dc380940b570b6f4d0dc986
+    m_Address: Assets/Models/Statues/Textures/statue_eye.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dfd549166d1c284a83ff4cf48913314
+    m_Address: Assets/Museum/farmed_painting.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e587e6d9e9358848af4ac44ee343dd2
+    m_Address: Assets/Materials/Statue/StatueEyes.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f3faa5ff06bad047917f905a75fdc0c
+    m_Address: Assets/Museum/HallCut/Soffit_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8117ae8f267a4494f9d4eb6db4587000
+    m_Address: Assets/Museum/Materials/Obs_Leaves.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8142da2946126504b9618a87f85674d9
+    m_Address: Assets/Museum/StreetTextures/Obs_CrateWoodDark_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83c14eb96bd48cb41bd598cd696aa2a6
+    m_Address: Assets/Props/Garden/G_Stem.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 845801206fa26f843b175b6cd7e28ff4
+    m_Address: Assets/Museum/StreetTextures/Scaf_Tarp_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8576eb4523cc1d94fac7126585a44b25
+    m_Address: Assets/Textures/ItsReal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85e48066d97d19b448201d6f5146f177
+    m_Address: Assets/Models/Trees/Tree_Bark.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 86109b6087bcf2043befd062ec33512d
+    m_Address: Assets/City/CityTile_2_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 866bcdb457074144794b3aeea701a9b2
+    m_Address: Assets/City/CityTile_1_3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87aece30a89312b48baa2dc85a3e3ea6
+    m_Address: Assets/Materials/Statue/Bark.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8818b8e07d938b947a9c9fd8c12ecddf
+    m_Address: Assets/Museum/Materials/Obs_StencilPaint.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 895d82b6c0147114ba9347bc30806c20
+    m_Address: Assets/Models/Trees/Textures/bark_normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 896edc3d583eff044831ba09dc2cef87
+    m_Address: Assets/Materials/HeadStone_2S.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8a6a19b0a4a7e084fba698fee45c4cb2
+    m_Address: Assets/Materials/SolanaVC.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8b6649f803f5a3b458ad2d3cb590b54b
+    m_Address: Assets/Props/Wheel/ForgiatoWheel.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c773639993a056488fe0d96f7567c33
+    m_Address: Assets/Props/Garden/G_Rose.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e51877f731b56d438e5825b056db6d2
+    m_Address: Assets/Museum/TarpCut_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8ee24363256905b4fba6fcfcabb1570a
+    m_Address: Assets/ResData/FX_Hidden.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8fb12c1b050e7cd43a9915530e70ccdc
+    m_Address: Assets/Museum/Materials/Iron_Black.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90d3eddf7c3cc1443bb44f3a81b5d4c2
+    m_Address: Assets/Museum/Materials/Veh_Rubber.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91ed477a2a206ba44848430a5442e0e2
+    m_Address: Assets/Museum/StreetTextures/Curb_Granite_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9294739e158222f4dad9c44917eb0d52
+    m_Address: Assets/Characters/HeistCharacterMixamo.controller
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93055195f18b402468ce13e5c7228229
+    m_Address: Assets/Characters/Materials/Shirt.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9371359011549b242b3813e4a4d7c878
+    m_Address: Assets/Museum/MuseumStreets.fbm/Kickelhahn_C.jpeg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9610f6bc04a3b5248bd7a68ada38145c
+    m_Address: Assets/Museum/Scaffold_EastTop.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 96e1b868017b6c943a510bbe2a22379b
+    m_Address: Assets/Props/Garden/G_RoofStone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 981ed44a4bfaf2d46901faacf389936d
+    m_Address: Assets/Props/ArtVan_Detail.obj
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a5c491bc95e31944a79f0e9add57564
+    m_Address: Assets/Characters/MouthChar/Textures/Mil_Image_2_002.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a778224434374a499c809afa829694d
+    m_Address: Assets/Props/ArtVan_Face.obj
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c3c34cdc9c4ff0469fae5d9c1c46455
+    m_Address: Assets/Museum/StreetTextures/Obs_Stone_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9cb4039e56b03484889ee731c9590def
+    m_Address: Assets/Props/Garden/G_Amphora.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d61197c46e80f841ad6787760a5417f
+    m_Address: Assets/ResData/SearchBeam.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dc969d8fff367c4f8c8133ee6c5062f
+    m_Address: Assets/Props/Garden/G_Stone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9e0f908584b1a654a9859a55b9859fad
+    m_Address: Assets/City/CityTile_2_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a0a3c5f532ea7d248ab1a219a67dd20f
+    m_Address: Assets/Props/Garden/G_TerracottaBlack.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a0b76a86657be4a48872b3652c4f0048
+    m_Address: Assets/Museum/Materials/Veh_Amber.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a10d1ec0a6e436f4f9bf9955e1c33699
+    m_Address: Assets/Models/AnsemInscription.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a1a3e18ed8e257d4280b1c455e9bb157
+    m_Address: Assets/Props/Wheel/Tire.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a1e96c1905a8f884493ffe5d8824566a
+    m_Address: Assets/Museum/MuseumStreets.fbm/PillLogo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a22c77079c105804fbcdfbac95af0781
+    m_Address: Assets/ResData/SoftDot.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2c9d4cf520709c41ba41582a26259af
+    m_Address: Assets/Museum/old_stone_tile.glb
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2eeb34e772bd2b46bdc595efc702f0d
+    m_Address: Assets/Characters/Mixamo/Walking.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a4071f9b99319634ca15dcb824fad15f
+    m_Address: Assets/Props/Garden/G_Terracotta.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a4f30f2e7907b044998183c067544f71
+    m_Address: Assets/Characters/Materials/Shoe.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6a9142d8d04a7f4b9c2ea2503960d8e
+    m_Address: Assets/Museum/StreetTextures/Scaf_Tarp_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6b87df38e7e38947a2abde2bd8032f8
+    m_Address: Assets/Models/Statues/Bust_Portrait.obj
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a75c6428a193fee4c94d58571dc3bec3
+    m_Address: Assets/Characters/Materials/Mask_Eye.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a79fb4101f77f444ba9ab7d92d3693ed
+    m_Address: Assets/Props/Garden/PlasterPatch.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8534a10ee7c57a4e9d62e8d07ce1f53
+    m_Address: Assets/Museum/Materials/Scaf_DarkSteel.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a87cb21220245e646bc25acac7cc2d89
+    m_Address: Assets/Characters/RightHandPistolLow.anim
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa03eaec2502d354da1e3863808fd08e
+    m_Address: Assets/Props/Wheel/Invisible.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa2af0d9c598dd44f93e6022cdf412cf
+    m_Address: Assets/Museum/Materials/ItsReal.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa51c8b41d35d984e9020d7a852e0168
+    m_Address: Assets/Weapons/Sniper/sniperColor.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ab596a4ae1eb9234ab6b9b60d67a99a4
+    m_Address: Assets/Museum/StreetTextures/Obs_CrateWood2_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac9ad0dc4a1a7244cb868aead705d833
+    m_Address: Assets/Museum/FacadeGlassFill.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: acb09028267df8a4e9817b4f7b18de9f
+    m_Address: Assets/Models/Cutscene/Textures/wood_albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: adc22ee632722a34daaba06c5284818e
+    m_Address: Assets/Museum/StreetTextures/Leaf_Boxwood.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af977757e34cd35439a8c5a5826ee7f7
+    m_Address: Assets/Props/Garden/G_Grass3.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0336cff0eb6691479846b6d2a06bc49
+    m_Address: Assets/Props/Garden/G_Leaf.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0b837ccaf68f164a9337eb65868482a
+    m_Address: Assets/Museum/Materials/Obs_Soil.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b17d2d90b14da9044a084c9e8788debf
+    m_Address: Assets/City/CityTile_1_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1a656921cea50d47b2a7342bbac55eb
+    m_Address: Assets/City/CityTile_1_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b2e4d878b9b040346aab6c3f7f93d1f3
+    m_Address: Assets/Museum/StreetTextures/Obs_Soil_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b349be0db4990f747a92ee549e2a2d9e
+    m_Address: Assets/Textures/CrackedGlass_HQ.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b488a1e666634c44694ee37b01afa2c0
+    m_Address: Assets/Materials/Statue/StatuePupil.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b596db34f1d42b6468d4a2b59c4c71ec
+    m_Address: Assets/Props/Garden/PlasterPatch.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5bbef0dd57b71d4ead8a0be0667defa
+    m_Address: Assets/Materials/Plane.065_atlas.004_0_HallOverlap_DiningCut.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5c2f774180faa24482ed4c154583b0b
+    m_Address: Assets/ResData/FX_WaterDrop.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b62996d6335f6be4d8782b429bf3cea1
+    m_Address: Assets/City/CityTile_0_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7e90c8834a856e469e7e85da4acd0c0
+    m_Address: Assets/Models/Trees/Tree_Grass.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b8783e36f8cad2e4ead65388e50f9e42
+    m_Address: Assets/City/CityTile_3_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b8aad66ff8927f542bf55e883ee8d61c
+    m_Address: Assets/Characters/Materials/Suit_White.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b8b10fb091db21e44828c12f4ad6cf1d
+    m_Address: Assets/Models/Trees/Tree_Leaves.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b8b719af2857ca7419b95d70afa112b4
+    m_Address: Assets/Museum/StreetTextures/Scaf_Steel_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b91e43ebfb0c58b4b9ef6ebe98bb0e18
+    m_Address: Assets/Museum/Materials/Scaf_Yellow.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba7604e4aea1c154c9de1e67637973ea
+    m_Address: Assets/Museum/MuseumStreets.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bade9c45f73230144b125be11c2ea4ad
+    m_Address: Assets/Museum/Materials/Obs_CrateWood2.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bafb97b94743178498e39414d49d052c
+    m_Address: Assets/City/CityNight.glb
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bbb5dbb01728dfd4ab13746c630d4565
+    m_Address: Assets/ResData/FX_SearchBeam.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bbdef95bd37fc0b498c942113fa81de3
+    m_Address: Assets/Museum/Materials/Veh_Chrome.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bca5d2bcb858e314f8d5b1f47d31baa5
+    m_Address: Assets/Materials/Statue/Leaves.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bcc6b091824f3e54bbee500f9a0e01c4
+    m_Address: Assets/Props/PoliceTape/Tape.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bcecb22f905f6cf41b35479604a53745
+    m_Address: Assets/Meshes/OuterPlaza.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be91d5dc2ff9d1142990151e0218f10f
+    m_Address: Assets/ResData/Death.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf13d1757d5ef604ca47f77d8a33df3a
+    m_Address: Assets/Textures/PillBadge.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bfd5611be218c3c40b113fcdfd630000
+    m_Address: Assets/Models/Cutscene/Textures/stencil.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bff9cf3aae56d5b449d5c90bedbd07c8
+    m_Address: Assets/Materials/FarmedPainting.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c107caab8efb1cc45a4d3f1634ed74fc
+    m_Address: Assets/Characters/HeistCharacter.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2673986f4fc8974e82cd4b26eb19486
+    m_Address: Assets/Optimized/Tex/t1.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2a7f2f514b360c4fa6afada53b7a4e6
+    m_Address: Assets/Museum/StreetTextures/Obs_Limestone_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3b3cbedc5de20d4b96887ba561b0481
+    m_Address: Assets/Museum/Materials/Scaf_Plank.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c62e1e44831f2174bb81a2c71309e2d1
+    m_Address: Assets/Optimized/Tex/t2.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c67f58eaa1304544388d7c8bc4d0976f
+    m_Address: Assets/Props/Garden/G_Wood.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c69a15c528aaec64fb144b1c4f22ade9
+    m_Address: Assets/City/CityTile_3_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c79fc407587693c49b4f1ac608db2bb1
+    m_Address: Assets/City/CityGround.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c95a121cf8dd021429b9721f756cc7ed
+    m_Address: Assets/Museum/Materials/Obs_CrateWoodDark.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cad22578fd657d04ea33650c561f95b9
+    m_Address: Assets/Props/Garden/G_Bronze.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd685c4924b130d4198b20c38a6f3d64
+    m_Address: Assets/Museum/Materials/Veh_Headlight.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce52170691574484d961c0db7736db8d
+    m_Address: Assets/Museum/Materials/Veh_PaintNavy.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cf02fc80f2db5f741900f8c58b4dadc4
+    m_Address: Assets/Museum/StreetTextures/Fountain_NoCurtain.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0d29f61f2172a1499498fb9c00db2eb
+    m_Address: Assets/Museum/Materials/Obs_Marble.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2156da9fb789a64b82672d647092bdb
+    m_Address: Assets/Museum/Materials/Lamp_Glass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d78145060cf81c54c9ff37324695e1db
+    m_Address: Assets/Materials/Statue/CrateStencil.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d785e5c529e328942b3359fad82f677f
+    m_Address: Assets/Museum/Materials/Veh_Interior.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d82b4430f848e80469cd040d1ce5d4d2
+    m_Address: Assets/Props/PoliceTape/SkidMark.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d962937b78ebae44fb8c4985c488b099
+    m_Address: Assets/Materials/Statue/TreeGrass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9867c583aeb2754e87b939681511a77
+    m_Address: Assets/City/CityTile_2_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9d5a174ff419c74ab6d1ed79167a30c
+    m_Address: Assets/Museum/Materials/Obs_Gold.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9f3ef5e81d41024f83aa38caba4bd49
+    m_Address: Assets/Characters/MouthChar/SniperGuard.controller
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da1dde73937cf3644b418927c7b48b40
+    m_Address: Assets/Props/Garden/G_Marble.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc79390c1486e654194b455e10ca140b
+    m_Address: Assets/Museum/HallCut/EntranceWallCopy.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dcbd7aff570eab74da5d4e6ee88e6d37
+    m_Address: Assets/Optimized/Tex/t4.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd439b8d21b80e84dad61b5d64219c32
+    m_Address: Assets/Museum/DrumGun.glb
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: deabcdd5fad3f074db9fb157b7adb6b0
+    m_Address: Assets/Props/Wheel/WheelTex.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dee9685d3fd3a4941aafb5e9ff335b5c
+    m_Address: Assets/Models/Statues/Textures/eye_charge.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e21d5550413fffa4f8c569aad064875a
+    m_Address: Assets/Models/Trees/Textures/leaves_atlas.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e32290449125aab4f8f168f812fda327
+    m_Address: Assets/Museum/Materials/PillLogo.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e504ca9f14f9dc342981c99580668912
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_3_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e52f717887d807440ad8578a693a3def
+    m_Address: Assets/ResData/FX_Hole.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e74b10a6485fa3447b2800a5969d6940
+    m_Address: Assets/Museum/Materials/Sidewalk_Stone2.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e75ece2843cda9e4db5fa3889525a4f2
+    m_Address: Assets/Materials/InscriptionBlack.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e78abeae91ed7004ca20024a1976837e
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_2_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e90b48a49ee74b144a805f5a74fe4f10
+    m_Address: Assets/Materials/Crack_Windshield_mesh.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eaca1b38d0a4ae8429c5170bcdca69bc
+    m_Address: Assets/Characters/Materials/Mask_White.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eaf83a845b73b6145998ee91dfa5a9f7
+    m_Address: Assets/Characters/MouthChar/Textures/Image_2.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb4457d86d0c8a742bfc1fae9e864183
+    m_Address: Assets/Museum/Materials/Kickelhahn_C.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb4577378091be440bd476892a0e7655
+    m_Address: Assets/Museum/Materials/Obs_GreenFire.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb492470eb799d44d9e5a4339828f730
+    m_Address: Assets/Characters/Materials/Tie_Black.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecc45f610de37d54a9a2f56d8341b7cb
+    m_Address: Assets/Materials/PaintingWall.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eccc4e74f057aff4d954b805a308a8a1
+    m_Address: Assets/ResData/FX_GlassCrack.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecd68fe72c720fd4a822c2a746363930
+    m_Address: Assets/Props/Garden/G_GrassDry.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ed86a508c8fcd5a4daaf4fae4e6d3185
+    m_Address: Assets/ResData/FX_GreenFlameSheet.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee3b7e4cf456e9347a97233f237a4bf4
+    m_Address: Assets/City/CityTile_0_0.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee4224a1608435849a76c3a843444a7c
+    m_Address: Assets/Museum/StreetTextures/Obs_Limestone_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ef4c375115af12846bf379ef4dbc574b
+    m_Address: Assets/ResData/FX_GlassShard.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: efbacb449bfc10240a4ec956509e9b7e
+    m_Address: Assets/Props/Garden/G_FlowerYellow.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: efcbfe8d61ad5f54c9ca677040165ac3
+    m_Address: Assets/Props/PoliceTape/TapeTornFlaps.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f02cbe479b5c75243af875947f664a3b
+    m_Address: Assets/Meshes/ChurchDoorClipped/Object_15_fit.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f548040fa60f21b4fb5b975915bacbec
+    m_Address: Assets/Textures/PumpMuseum.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5522d8470719b64baddb2c4fa55ae10
+    m_Address: Assets/Museum/Materials/Obs_Stone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f68f0492c779a1b4a9784826b90d7fd2
+    m_Address: Assets/City/CityTile_3_3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f75c1b29df07bff49b967fd3ac1b7a5e
+    m_Address: Assets/Museum/Materials/Obs_Limestone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f84d2a9daad02fd41a109b96a1c8ae5e
+    m_Address: Assets/Optimized/Mats/m1.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f86d0ee5f01d52c42aa1313241da2393
+    m_Address: Assets/Museum/StreetTextures/Obs_Stone_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f96c373995f7b1f46b3987be0ed26fdf
+    m_Address: Assets/Props/PoliceTape/TapeBorder.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_10
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fa266ce64820e7a4faa90cf484bf510e
+    m_Address: Assets/Materials/CrackedGlass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fbde8872f1f84174c9582a6d9b37c0bd
+    m_Address: Assets/Models/Trees/Textures/bark_albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd413aed07cba24429159464ba86de31
+    m_Address: Assets/Museum/Materials/Obs_SlateStone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fdb0809514a9b0343894203f8b89b973
+    m_Address: Assets/City/CityTile_4_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fdb239c21dba6394ebf3895a9f51e244
+    m_Address: Assets/Museum/HallCut/Soffit_1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fe9269c973f4e4a4caed9be05eeb5933
+    m_Address: Assets/Materials/PortraitPanelFramed.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_8
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff2237e26525ce24db5ee914e24ceee3
+    m_Address: Assets/Museum/StreetTextures/Sidewalk_Stone2_Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff3796bc08272be419022c1142be6b7c
+    m_Address: Assets/Museum/Materials/PumpMuseum.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_9
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff93538f9bcfc8a4a8647d66036a7f36
+    m_Address: Assets/Museum/Materials/Veh_Taillight.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G2_7
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: fbec2a80f553f32429580439e5e21c2f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 86ab54ece1b5b1747a922fe8581208d9, type: 2}
+    - {fileID: 11400000, guid: 216e360f3be0ca140ab94ce0171f993d, type: 2}
+    m_SchemaDisplayOrder:
+    - G2_BundledAssetGroupSchema
+    - G2_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

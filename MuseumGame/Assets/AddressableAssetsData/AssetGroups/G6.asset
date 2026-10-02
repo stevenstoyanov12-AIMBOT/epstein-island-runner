@@ -1,0 +1,124 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: G6
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: G6
+  m_GUID: 39ad0952928efce43910d744ba10c415
+  m_SerializeEntries:
+  - m_GUID: 10fc4df2da32a41aaa32d77bc913491c
+    m_Address: Assets/Settings/SampleSceneProfile.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 138397b7fb17ea74ea0a0b5358769631
+    m_Address: Assets/Museum/GalleryInterior.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d2e00df970cb394eb8ad11bbde114e8
+    m_Address: Assets/Materials/Plane.065_atlas.004_0_DiningCut.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2133b91015486444a8ac0999478241ca
+    m_Address: Assets/Museum/HallCut/Plane.065_atlas.005_0_HallCut.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36818721584375a42b09295eb782e685
+    m_Address: Assets/Materials/NightSky.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55d6d7c6c79541340abcd119837ac475
+    m_Address: Assets/Materials/BuildingWall_2S.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e96f49fd54afe14a9daaf202e546990
+    m_Address: Assets/Museum/Textures/UpperVestibule_Albedo.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c972f4ba721aee4a9431d207c0a8b29
+    m_Address: Assets/Meshes/ArchSlabs/N_Upper Vestibule_9791.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8968e4ecbe429de4690b9ef4176a2215
+    m_Address: Assets/Museum/VestibuleStone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8ba102b44cf62174380948d3f1bfd1fe
+    m_Address: Assets/Materials/BuildingRoof_2S.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a58f51a6a3e58754fa1ef736703430c0
+    m_Address: Assets/Props/Garden/G_QuartzFloor.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d57b51d2dc729ac49929893a94cb28c3
+    m_Address: Assets/Props/Garden/QuartzTile.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e4ae8718a5979894783fb507ce9b23be
+    m_Address: Assets/Museum/Textures/GalleryInterior_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f88ce0e566e956441bfb796099ea1743
+    m_Address: Assets/Museum/MuseumScene_v2_1.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8e7f77b055b01d49bf52c2450c82652
+    m_Address: Assets/Props/Garden/MarbleTile.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fa82aaa70e9ee2c438a59f7b81287375
+    m_Address: Assets/Museum/Textures/BuildingWall_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G6_1
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: fbec2a80f553f32429580439e5e21c2f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 1f0a3af9f41b99343ab9abf8ac9d0703, type: 2}
+    - {fileID: 11400000, guid: 0d1878defb0bfe94da27aedc9bd9e963, type: 2}
+    m_SchemaDisplayOrder:
+    - G6_BundledAssetGroupSchema
+    - G6_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1
