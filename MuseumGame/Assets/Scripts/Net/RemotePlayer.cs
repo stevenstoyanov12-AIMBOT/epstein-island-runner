@@ -8,7 +8,7 @@ public class RemotePlayer : MonoBehaviour
 
     public static RemotePlayer Create(string id, string character, Transform localRoot)
     {
-        var prefab = Res.Load<GameObject>("SelectModels/" + character); if (prefab == null || localRoot == null) return null;
+        var prefab = Res.Load<GameObject>("SelectModels/" + character); if (prefab == null || localRoot == null) { Debug.LogWarning("RemotePlayer: cannot create '" + character + "' (prefab " + (prefab != null) + ", local player " + (localRoot != null) + ")"); return null; }
         var go = new GameObject("Remote_" + id);
         var rp = go.AddComponent<RemotePlayer>(); rp.id = id;
         var cc = localRoot.GetComponent<CharacterController>();

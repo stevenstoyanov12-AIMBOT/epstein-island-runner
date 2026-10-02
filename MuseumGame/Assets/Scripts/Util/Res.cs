@@ -12,13 +12,13 @@ public static class Res
     public static T Load<T>(string path) where T : Object
     {
         List<Object> l;
-        if (map.TryGetValue(path, out l)) foreach (var o in l) if (o is T) return (T)o;
+        if (map.TryGetValue(path, out l)) foreach (var o in l) if (o != null && o is T) return (T)o;   // skip assets that were unloaded with their scene (the select screen)
         var all = LoadAll<T>(path); return all.Length > 0 ? all[0] : null;
     }
     public static T[] LoadAll<T>(string path) where T : Object
     {
         var r = new List<T>(); List<Object> l;
-        if (map.TryGetValue(path, out l)) foreach (var o in l) if (o is T) r.Add((T)o);
+        if (map.TryGetValue(path, out l)) foreach (var o in l) if (o != null && o is T) r.Add((T)o);
 #if UNITY_EDITOR
         if (r.Count == 0)   // editor / unregistered: read straight from the asset folder
         {
