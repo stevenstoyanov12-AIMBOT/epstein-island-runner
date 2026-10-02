@@ -59,10 +59,21 @@ public class CharacterSelect : MonoBehaviour
         fill.type = LightType.Directional; fill.intensity = 0.7f; fill.shadows = LightShadows.None;
         fill.transform.rotation = Quaternion.Euler(10f, 230f, 0f);
 
+        int built = 0;
         for (int i = 0; i < Names.Length; i++)
         {
+            // one character failing must not hide the others: log it and carry on
+            try { if (BuildOne(i)) built++; }
+            catch (System.Exception e) { rts[i] = null; Debug.LogError("CharacterSelect: building '" + Names[i] + "' failed: " + e); }
+        }
+        Debug.Log("CharacterSelect: " + built + " of " + Names.Length + " characters built (idle clip " + (menuClip != null) + ", baked anim " + (Baked.names != null) + ")");
+    }
+
+    bool BuildOne(int i)
+    {
+        {
             var prefab = Res.Load<GameObject>("SelectModels/" + Names[i]);
-            if (prefab == null) continue;
+            if (prefab == null) { Debug.LogWarning("CharacterSelect: prefab 'SelectModels/" + Names[i] + "' not found in the registry"); return false; }
             var pos = stage.position + new Vector3(i * 4f, 0f, 0f);
             var inst = Instantiate(prefab, pos, Quaternion.Euler(0f, 25f, 0f), stage);     // mostly facing the camera
             FixSleeves(inst, Names[i]);
@@ -89,6 +100,7 @@ public class CharacterSelect : MonoBehaviour
             cam.nearClipPlane = 0.1f; cam.farClipPlane = 20f;
             cam.targetTexture = rt;
             cam.enabled = false;                                                   // rendered by hand a few times
+            return true;
         }
     }
 
@@ -111,9 +123,14 @@ public class CharacterSelect : MonoBehaviour
     }
     static void RenderCam(Camera cam)
     {
+        if (cam.targetTexture == null) return;
         var req = new UnityEngine.Rendering.RenderPipeline.StandardRequest { destination = cam.targetTexture };
-        if (UnityEngine.Rendering.RenderPipeline.SupportsRenderRequest(cam, req)) UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(cam, req);
-        else cam.Render();
+        try
+        {
+            if (UnityEngine.Rendering.RenderPipeline.SupportsRenderRequest(cam, req)) UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(cam, req);
+            else cam.Render();
+        }
+        catch (System.Exception) { cam.Render(); }   // render requests can be unsupported in the web build: fall back to a plain render
     }
     void SetPlaying(int i)
     {
