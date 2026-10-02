@@ -413,7 +413,7 @@ public class PlayerAvatarAnim : MonoBehaviour
             flashLight.color = new Color(1f, 0.75f, 0.4f); flashLight.range = 6f; flashLight.intensity = 6f; flashLight.shadows = LightShadows.None;
             var q = GameObject.CreatePrimitive(PrimitiveType.Quad); Destroy(q.GetComponent<Collider>()); q.transform.SetParent(go.transform, false);
             q.transform.localScale = Vector3.one * 0.12f;
-            var sh = Shader.Find("Universal Render Pipeline/Particles/Unlit"); var m = new Material(sh);
+            var baseMat = Res.Load<Material>("FX_Flash"); var m = baseMat != null ? new Material(baseMat) : new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));   // FX_Flash is a real asset so the web build keeps its transparent shader variant
             m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", 2f); m.SetOverrideTag("RenderType", "Transparent");
             m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha); m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One); m.SetInt("_ZWrite", 0);
             m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.renderQueue = 3100;
