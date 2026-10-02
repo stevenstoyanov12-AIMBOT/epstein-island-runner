@@ -15,7 +15,8 @@ public class WineBarrel : MonoBehaviour
 
     static Material Make(bool additiveSoft, float alpha)
     {
-        var m = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+        var baseMat = Res.Load<Material>("FX_WineAlpha");   // real asset: the web build keeps its transparent shader variant
+        var m = baseMat != null ? new Material(baseMat) : new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
         m.SetFloat("_Surface", 1); m.SetFloat("_Blend", 0); m.SetOverrideTag("RenderType", "Transparent");
         m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha); m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
         m.SetInt("_ZWrite", 0); m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.renderQueue = 3000;
