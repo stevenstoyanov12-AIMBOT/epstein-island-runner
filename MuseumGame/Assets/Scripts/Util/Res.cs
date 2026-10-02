@@ -37,9 +37,3 @@ public static class Res
         return r.ToArray();
     }
 }
-
-public class ResourceRegistry : MonoBehaviour
-{
-    public string[] keys; public Object[] objs;
-    void Awake() { if (keys == null) return; for (int i = 0; i < keys.Length && i < objs.Length; i++) Res.Register(keys[i], objs[i]); }
-}

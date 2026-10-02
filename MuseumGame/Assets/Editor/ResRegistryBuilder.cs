@@ -19,7 +19,11 @@ public static class ResRegistryBuilder
         if (!System.IO.File.Exists(scenePath)) return;
         var sc = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
         var go = GameObject.Find("ResourceRegistry"); if (go == null) go = new GameObject("ResourceRegistry");
-        var reg = go.GetComponent<ResourceRegistry>() ?? go.AddComponent<ResourceRegistry>();
+        // earlier builds piled up duplicate / broken registry components: keep exactly one, with a proper script reference
+        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
+        var regs = go.GetComponents<ResourceRegistry>();
+        for (int r = 1; r < regs.Length; r++) Object.DestroyImmediate(regs[r]);
+        var reg = regs.Length > 0 ? regs[0] : go.AddComponent<ResourceRegistry>();
         var keys = new List<string>(); var objs = new List<Object>();
         foreach (var f in System.IO.Directory.GetFiles("Assets/ResData", "*", System.IO.SearchOption.AllDirectories))
         {
