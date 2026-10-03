@@ -11,6 +11,7 @@ public static class FlashMaterialBuilder
     {
         Make("FX_Flash", 2f, BlendMode.One, 3100, new Color(1f, 0.8f, 0.4f, 1f));                        // additive: muzzle flash
         Make("FX_WineAlpha", 0f, BlendMode.OneMinusSrcAlpha, 3000, new Color(0.42f, 0.015f, 0.05f, 1f)); // alpha blended: wine drops and mist
+        Make("FX_Additive", 2f, BlendMode.One, 3000, Color.white);                                        // additive: laser eyes, sparks
         AssetDatabase.SaveAssets();
     }
 
@@ -21,7 +22,7 @@ public static class FlashMaterialBuilder
         m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", blend); m.SetOverrideTag("RenderType", "Transparent");
         m.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha); m.SetInt("_DstBlend", (int)dst); m.SetInt("_ZWrite", 0);
         m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.renderQueue = queue;
-        m.SetColor("_BaseColor", color);
+        m.SetColor("_BaseColor", color); m.SetFloat("_Cull", 0f);
         AssetDatabase.DeleteAsset(path);
         AssetDatabase.CreateAsset(m, path);
         Debug.Log("Created " + path);

@@ -261,7 +261,8 @@ public class LaserEye
         var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
         if (shader == null)
             return new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, color = hdr };
-        var m = new Material(shader);
+        var baseMat = Res.Load<Material>("FX_Additive");   // real asset, so the web build keeps the additive shader variant
+        var m = baseMat != null ? new Material(baseMat) : new Material(shader);
         m.SetTexture("_BaseMap", tex);
         m.SetColor("_BaseColor", hdr);
         m.SetFloat("_Surface", 1f);                                   // transparent
