@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <style>
+    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
+    #unity-canvas { position:fixed; inset:0; width:100vw; height:100vh; display:block; background:#000; outline:none; }
+    #loading { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(420px,70vw); height:6px; background:#222; border-radius:3px; overflow:hidden; }
+    #bar { width:0; height:100%; background:#c9a24a; transition:width .2s; }
+    #hint { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); color:#ddd; font:14px sans-serif; background:rgba(0,0,0,.55); padding:8px 14px; border-radius:6px; pointer-events:none; display:none; }
+  </style>
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div id="loading"><div id="bar"></div></div>
+  <div id="hint">Click to play fullscreen</div>
+      <script>
+      // Unity 6 streams asset bundles into the engine and sizes its buffer from Content-Length. For a Brotli-encoded
+      // bundle that header is the COMPRESSED size, so Unity guesses the real size (x2) and the bundle reader fails
+      // ("Failed to decompress data"). Here the browser unpacks the bundle first, then hands Unity a plain response
+      // with the exact unpacked size - the download over the network stays Brotli-small.
+      (function () {
+        var origFetch = window.fetch.bind(window);
+        window.fetch = function (input, init) {
+          var url = typeof input === 'string' ? input : (input && input.url) || '';
+          if (/\.bundle(\?|$)/.test(url)) { init = Object.assign({}, init || {}); init.cache = 'reload'; }   // never use Chrome's saved copy: old ones were stored broken (double-compressed)
+          return origFetch(input, init).then(function (r) {
+            if (!/\.bundle(\?|$)/.test(url) || !r.ok || !r.headers.get('content-encoding')) return r;
+            return r.arrayBuffer().then(function (buf) {
+              var h = new Headers(r.headers); h.delete('content-encoding'); h.set('content-length', String(buf.byteLength));
+              return new Response(buf, { status: r.status, statusText: r.statusText, headers: h });
+            });
+          });
+        };
+      })();
+    </script>
+    <script>
+    // ---- graphics: WebGPU on modern GPUs, WebGL on older ones (picked automatically). Both run the same game on the same servers. ----
+    function gpuName() {
+      try { var c = document.createElement('canvas'); var gl = c.getContext('webgl'); var ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+            return ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : ''; } catch (e) { return ''; }
+    }
+    // older than NVIDIA RTX 20-series class: GTX/GT cards, old Quadros, AMD before RX 5000 or with under 4 GB, Intel HD/UHD integrated
+    function oldGpu(n) {
+      n = n.toUpperCase();
+      // AMD with under 4 GB of video memory: RX 5300 (3 GB), RX 6300 (2 GB) and every integrated Radeon (Vega, 610M-780M, "Radeon Graphics": they share system RAM)
+      if (/RX\s?(5300|6300)\b|RADEON(\(TM\))?\s+(\d{3}M\b|GRAPHICS)/.test(n)) return true;
+      if (/RTX|RX\s?[5-9]\d{3}|ARC|APPLE/.test(n)) return false;
+      return /GTX|GEFORCE\s+(GT|MX|\d{3}M?\b)|QUADRO\s+[KMP]|RADEON\s+(R[579]|HD|RX\s?[45]\d{2}\b|VEGA)|INTEL.*(HD|UHD)/.test(n);
+    }
+    var useGL = !navigator.gpu || oldGpu(gpuName());
+    // Unity uses WebGPU when the browser offers it and falls back to WebGL2 otherwise: hiding WebGPU forces the WebGL path
+    if (useGL) { try { Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true }); } catch (e) {} }
+    var canvas = document.getElementById('unity-canvas');
+    var hint = document.getElementById('hint');
+    function isFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+    function goFs() {
+      if (isFs()) return;
+      var el = document.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) { try { var p = req.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
+    }
+    function updateHint() { hint.style.display = (window.gameReady && !isFs()) ? 'block' : 'none'; }
+    // browsers only allow fullscreen from a click/key, so every click while windowed puts the game back in fullscreen
+    document.addEventListener('mousedown', goFs, true);
+    document.addEventListener('keydown', function (e) { if (e.key !== 'Escape') goFs(); }, true);
+    document.addEventListener('fullscreenchange', updateHint);
+    document.addEventListener('webkitfullscreenchange', updateHint);
+    canvas.addEventListener('mousedown', function () { canvas.focus(); });
+
+    var buildUrl = 'Build';
+    var config = {
+      arguments: [],
+      dataUrl: buildUrl + '/{{{ DATA_FILENAME }}}',
+      frameworkUrl: buildUrl + '/{{{ FRAMEWORK_FILENAME }}}',
+      codeUrl: buildUrl + '/{{{ CODE_FILENAME }}}',
+      streamingAssetsUrl: 'StreamingAssets',
+      // Addressables bundles arrive Brotli-encoded; Unity's own download cache mishandles those, so it skips them.
+      // The browser's normal HTTP cache still keeps them (immutable), so repeat visits stay fast.
+      cacheControl: function (url) { return /\.bundle(\?|$)/.test(url) ? 'no-store' : 'must-revalidate'; },
+      companyName: '{{{ COMPANY_NAME }}}',
+      productName: '{{{ PRODUCT_NAME }}}',
+      productVersion: '{{{ PRODUCT_VERSION }}}',
+    };
+    var script = document.createElement('script');
+    script.src = buildUrl + '/{{{ LOADER_FILENAME }}}';
+    script.onload = function () {
+      createUnityInstance(canvas, config, function (p) { document.getElementById('bar').style.width = (100 * p) + '%'; })
+        .then(function () { document.getElementById('loading').style.display = 'none'; window.gameReady = true; updateHint(); canvas.focus(); })
+        .catch(function (m) { alert(m); });
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
