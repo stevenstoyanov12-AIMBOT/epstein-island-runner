@@ -1,0 +1,216 @@
+"""Paint the Meshy 'tiny soldier' head in the colours of the reference drawing (vertex colours by region),
+crop it to the head, render previews and export a GLB/FBX for Unity.
+Blender coords after glTF import: X right, Z up, face looks toward -Y (d = -Y is 'frontness').
+usage: python3 paint_soldier.py MODEL.glb OUT_DIR PREVIEW_PREFIX"""
+import math, os, sys, bpy, bmesh
+import numpy as np
+from mathutils import Vector
+src, out_dir, prev = sys.argv[1], sys.argv[2], sys.argv[3]
+
+def lin(c):  # sRGB 0-255 -> linear
+    c = np.array(c) / 255.0
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+HELMET, HELMET_DK = lin((122, 116, 62)), lin((88, 84, 44))
+STAR = lin((70, 72, 40))
+SKIN, CHEEK = lin((255, 222, 196)), lin((246, 168, 150))
+HAIR, HAIR_DK = lin((236, 196, 106)), lin((204, 156, 70))
+FRAME, LENS, LENS_HI = lin((28, 30, 38)), lin((52, 66, 84)), lin((96, 120, 142))
+STRAP = lin((96, 104, 96))
+LEAF, STEM = lin((110, 150, 90)), lin((150, 170, 110))
+MOUTH, NOSE = lin((150, 90, 80)), lin((248, 206, 182))
+
+bpy.ops.wm.read_factory_settings(use_empty=True)
+bpy.ops.import_scene.gltf(filepath=src)
+obj = next(o for o in bpy.data.objects if o.type == "MESH")
+bpy.context.view_layer.objects.active = obj
+bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+me = obj.data
+
+# crop to the head: drop the shirt below the chin (measured on grid renders: chin at z 0.26)
+bm = bmesh.new(); bm.from_mesh(me)
+bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z < 0.25], context="VERTS")
+bm.to_mesh(me); bm.free()
+
+# also export the cropped, unpainted head with exactly the same export settings (the grey original)
+if os.environ.get("GREY_OUT"):
+    bpy.ops.object.select_all(action="DESELECT"); obj.select_set(True)
+    bpy.ops.export_scene.fbx(filepath=os.environ["GREY_OUT"], use_selection=True, axis_forward="-Z", axis_up="Y",
+                             apply_scale_options="FBX_SCALE_UNITS")
+co = np.array([v.co[:] for v in me.vertices]); nrm = np.array([v.normal[:] for v in me.vertices])
+x, y, z = co[:, 0], co[:, 1], co[:, 2]; d = -y; ax = np.abs(x)
+col = np.tile(HAIR, (len(co), 1))                                        # default: hair (sides/back)
+
+# helmet: above the brim line, measured from the side view (front tip high, sloping down to the back)
+brim = np.interp(d, [-0.6, -0.35, -0.2, -0.1, 0.05, 0.14], [0.36, 0.40, 0.50, 0.59, 0.645, 0.72])   # the helmet comes down low at the back
+brim = brim - 0.05 * np.clip((ax - 0.2) / 0.1, 0, 1)                     # a little lower at the sides
+helmet = z > brim
+col[helmet] = HELMET
+col[helmet & (nrm[:, 2] < -0.3) & (d > 0.0)] = HELMET_DK                 # underside of the front brim only
+ang = np.arctan2(z - 0.86, x); r = np.hypot(x, z - 0.86)
+star = helmet & (d > 0.0) & (r < 0.075 * (0.55 + 0.45 * np.cos(5 * (ang - math.pi / 2))))
+col[star] = STAR
+
+# blond fringe under the brim: forward-facing forehead surface (the brim underside faces down instead)
+fringe = helmet & (ax < 0.25) & (z < 0.71) & (d < 0.075) & (nrm[:, 1] < -0.35) & (nrm[:, 2] > -0.3)
+col[fringe] = HAIR
+helmet &= ~fringe
+fringe |= ~helmet & (ax < 0.25) & (z > 0.645) & (d > -0.06)
+col[fringe] = HAIR
+# face: the front of the head under the brim
+face = ~helmet & ~fringe & (d > -0.06) & (ax < 0.25)
+col[face] = SKIN
+col[face & (np.hypot(ax - 0.165, (z - 0.43) * 1.3) < 0.045)] = CHEEK     # rosy cheeks under the glasses
+# sunglasses: dark frame, slate lenses with a lighter reflection band
+glass = ~helmet & (ax < 0.245) & (z > 0.468) & (z < 0.648) & (d > 0.05)
+col[glass] = FRAME
+lens = glass & (ax > 0.036) & (ax < 0.228) & (z > 0.482) & (z < 0.634)
+col[lens] = LENS
+col[lens & (np.abs((z - 0.56) - 0.5 * (ax - 0.13)) < 0.01)] = LENS_HI
+# the nose pokes through under the glasses' bridge: keep it skin, not frame
+nose = glass & (ax < 0.05) & (z < 0.535)   # nose tip z 0.46-0.52; the bridge bar is z 0.55-0.61
+col[nose] = SKIN
+# the mouth as in the drawing: a small, slightly down-turned line, with a hint of lower lip
+# ear-side chin strap
+col[~helmet & (x > 0.22) & (z > 0.3) & (z < 0.49) & (d > -0.06)] = STRAP
+# the leaf in the mouth
+col[(d > 0.09) & (z > 0.37) & (z < 0.43) & (ax < 0.4) & ~glass & (nrm[:, 1] > -0.9)] = LEAF   # the green stem, as in the drawing
+
+# a few darker strands in the hair
+hair_mask = np.all(col == HAIR, axis=1)
+col[hair_mask & (np.sin(z * 90 + x * 30) > 0.85)] = HAIR_DK
+
+attr = me.color_attributes.new("Col", "FLOAT_COLOR", "POINT")
+for i, c in enumerate(col):
+    attr.data[i].color = (*c, 1.0)
+me.color_attributes.active_color = attr
+
+# --- lens reflections: the two little soldiers in each lens, taken 1:1 from the reference drawing ---------
+REF = os.environ.get("SOLDIER_REF")
+lens_objs = []
+if REF:
+    from PIL import Image, ImageDraw, ImageFilter
+    ref = Image.open(REF).convert("RGB")
+    lens_d = float(d[lens].max()) + 0.003                                  # just in front of the lens surface
+    # (drawing crop in 400x400 pixels, model x range): viewer's left lens is the character's right (-x)
+    for name, box, (x0, x1) in (("LensR", (73, 133, 151, 200), (-0.228, -0.036)),
+                                ("LensL", (201, 133, 292, 202), (0.036, 0.228))):
+        crop = ref.crop(box).resize((512, 400), Image.LANCZOS)
+        mask = Image.new("L", crop.size, 0)
+        ImageDraw.Draw(mask).rounded_rectangle((6, 6, 506, 394), radius=70, fill=255)
+        crop.putalpha(mask.filter(ImageFilter.GaussianBlur(3)))
+        tex_path = os.path.join(out_dir, f"soldier_{name.lower()}.png"); os.makedirs(out_dir, exist_ok=True)
+        crop.save(tex_path)
+        z0, z1 = 0.482, 0.634
+        verts = [(x0, -lens_d, z0), (x1, -lens_d, z0), (x1, -lens_d, z1), (x0, -lens_d, z1)]
+        lm = bpy.data.meshes.new(name); lm.from_pydata(verts, [], [(0, 1, 2, 3)])
+        uv = lm.uv_layers.new(name="UVMap")
+        for li, (u, v) in zip(range(4), ((0, 0), (1, 0), (1, 1), (0, 1))):
+            uv.data[li].uv = (u, v)
+        lo = bpy.data.objects.new(name, lm); bpy.context.collection.objects.link(lo)
+        mt = bpy.data.materials.new(name); mt.use_nodes = True; t = mt.node_tree; bs = t.nodes["Principled BSDF"]
+        img = t.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(tex_path)
+        t.links.new(img.outputs["Color"], bs.inputs["Base Color"])
+        t.links.new(img.outputs["Color"], bs.inputs["Emission Color"]); bs.inputs["Emission Strength"].default_value = 0.6
+        t.links.new(img.outputs["Alpha"], bs.inputs["Alpha"]); bs.inputs["Roughness"].default_value = 0.15
+        if hasattr(mt, "surface_render_method"): mt.surface_render_method = "BLENDED"
+        lm.materials.append(mt)
+        lens_objs.append(lo)
+
+    # the mouth, cut 1:1 from the drawing (its line and little lower lip) and laid on the lips: the model has
+    # too few vertices around the mouth to paint such a thin line
+    crop = ref.crop((138, 244, 186, 278)).resize((480, 340), Image.LANCZOS).convert("RGB")
+    px = np.asarray(crop).astype(float)
+    lum = px.mean(-1)
+    skin_lum = np.percentile(lum, 80)                                       # the plain skin around the lines
+    alpha = np.clip((skin_lum - lum - 8) / 40.0, 0, 1) ** 0.8   # only the drawn lines, no skin halo
+    rgba = np.dstack([px, alpha * 255]).astype(np.uint8)
+    mouth_path = os.path.join(out_dir, "soldier_mouth.png")
+    Image.fromarray(rgba, "RGBA").save(mouth_path)
+    w, h = 0.096, 0.068
+    cx, cz, md = -0.006, 0.405, 0.0875                                      # centre on the lips, just proud of them
+    verts = [(cx - w / 2, -md, cz - h / 2), (cx + w / 2, -md, cz - h / 2), (cx + w / 2, -md, cz + h / 2), (cx - w / 2, -md, cz + h / 2)]
+    mm = bpy.data.meshes.new("Mouth"); mm.from_pydata(verts, [], [(0, 1, 2, 3)])
+    uv = mm.uv_layers.new(name="UVMap")
+    for li, (u, v) in zip(range(4), ((0, 0), (1, 0), (1, 1), (0, 1))):
+        uv.data[li].uv = (u, v)
+    mo = bpy.data.objects.new("Mouth", mm); bpy.context.collection.objects.link(mo)
+    mt = bpy.data.materials.new("Mouth"); mt.use_nodes = True; t = mt.node_tree; bs = t.nodes["Principled BSDF"]
+    img = t.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(mouth_path)
+    t.links.new(img.outputs["Color"], bs.inputs["Base Color"]); t.links.new(img.outputs["Alpha"], bs.inputs["Alpha"])
+    if hasattr(mt, "surface_render_method"): mt.surface_render_method = "BLENDED"
+    mm.materials.append(mt)
+    lens_objs.append(mo)
+
+    # the leaf on the end of the stem, drawn like the one in the picture: a lobed oak-style sprig in the
+    # drawing's olive green, with a dark ink outline, a lighter midrib and side veins
+    W, H = 600, 360
+    leaf = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    dr = ImageDraw.Draw(leaf)
+    pts = []
+    for i in range(121):                                   # outline: stem end at x=0, tip at x=W
+        t = i / 120
+        lobes = 0.55 + 0.45 * abs(math.sin(t * math.pi * 3.5))
+        half = (H * 0.46) * math.sin(math.pi * t) ** 0.8 * lobes
+        pts.append((12 + t * (W - 24), H / 2 - half))
+    pts += [(x, H - y) for x, y in reversed(pts)]
+    dr.polygon(pts, fill=(106, 124, 64, 255))
+    shade = Image.new("RGBA", (W, H), (0, 0, 0, 0)); ds = ImageDraw.Draw(shade)
+    ds.polygon([(x, y) for x, y in pts if y > H / 2 - 1] or pts, fill=(80, 98, 50, 110))   # darker lower half
+    leaf = Image.alpha_composite(leaf, shade)
+    dr = ImageDraw.Draw(leaf)
+    dr.line([(12, H / 2), (W - 20, H / 2)], fill=(150, 168, 100, 255), width=6)            # midrib
+    for k in range(1, 7):                                                              # side veins to each lobe
+        x0 = 12 + (W - 24) * k / 7.5
+        for sgn in (-1, 1):
+            dr.line([(x0, H / 2), (x0 + 55, H / 2 + sgn * H * 0.3 * math.sin(math.pi * k / 7.5))],
+                    fill=(135, 152, 88, 255), width=4)
+    dr.line(pts + [pts[0]], fill=(46, 52, 32, 255), width=7)                           # ink outline
+    leaf_path = os.path.join(out_dir, "soldier_leaf.png")
+    leaf.save(leaf_path)
+    L, Wd = 0.20, 0.12                                     # size in metres; lies flat, pointing forward from the tip
+    tip = (0.007, -0.575, 0.413)
+    # tilted 55 degrees about its own length so its face shows from the front and the sides, drooping a little
+    wx, wz = math.cos(math.radians(55)) * Wd / 2, math.sin(math.radians(55)) * Wd / 2
+    verts = [(tip[0] - wx, tip[1], tip[2] - wz), (tip[0] + wx, tip[1], tip[2] + wz),
+             (tip[0] + wx - 0.04, tip[1] - L, tip[2] + wz - 0.06), (tip[0] - wx - 0.04, tip[1] - L, tip[2] - wz - 0.06)]
+    lf = bpy.data.meshes.new("Leaf"); lf.from_pydata(verts, [], [(0, 1, 2, 3)])
+    uv = lf.uv_layers.new(name="UVMap")
+    for li, (u, v) in zip(range(4), ((0, 0), (0, 1), (1, 1), (1, 0))):   # texture length runs along the leaf
+        uv.data[li].uv = (u, v)
+    lo = bpy.data.objects.new("Leaf", lf); bpy.context.collection.objects.link(lo)
+    mt = bpy.data.materials.new("Leaf"); mt.use_nodes = True; t = mt.node_tree; bs = t.nodes["Principled BSDF"]
+    img = t.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(leaf_path)
+    t.links.new(img.outputs["Color"], bs.inputs["Base Color"]); t.links.new(img.outputs["Alpha"], bs.inputs["Alpha"])
+    if hasattr(mt, "surface_render_method"): mt.surface_render_method = "BLENDED"
+    lf.materials.append(mt)
+    lens_objs.append(lo)
+
+m = bpy.data.materials.new("Soldier"); m.use_nodes = True; nt = m.node_tree; b = nt.nodes["Principled BSDF"]
+vc = nt.nodes.new("ShaderNodeVertexColor"); vc.layer_name = "Col"
+nt.links.new(vc.outputs["Color"], b.inputs["Base Color"]); b.inputs["Roughness"].default_value = 0.75
+me.materials.clear(); me.materials.append(m)
+for p in me.polygons: p.use_smooth = True
+
+sc = bpy.context.scene
+w = bpy.data.worlds.new("W"); sc.world = w; w.use_nodes = True
+w.node_tree.nodes["Background"].inputs["Color"].default_value = (0.55, 0.7, 0.85, 1)
+w.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.9
+sun = bpy.data.objects.new("S", bpy.data.lights.new("S", "SUN")); sun.data.energy = 2.2
+sun.rotation_euler = (math.radians(40), 0, math.radians(25)); sc.collection.objects.link(sun)
+cam = bpy.data.objects.new("C", bpy.data.cameras.new("C")); sc.collection.objects.link(cam); sc.camera = cam; cam.data.lens = 85
+sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.use_denoising = True
+sc.render.resolution_x = sc.render.resolution_y = 500; sc.view_settings.view_transform = "Standard"
+for name, ang in (("front", 0), ("three", 35), ("side", 80), ("close", 0), ("back", 180), ("leaf", 30)):
+    a = math.radians(ang); cam.location = (3.2 * math.sin(a), -3.2 * math.cos(a), 0.58)
+    cam.data.lens = 260 if name == "close" else (60 if name == "leaf" else 85)
+    cam.rotation_euler = (Vector((0, 0, 0.56)) - cam.location).to_track_quat("-Z", "Y").to_euler()
+    sc.render.filepath = f"{prev}_{name}.png"; bpy.ops.render.render(write_still=True)
+
+import os
+os.makedirs(out_dir, exist_ok=True)
+bpy.ops.object.select_all(action="DESELECT"); obj.select_set(True)
+for lo in lens_objs: lo.select_set(True)
+bpy.ops.export_scene.gltf(filepath=os.path.join(out_dir, "SoldierHead.glb"), use_selection=True, export_vertex_color="ACTIVE")
+bpy.ops.export_scene.fbx(filepath=os.path.join(out_dir, "SoldierHead.fbx"), use_selection=True, colors_type="LINEAR",
+                         axis_forward="-Z", axis_up="Y", apply_scale_options="FBX_SCALE_UNITS", path_mode="COPY", embed_textures=True)

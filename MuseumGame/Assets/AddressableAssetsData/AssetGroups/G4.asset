@@ -1,0 +1,1504 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: G4
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: G4
+  m_GUID: 474d6ba63f9b7df46ba51aa6eacd2bea
+  m_SerializeEntries:
+  - m_GUID: 002680401837e694d892dd6e9b929c73
+    m_Address: Assets/Museum/VestibuleCropped/Object_5_wp.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 01e309139e816ff4e963bc912da23d35
+    m_Address: Assets/Museum/Shards3/Shard_R_146_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02e9168b11f2a4f47808b9d6ed96c385
+    m_Address: Assets/Museum/Shards3/Shard_F_005_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02f028cf515c8e4428af87297874eb54
+    m_Address: Assets/Museum/Shards3/Shard_R_162_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 037f603d846ebe8428cf3ddf2656cd9b
+    m_Address: Assets/Museum/Shards3/Shard_F_032_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 04a1d9d8fad807641b3f8c23fa09850f
+    m_Address: Assets/Museum/Shards3/Shard_R_115_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0574d28fc1aec5a4e98eeb151e554c8f
+    m_Address: Assets/Museum/Shards3/Shard_F_018_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 05a87029fc704f84e923380c4a4035ea
+    m_Address: Assets/Museum/Shards3/Shard_L_103_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 063a8e0210aa96c458a33b1d611d450c
+    m_Address: Assets/Museum/Shards3/Shard_F_006_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 068e79cf01cccba44857c2906a2eb566
+    m_Address: Assets/Museum/Shards3/Shard_R_117_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 06dc8b53558486346b27e31be359b327
+    m_Address: Assets/Props/Garden/G_DoorStone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 076a5bde66305364488983d2dfad440b
+    m_Address: Assets/Museum/GalleryCropped/DoorFloorFill.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08d7e48b83385384b8d88672a91865af
+    m_Address: Assets/Museum/Shards3/Shard_L_099_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 093b7935c43467a48b7c765fa81ed4dd
+    m_Address: Assets/Museum/VestibuleCropped/Object_11_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0950eb7961efdd9499cfa9c8a12442ff
+    m_Address: Assets/Museum/Shards3/Shard_R_142_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09eb5bd5e746ffc4484588725faec801
+    m_Address: Assets/Museum/Shards3/Shard_L_078_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09f41aa5b7dea7b46973e01c09001750
+    m_Address: Assets/Museum/VestibuleCropped/Object_4_colwp.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b1775d72ca3f7645a8b25d6f960e449
+    m_Address: Assets/Museum/Shards3/Shard_L_086_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b3d2169dc8b7e2478c7cc1daa016231
+    m_Address: Assets/Museum/Shards3/Shard_R_137_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b591443fdce4644c8c427955ab0e249
+    m_Address: Assets/Meshes/DiningRoom/DiningRoom_backing.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b5a08edcc45eba4ab934a7ffc9bfe9a
+    m_Address: Assets/Museum/Shards3/Shard_R_140_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0badd88b428dbd24ba11df00eff54146
+    m_Address: Assets/Museum/Shards3/Shard_L_110_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0bd96509adb317542af86559ba429b82
+    m_Address: Assets/Museum/Shards3/Shard_L_082_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0c239a77d2e9c3c4b9def8d847695d31
+    m_Address: Assets/Museum/Shards3/Shard_L_057_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d4b9e29c0d7995418c87e6404dabbf5
+    m_Address: Assets/Museum/Shards3/Shard_R_122_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11658fbdabba9ff42a9000e2003eeec2
+    m_Address: Assets/Museum/Shards3/Shard_L_100_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 127d685efc7ceb441907cd9c54c67446
+    m_Address: Assets/Museum/Shards3/Shard_L_104_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 131f22514b153cc4f8e7ef9c622f2258
+    m_Address: Assets/Materials/161122_HWY_Galleri_Material_u1_v1_2S.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14243c9e83a8b224b9212c8beb050e75
+    m_Address: Assets/Museum/Shards3/Shard_R_128_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15472d6f89b22fd4e976a2a80eb0e27f
+    m_Address: Assets/Museum/Shards3/Shard_F_028_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 154f09a1c89416448bb8d779457c435a
+    m_Address: Assets/Museum/Shards3/Shard_F_040_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15abfd416a14be04e800498fd4cf050f
+    m_Address: Assets/Museum/HallFractured.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15d321b7ed4268143bbc5dd24c670504
+    m_Address: Assets/Museum/VestibuleCropped/Object_8_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16fb32a1d319feb4faecd2f100a94289
+    m_Address: Assets/Museum/Shards3/Shard_R_152_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1913cb3e5c30d6344a2f7565d52399db
+    m_Address: Assets/Museum/Shards3/Shard_R_113_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19e2edf317fb9fd4fae67863701deefd
+    m_Address: Assets/Museum/Shards3/Shard_R_141_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b0c330eae97ef44097710851cf6ff8b
+    m_Address: Assets/Museum/Shards3/Shard_R_155_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e7d5a3f990ea7c4185ee5475f4b1877
+    m_Address: Assets/Museum/Shards3/Shard_L_061_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ea8723ac1700ae4390c90404da0783f
+    m_Address: Assets/Museum/Shards3/Shard_R_147_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20ca5d822f7344e4c88d92050d31d432
+    m_Address: Assets/Museum/AuctionHall.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21a7f0bf5b92fbd4895a33aed46079eb
+    m_Address: Assets/Museum/Shards3/Shard_L_058_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 239ff818c9204604f97f7899bd2f335c
+    m_Address: Assets/Meshes/GalleryCarved/Object_8_carved4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24980532f5d5baf48a888407b31bf606
+    m_Address: Assets/Materials/DiningRoom.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25842d5a278392f49af22e329d915c10
+    m_Address: Assets/Museum/Shards3/Shard_L_106_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25d174e0886423d48b53a603b3b6e71b
+    m_Address: Assets/Museum/VestibuleCropped/Object_6_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 28ae150d09ab7e8409f5e05e4c095a18
+    m_Address: Assets/Museum/Shards3/Shard_F_023_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2972f6c44a4d0614aa0d97c2285e6d35
+    m_Address: Assets/Museum/Crater_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 29bf2d71d76708f489fa06b3a0dd548e
+    m_Address: Assets/Museum/Shards3/Shard_L_105_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c2597cc796119244a45cc29cc57c8db
+    m_Address: Assets/Museum/Shards3/Shard_F_024_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c3d152e03936c24fbf208740a0e5651
+    m_Address: Assets/Museum/Shards3/Shard_F_030_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c78d6f0d873b6540bb26b992a4cc57e
+    m_Address: Assets/Museum/GalleryCropped/Object_11_post3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2dca3c3c281a69b488a042bd603f1a7a
+    m_Address: Assets/Museum/Shards3/Shard_F_016_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fe14b99f12df114094a02079a495ab9
+    m_Address: Assets/Museum/Shards3/Shard_R_133_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30961c0aba2d7b943aa3a73bfd17075b
+    m_Address: Assets/Props/Garden/G_DoorFrame.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30d6cae8d6425064794a72ff7109b3e0
+    m_Address: Assets/Museum/GalleryCropped/ArchFloor2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 312b2c948f8b4c0459798ed2e2057a80
+    m_Address: Assets/Museum/Shards3/Shard_F_051_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 330ed134027e34e4a91e31a58997bef2
+    m_Address: Assets/Museum/Shards3/Shard_L_074_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 33d133cfb76bfbe4fbf731a7ce4b3660
+    m_Address: Assets/Museum/Shards3/Shard_R_158_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 345ac47c2d5119641850a7c5161f7721
+    m_Address: Assets/Museum/VestibuleCropped/Object_10_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 349da18daf3bb204eb9364bcd8f3dae4
+    m_Address: Assets/Museum/Shards3/Shard_L_081_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34fdb0ff1f921b145b6835bb5d8f8873
+    m_Address: Assets/Museum/Shards3/Shard_F_038_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 351325f73d0f776419f1c89beadf658e
+    m_Address: Assets/Museum/Shards3/Shard_R_116_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3585d662e4365344489aa8dd2cc0056a
+    m_Address: Assets/Materials/Prop_Glass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 366e64b4b83985e40b120c5ad6bac3a2
+    m_Address: Assets/Museum/Shards3/Shard_F_010_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 366ec2020676f2847a8932a6a7714f16
+    m_Address: Assets/Museum/Shards3/Shard_L_095_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 377d4d53652989e4d844d6fce481f6c6
+    m_Address: Assets/Museum/Shards3/Shard_F_013_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3786f34867c44ed42ba5343d35af5116
+    m_Address: Assets/Museum/Shards3/Shard_R_159_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3862826f328fa2743af763fc16826354
+    m_Address: Assets/Materials/Pillar_Crack.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38c16d6bf872450439abadd09412b2df
+    m_Address: Assets/Optimized/Tex/t100.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38e190796bcc7894ab6bee40c4d8dc17
+    m_Address: Assets/Museum/Shards3/Shard_L_065_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3ad90d470d5f8e8418eb59035a495e6e
+    m_Address: Assets/Museum/Shards3/Shard_F_046_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3fa21230fa629ab48b3bc6c39f1081bd
+    m_Address: Assets/Museum/Shards3/Shard_R_165_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40fb1fff26079c9479d735b47692432b
+    m_Address: Assets/Museum/GlassShards.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 439a2f1e1cfaa274f9b83d21c6e8189a
+    m_Address: Assets/Museum/Shards3/Shard_R_160_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4454b1eeb74e1a2428be9c513fb76f3f
+    m_Address: Assets/Museum/VestibuleCropped/Object_7_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4583376cd0474a74aa3b1bfb7bca4b81
+    m_Address: Assets/Museum/Shards3/Shard_L_093_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46c7c73f5ef796244aa2e38d8012ecd1
+    m_Address: Assets/Museum/Shards3/Shard_F_049_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 476424d7e8b5f9048b74f139235edbd8
+    m_Address: Assets/Museum/Shards3/Shard_R_131_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 485f62e0a26a972439007a301db7a399
+    m_Address: Assets/Museum/Shards3/Shard_F_036_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4acaa78bb0850944ca8432afd7142074
+    m_Address: Assets/Museum/Shards3/Shard_L_098_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ce6881526b405b469ae0ce327fca2a3
+    m_Address: Assets/Museum/Shards3/Shard_L_111_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4dae8815780f15d439857cc64b11e306
+    m_Address: Assets/Museum/DetailedPillar.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f2d2e870dc5a64459692d49c2148f9f
+    m_Address: Assets/Museum/VestibuleCropped/Object_14_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 515407ea10fe5484a9bfc92ffad9593a
+    m_Address: Assets/Museum/Shards3/Shard_F_008_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51afe2d90c765ae40ad4fb05aeafc2f7
+    m_Address: Assets/Museum/Shards3/Shard_F_001_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52b86991a55ddb54b942bb383df58687
+    m_Address: Assets/Museum/Shards3/Shard_R_145_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55d4b42615d1a154ab6edc2deaaf09f7
+    m_Address: Assets/Museum/VestibuleCropped/Object_2_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55fa89e9696200742a297a505a61ff3f
+    m_Address: Assets/Museum/Shards3/Shard_L_076_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57d9c6d0b96c55441b4fb640b9f87f87
+    m_Address: Assets/Museum/Shards3/Shard_L_102_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5974f475cabafe54ea0794c99163f487
+    m_Address: Assets/Museum/Shards3/Shard_R_114_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59dad5e0a6575ce409aa2266639f2d8d
+    m_Address: Assets/Museum/Shards3/Shard_R_119_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5a314df367694d9418354240fb8b0898
+    m_Address: Assets/Materials/DiningRoom_cull.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5bc0727a73ac29744840cc7c761e8a12
+    m_Address: Assets/Museum/Textures/DiningRoom_Albedo.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cb85e3a27185d948a9cb27b3de13a76
+    m_Address: Assets/Museum/Shards3/Shard_F_025_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cf69aad63c686c4299610e99881707c
+    m_Address: Assets/Museum/VestibuleCropped/Object_3_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cf904c91fe652e4a9349646572f390e
+    m_Address: Assets/Museum/Shards3/Shard_L_077_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5d1cc0ebe8c243740b3bcd03bdeaa04f
+    m_Address: Assets/Museum/GalleryCropped/Object_12_rope.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5d88bcbfd162c054ea9482d50f7ad6a8
+    m_Address: Assets/Museum/Shards3/Shard_L_060_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f4b629573ecdd94a9b1139376c9e10f
+    m_Address: Assets/Museum/Shards3/Shard_R_118_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ff4ea23e288d6f4abf4f7164b309104
+    m_Address: Assets/Museum/Shards3/Shard_F_031_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60c3a3cd4149fea428db69657a6b8903
+    m_Address: Assets/Museum/Shards3/Shard_R_124_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60e883e42a8497349bb2b38c7f7f85ca
+    m_Address: Assets/Museum/Shards3/Shard_R_120_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61525e515119add4fae1f844403ce812
+    m_Address: Assets/Meshes/ArchSlabs/G7_Object_4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61f4ce59771b307498915e666ac72473
+    m_Address: Assets/Museum/ScanCollision.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6275a9588591af2489b8861a7f77d75b
+    m_Address: Assets/Museum/Shards3/Shard_R_143_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62a121aaa92619b49bfae8a1757bceed
+    m_Address: Assets/Museum/Shards3/Shard_L_091_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 630dbe12374ba4443aebec4beee15bfd
+    m_Address: Assets/Museum/VestibuleCropped/Object_13_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 649ae564d4dfcbc4f9eb80eae64e1801
+    m_Address: Assets/Museum/Shards3/Shard_F_011_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64d3e6c17a7d6fe4ba616dc586e35e67
+    m_Address: Assets/Museum/Shards3/Shard_L_054_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65868847f92563543bce663a6a2f5017
+    m_Address: Assets/Museum/Shards3/Shard_R_148_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65ada346ece356b4a93fb11b63217d14
+    m_Address: Assets/Museum/Shards3/Shard_L_063_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66dcebd4f88e3f94687ef626a083102a
+    m_Address: Assets/Museum/Shards3/Shard_F_045_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 673cc2d1fcfe684489068e4ae23c5f5a
+    m_Address: Assets/Museum/Shards3/Shard_L_085_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6826ef8b17764f14db952cf51069fb84
+    m_Address: Assets/Museum/Shards3/Shard_R_126_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 68df2b3322f9778489366295470e167a
+    m_Address: Assets/Museum/Shards3/Shard_L_090_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 69d46dc333859df4e82fbca953b35110
+    m_Address: Assets/Museum/Shards3/Shard_L_071_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 69d5ebec5a2633b4dad980d5457666ad
+    m_Address: Assets/Museum/VestibuleCropped/Object_14_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b6a4cd4caf08d44599d79d99817fe89
+    m_Address: Assets/Optimized/Mats/m101.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c7372666a5b8fc4a82136c7135c195b
+    m_Address: Assets/Museum/Shards3/Shard_L_067_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 713a18364ca366349842aebb412c88e4
+    m_Address: Assets/Museum/Shards3/Shard_L_112_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 723818a9c4d65064488357ffdc0f4570
+    m_Address: Assets/Meshes/DiningRoom/DiningRoom_filled12.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 74a045685e2027f46937ac1158d78c1e
+    m_Address: Assets/Museum/VestibuleCropped/Object_10_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 753a96488b470554abca682ca78b7467
+    m_Address: Assets/Museum/Shards3/Shard_L_084_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 76283abc72500814fb34cd8815b6439a
+    m_Address: Assets/Museum/Shards3/Shard_L_062_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 771f9d27cdd564d458e520ba9fffba59
+    m_Address: Assets/Museum/Shards3/Shard_R_163_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7949a0425b9fefe4982bd343cc1f2bcf
+    m_Address: Assets/Museum/Shards3/Shard_R_144_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 79dcf88cf0b0b1142917571b01667618
+    m_Address: Assets/Textures/GalleryPaintingsRow.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a4bac684fba6d34c9045b75727c796e
+    m_Address: Assets/Museum/Shards3/Shard_L_066_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c8d2d30a133aae4ebb38110f287943b
+    m_Address: Assets/Museum/Shards3/Shard_L_068_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d5a156f6aae422448c452a3248d0d13
+    m_Address: Assets/Museum/GalleryCropped/Object_6_post2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7eada6b6e44bad445bfe2ef5f5c0af7b
+    m_Address: Assets/Museum/Shards3/Shard_R_125_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 80a80330af23d1a4da868f2bbbcc5091
+    m_Address: Assets/Museum/Shards3/Shard_L_056_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 816cce6611551ff4e9468e3ae4a78ab6
+    m_Address: Assets/Meshes/DiningRoom/DiningBackdrop2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 831760cbc7f72ba4791600045219547b
+    m_Address: Assets/Museum/Shards3/Shard_R_129_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83b5454b551ec0e42a8d8d5b56db6f96
+    m_Address: Assets/Museum/VestibuleCropped/Object_6_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8455ea7fe5fd60f4c963377716814f22
+    m_Address: Assets/Museum/Shards3/Shard_F_003_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 84cf246053a7f5a4c8cddae1ad390283
+    m_Address: Assets/Museum/Shards3/Shard_F_026_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 86a9299e1c3789d4d90df0dafd3f465f
+    m_Address: Assets/Materials/ArchPatch_2S.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87d6ecc74d1f49346b9b4fba6c71b2b2
+    m_Address: Assets/Museum/Shards3/Shard_L_094_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 89e44678241903248b961eca01abf81b
+    m_Address: Assets/Museum/Shards3/Shard_L_092_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8bc0fc7ad53a2ce49b06350de6dc0a53
+    m_Address: Assets/Museum/Shards3/Shard_F_039_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c6baedf92e914c4899ed77b3f4ba3f5
+    m_Address: Assets/Museum/Shards3/Shard_F_033_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c97322a776ddeb4c87bf15033e3ebba
+    m_Address: Assets/Museum/Shards3/Shard_F_007_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8db409d441a4ada4dbdb6e8a37bbc83b
+    m_Address: Assets/Meshes/ArchSlabs/G7_Object_3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e4b0fe1565a1694d8f0a35e0bceea30
+    m_Address: Assets/Museum/Shards3/Shard_F_002_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f316f20ecc97c14e8f596e2f8d17d66
+    m_Address: Assets/Museum/Shards3/Shard_L_108_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f59b0e0d16a954479f628c035816d20
+    m_Address: Assets/Museum/Shards3/Shard_F_004_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8fd216e1306e43346b6baef9f90a3660
+    m_Address: Assets/Museum/VestibuleCropped/Object_4_wp.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90b201c67e6063f4db8234d07b9886b5
+    m_Address: Assets/Museum/Shards3/Shard_R_135_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91cb403a6100d11439e28026e71d48a6
+    m_Address: Assets/Museum/VestibuleCropped/Object_15_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93ddb355edcd38b4e870c77600ad2570
+    m_Address: Assets/Materials/HoleCoverPainting.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95d6299a217f40f49b1c961d03014c21
+    m_Address: Assets/Museum/VestibuleCropped/Object_13_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9641ae33381fe964a992839277c4f2e8
+    m_Address: Assets/Materials/Pillar_Crater.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 972c5975c0a3ced44bdd66cee47e0cc3
+    m_Address: Assets/Museum/Shards3/Shard_F_044_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99f86bf5f9ba23641b87ef89b57914c2
+    m_Address: Assets/Museum/Shards3/Shard_F_035_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9aaa58503f794e7498b993615d95f732
+    m_Address: Assets/Museum/Shards3/Shard_F_012_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b0525c4abb8b9f4292ff6f245702dff
+    m_Address: Assets/Museum/Shards3/Shard_F_042_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f22a43468321f54d91c1cf9d7ce6f74
+    m_Address: Assets/Museum/Shards3/Shard_L_097_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a0d3a2c05fea81542965212b3205ff98
+    m_Address: Assets/Museum/Shards3/Shard_R_153_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a1cf8a7f37ba08544b2d8a651a071cec
+    m_Address: Assets/Museum/Shards3/Shard_R_139_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a269ff971fe82ad4d82e353ab13010c9
+    m_Address: Assets/Museum/Shards3/Shard_R_164_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a275b7f1ffab00545b6c1ee384b6ec9d
+    m_Address: Assets/Museum/GalleryCropped/Object_13_gcut2.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2ec7db322d6ce840a03e2e1d7e57e4b
+    m_Address: Assets/Museum/Shards3/Shard_F_019_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a349a3f5728f632409c3baebfee442ea
+    m_Address: Assets/Museum/Shards3/Shard_R_136_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3526426c625fbf4987f09c389c4ff34
+    m_Address: Assets/Museum/Shards3/Shard_L_079_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3896717fa63f2f4d8ae8efbd56e49ad
+    m_Address: Assets/Museum/Shards3/Shard_R_161_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a4bd43a6f9ad3ed4e98c43248653aa01
+    m_Address: Assets/Museum/VestibuleCropped/Object_3_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a51e6a06635829d43adec38cd35a240c
+    m_Address: Assets/Museum/Shards3/Shard_F_043_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a5861aadc99d1b74281064dfa432eb68
+    m_Address: Assets/Museum/GalleryCropped/ArchFloor.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6ad18a07e7b8334dbb5134ed8a71909
+    m_Address: Assets/Materials/Prop_Iron.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6e06ec98780a8a4abb45f6987711aa5
+    m_Address: Assets/Museum/VestibuleCropped/Object_9_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a74ad46a39455de4da4aeeeab84aacbb
+    m_Address: Assets/Museum/Shards3/Shard_L_064_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a762304156678af479e67fbc8408de40
+    m_Address: Assets/Museum/Shards3/Shard_F_034_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a9ce681c8658a414da2839fc807c14b7
+    m_Address: Assets/Museum/VestibuleCropped/Object_2_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa1bfd32567554f488d2b7896a4b499f
+    m_Address: Assets/Museum/Shards3/Shard_F_017_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aac349abdcb73074c9641f2a9539ba0e
+    m_Address: Assets/Museum/VestibuleCropped/StairFill 1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad1a21890c97ea247b99fc5459e448a5
+    m_Address: Assets/Museum/Shards3/Shard_L_080_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aded54dbc2106ba46aeb41464d3e5118
+    m_Address: Assets/Materials/Hall_Stone.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0c63a74aa8605a4ba7ae02e20411b8d
+    m_Address: Assets/Museum/VestibuleCropped/Object_11_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4ca1a005fc105b40b08a1743d7f4fd0
+    m_Address: Assets/Optimized/Tex/t101.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b66b723c605874a4880daa4ee09a719d
+    m_Address: Assets/Museum/Shards3/Shard_L_059_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7f130a729e0b2a49a7c61ed607cf440
+    m_Address: Assets/Museum/Shards3/Shard_L_087_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b8c5210b1bd419942b1d9bd111baddcf
+    m_Address: Assets/Museum/Shards3/Shard_L_088_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: baf124eb6a85f1c41ab15c145fa65394
+    m_Address: Assets/Museum/Shards3/Shard_F_000_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bbe07dc7fed519145be99a3bbcf62a5a
+    m_Address: Assets/Museum/Shards3/Shard_R_132_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf05d1dbf1356df4cb0c39b4237fae24
+    m_Address: Assets/Materials/Hall_Brass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c070e216bd17e494286e390f550f3f67
+    m_Address: Assets/Museum/VestibuleCropped/Object_12_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c07c9b587ba113840bca2de729de7ebc
+    m_Address: Assets/Museum/Shards3/Shard_R_154_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c0cfd9208eed06042b30c5ccbbd96abd
+    m_Address: Assets/Museum/Shards3/Shard_F_052_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c15059d00c7532041bce69992f159b1e
+    m_Address: Assets/Museum/VestibuleCropped/Object_15_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2059fa2461d01e4f9c22ca04f911cdb
+    m_Address: Assets/Materials/Prop_BarrelWood.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2119a6dd59789049892828fd9c8a59f
+    m_Address: Assets/Meshes/ArchSlabs/GalleryDoor_fit4.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2f80f2e279b0e341ac1d27754cef2ec
+    m_Address: Assets/Museum/Shards3/Shard_F_020_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c368c4910590fe64b94c85fd18b79ef7
+    m_Address: Assets/Museum/Shards3/Shard_R_157_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3e7861299c44c341888755ea97615c2
+    m_Address: Assets/Museum/VestibuleCropped/Object_12_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c4cf5db1aeb09754fb5e9a5470e82f56
+    m_Address: Assets/Museum/Shards3/Shard_R_123_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c54a54b66ab5eae4b9da2f732de8d95c
+    m_Address: Assets/Museum/Shards3/Shard_L_070_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c55372df0ad5314448f53e813c1aa044
+    m_Address: Assets/Museum/Marble_Albedo.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c82be1f6f07ec2a4bb2d3c301a629462
+    m_Address: Assets/Museum/Shards3/Shard_R_149_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc3bafe1be7ec6d48b52cdfcae9067fb
+    m_Address: Assets/Museum/Shards3/Shard_R_130_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d082d02e2a3155c4fb854512ef65b7a7
+    m_Address: Assets/Museum/Shards3/Shard_R_150_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0d8b16c82e41444fa5e36a9d6c85ecd
+    m_Address: Assets/Museum/VestibuleCropped/LandingCorners.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d19a566d4be5158449eaa6a69e74b3ae
+    m_Address: Assets/Museum/Shards3/Shard_F_021_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3ef1ec90b45f4b489c2baca8725b49b
+    m_Address: Assets/Museum/Shards3/Shard_L_073_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d45630571cbb21941ae8e43d21dd4578
+    m_Address: Assets/Museum/GalleryCropped/Object_10_post3.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d67dd5274cb4df647882ccef173c593a
+    m_Address: Assets/Museum/Shards3/Shard_F_009_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d79f9aad9cccecc40a0e737b4b1fcee0
+    m_Address: Assets/Museum/Shards3/Shard_R_138_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8d192e07a4933e48b86b2007e7c3574
+    m_Address: Assets/Museum/Shards3/Shard_R_121_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: daed63514c3cd4141b042b63ce7b96c0
+    m_Address: Assets/Museum/Shards3/Shard_F_050_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_7
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db2fee4c35515114fb239d1792a5defa
+    m_Address: Assets/Museum/the_picture_gallery.glb
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_2
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc46a82b34f7c5e43bcd5ff3fb30579c
+    m_Address: Assets/Meshes/ArchSlabs/PitFloor.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ddddb1b2e58871946bd74cd5c4ceb808
+    m_Address: Assets/Museum/Shards3/Shard_L_101_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: defbc4b2597880a408dbe4d838af497b
+    m_Address: Assets/Museum/Barrel_Shattered.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df73c717429335b4e8dfc9d0dbd22026
+    m_Address: Assets/Museum/VestibuleCropped/Object_5_colwp.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df8ce847bdd28c046bf9ca5d2d4bb011
+    m_Address: Assets/Materials/Hall_Glass.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df9395d079816f94883a6e4597cfac72
+    m_Address: Assets/Museum/VestibuleCropped/Object_8_collo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e06019b04e405004e92bb9491013077e
+    m_Address: Assets/Museum/Shards3/Shard_F_015_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0953183283c14341b2484f97d9e8bcc
+    m_Address: Assets/Museum/Shards3/Shard_F_022_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e302b32ca2232444898a5b56baba70de
+    m_Address: Assets/Museum/ScanBoundary.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3082cac5b12fdc4b8179948b17ce134
+    m_Address: Assets/Museum/Shards3/Shard_F_014_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3b1dd286e23a26469aefae5e5b14077
+    m_Address: Assets/Museum/VestibuleCropped/Object_9_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e426fe17e4a7a144f97404c9d8d1b6f3
+    m_Address: Assets/Museum/Shards3/Shard_L_089_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e74da01374692ec42b8f9910999a8b0b
+    m_Address: Assets/Museum/Shards3/Shard_F_047_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e930d7f36ba962749b2f08ab719fbfd8
+    m_Address: Assets/Museum/Shards3/Shard_F_037_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e9821c67cf2ba5741a908f7cbe0d07e1
+    m_Address: Assets/Museum/Shards3/Shard_R_156_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea005ea58c52cfb4eab091a8afd5afee
+    m_Address: Assets/Museum/Shards3/Shard_L_075_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea010d93699c7fd4293a3feca1a70701
+    m_Address: Assets/Museum/Shards3/Shard_F_027_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea761c25587382a448cc6e30607943df
+    m_Address: Assets/Museum/Shards3/Shard_L_069_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea7a5a465001d81418731221ae8c4eaf
+    m_Address: Assets/Materials/Hall_Crystal.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb2c0bf1d7c24d646a91fa09c53ef03d
+    m_Address: Assets/Museum/Shards3/Shard_L_055_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_5
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb8992f56b274654d911303a82223e3d
+    m_Address: Assets/Materials/Prop_Wood.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eba83a26727d50548b00981fd6de9b7a
+    m_Address: Assets/Museum/Shards3/Shard_L_109_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecde411ec7413894c9ca6ecebb2963a1
+    m_Address: Assets/Museum/Shards3/Shard_F_041_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ed801cfa9d0d847469816cf05d2759e9
+    m_Address: Assets/Museum/Shards3/Shard_L_083_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_6
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eecfb37f3897b43429b320ed12ec2c7e
+    m_Address: Assets/Museum/Shards3/Shard_L_072_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f04e5f1c2c202fd458ad18b00a15398b
+    m_Address: Assets/Museum/Shards3/Shard_L_107_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f144f4b8cf8224442a340c74a82f135b
+    m_Address: Assets/Optimized/Mats/m100.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f228d06d1c5401b42a91c14045118f51
+    m_Address: Assets/Museum/Shards3/Shard_L_096_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f284a0ca9d91e7a44bd704ca8e63b14c
+    m_Address: Assets/Museum/Shards3/Shard_R_134_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3fadbb1dda83ad458d44bc2f9701e0d
+    m_Address: Assets/Museum/Shards3/Shard_F_029_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f728b9453a5e4334880c3ab298bb9a97
+    m_Address: Assets/Museum/Shards3/Shard_R_127_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f860f92ce35d07d438a8152504bb6366
+    m_Address: Assets/Museum/Shards3/Shard_F_053_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fa7ad772d4986d0488101316299ce555
+    m_Address: Assets/Museum/VestibuleCropped/Object_7_lo.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb15eb1f504b3bd4b8b13b64fa27c3b6
+    m_Address: Assets/Museum/Shards3/Shard_F_048_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_0
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fbc440e0f66e4ac4583ca5cedd6ded40
+    m_Address: Assets/Materials/Hall_Wall.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_4
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ffb2a2f2ae04da04cb9aad775c317a5d
+    m_Address: Assets/Museum/Shards3/Shard_R_151_t.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - G4_1
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: fbec2a80f553f32429580439e5e21c2f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 88074abcd44587b4d958a8213a90fd47, type: 2}
+    - {fileID: 11400000, guid: 7bbecb5c48b8de84caeb325d5e866417, type: 2}
+    m_SchemaDisplayOrder:
+    - G4_BundledAssetGroupSchema
+    - G4_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1
