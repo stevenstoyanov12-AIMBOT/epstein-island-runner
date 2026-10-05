@@ -180,6 +180,14 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
     to_b = np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], float)   # Y-up (figure faces -Z) -> Z-up (faces -Y)
 
     for name, m in [("Intact", intact)] + pieces:
+        share = len(m.faces) / total
+        target = max(400, int(budget * share))
+        if name == "Intact":
+            target = int(budget * 0.8)                       # seamless shell shown until the first hit
+        elif name.startswith("Base"):
+            target = max(300, target // 3)                  # flat plinth faces decimate well
+        if target < len(m.faces):
+            m = decimate(m, target)
         flags = broken_faces(m, vol, lo, voxel) if name != "Intact" else np.zeros(len(m.faces), bool)
         centre = m.centroid
         verts = (m.vertices - centre) @ to_b.T
@@ -193,20 +201,6 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
         ob.location = centre @ to_b.T
         ob.parent = root
         scene.collection.objects.link(ob)
-
-        share = len(m.faces) / total
-        target = max(400, int(budget * share))
-        if name == "Intact":
-            target = int(budget * 0.8)                       # seamless shell shown until the first hit
-        elif name.startswith("Base"):
-            target = max(300, target // 3)                  # flat plinth faces decimate well
-        if target < len(m.faces):
-            mod = ob.modifiers.new("Decimate", "DECIMATE")
-            mod.ratio = target / len(m.faces)
-            mod.use_collapse_triangulate = True
-            bpy.context.view_layer.objects.active = ob
-            with bpy.context.temp_override(object=ob, active_object=ob):
-                bpy.ops.object.modifier_apply(modifier=mod.name)
         bm = bmesh.new()
         bm.from_mesh(ob.data)
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
