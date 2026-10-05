@@ -18,6 +18,7 @@ import trimesh
 from scipy.ndimage import binary_dilation, map_coordinates
 from skimage.measure import marching_cubes
 
+from build import decimate
 from sdf import fbm
 from venus_statue import PLINTH_H, VenusStatue
 
@@ -96,25 +97,30 @@ def cell_field(p, seeds, i):
 def cut_pieces(vol, lo, voxel, groups, gap):
     """groups: list of (prefix, seeds, sign) where sign selects y>0 (figure) or y<0 (plinth)."""
     shape = np.array(vol.shape)
-    inside = vol < 2 * voxel
-    coords = np.argwhere(inside)
-    world = lo + coords * voxel
+    y0 = int(np.ceil(-lo[1] / voxel))                 # first voxel row with y >= 0
     pieces = []
     for prefix, seeds, side in groups:
-        sel = (world[:, 1] >= 0) if side > 0 else (world[:, 1] < 0)
-        cw, cc = world[sel], coords[sel]
-        lab = np.empty(len(cw), np.int32)
-        for s in range(0, len(cw), 2_000_000):
-            pw = warp(cw[s:s + 2_000_000])
-            d2 = ((pw[:, None, :] - seeds[None]) ** 2).sum(-1)
-            lab[s:s + 2_000_000] = d2.argmin(1)
-        order = np.argsort(-seeds[:, 1] if side > 0 else -seeds[:, 1])
-        for k, i in enumerate(order):
-            mine = cc[lab == i]
-            if len(mine) < 50:
+        ya, yb = (y0, shape[1]) if side > 0 else (0, y0)
+        # per-cell voxel bounding boxes, labelled one x-slab at a time to keep memory down
+        bmin = np.full((len(seeds), 3), 1 << 30)
+        bmax = np.full((len(seeds), 3), -1)
+        count = np.zeros(len(seeds), int)
+        for x in range(shape[0]):
+            cc = np.argwhere(vol[x, ya:yb] < 2 * voxel)
+            if not len(cc):
                 continue
-            a = np.maximum(mine.min(0) - 4, 0)
-            b = np.minimum(mine.max(0) + 5, shape)
+            cc = np.column_stack([np.full(len(cc), x), cc[:, 0] + ya, cc[:, 1]])
+            pw = warp(lo + cc * voxel).astype(np.float32)
+            lab = ((pw[:, None, :] - seeds[None].astype(np.float32)) ** 2).sum(-1).argmin(1)
+            np.minimum.at(bmin, lab, cc)
+            np.maximum.at(bmax, lab, cc)
+            count += np.bincount(lab, minlength=len(seeds))
+        order = np.argsort(-seeds[:, 1])
+        for k, i in enumerate(order):
+            if count[i] < 50:
+                continue
+            a = np.maximum(bmin[i] - 4, 0)
+            b = np.minimum(bmax[i] + 5, shape)
             sub = vol[a[0]:b[0], a[1]:b[1], a[2]:b[2]]
             g = np.stack(np.meshgrid(*[np.arange(a[j], b[j]) for j in range(3)], indexing="ij"), -1).reshape(-1, 3)
             p = lo + g * voxel
@@ -134,6 +140,7 @@ def cut_pieces(vol, lo, voxel, groups, gap):
             if m.volume < 0:
                 m.invert()
             trimesh.smoothing.filter_taubin(m, iterations=4)
+            m = decimate(m, max(2000, len(m.faces) // 4))     # Blender does the final reduction
             pieces.append((f"{prefix}_{k:02d}", m))
     return pieces
 
@@ -337,6 +344,7 @@ def main():
     if intact.volume < 0:
         intact.invert()
     trimesh.smoothing.filter_taubin(intact, iterations=4)
+    intact = decimate(intact, len(intact.faces) // 4)
 
     blender_scene(pieces, intact, vol, lo, args.voxel, args.tris, args.blend, args.fbx, args.preview, not args.no_render)
     print(f"done in {time.time() - t:.0f}s")
