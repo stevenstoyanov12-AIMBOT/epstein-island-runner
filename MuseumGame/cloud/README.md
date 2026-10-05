@@ -18,49 +18,16 @@ These are the three things that ruled out the plan as written:
 
 There's no third-party relay: the only external service is Google's public STUN server. The TURN password is created on the card at boot and only ever leaves it for the Worker's memory.
 
-## Wiring (one time)
+## Wiring (done)
 
-`museum-server/src/index.js`:
-
-```js
-import { CloudBroker, handleCloud } from "./cloud.js";
-export { CloudBroker };
-// first thing in fetch():
-if (url.pathname.startsWith("/cloud/") || url.pathname === "/stream.html") return handleCloud(request, env);
-```
-
-`wrangler.toml`:
-
-```toml
-[[durable_objects.bindings]]
-name = "CLOUD"
-class_name = "CloudBroker"
-
-[[migrations]]
-tag = "v3"
-new_classes = ["CloudBroker"]
-```
+The cloud broker is already wired into `index.js` (the `/cloud/*` and `/stream.html` routes), `wrangler.toml` (`CLOUD` binding, migration v3), the `index.html` template (weak GPUs go to `/stream.html`, and `?nocloud=1` skips that), and `Net.cs` (a cloud instance stays offline until a player attaches; `-room` forces a room). What's left for you:
 
 ```
 npx wrangler secret put CLOUD_SECRET      # any long random string; the same value goes in the Vast env
 npx wrangler deploy
 ```
 
-`index.html` (template + built copy), just before the WebGPU/WebGL choice:
-
-```js
-if (oldGpu() && !/[?&]nocloud=1/.test(location.search)) { location.replace("/stream.html"); return; }
-```
-
-`stream.html` handles claiming a slot, the queue ("number N in the queue"), and the "Play in the browser instead" button (which goes to `/?nocloud=1`, the WebGL fallback). It also falls back automatically when there are no cards in your region.
-
-`Net.cs`: a cloud instance must not join a room until a player is attached, otherwise idle instances take room seats. Where `Net` opens its socket:
-
-```csharp
-if (CloudArgs.IsCloud && !CloudArgs.PlayerAttached) { CloudArgs.PlayerAttachedChanged += on => { if (on) Connect(); }; return; }
-```
-
-`CloudArgs.Room` (from `-room`) is there if you want to force a room. Otherwise the instance goes through the Lobby like any player. The Lobby puts it by the card's location, so EU cards land in EU rooms.
+Then rebuild WebGL so the built `index.html` picks up the redirect. Until cards are running, weak-GPU players see "Cloud play is offline" for about 2 seconds and then load the WebGL version as before.
 
 ## Build the image
 

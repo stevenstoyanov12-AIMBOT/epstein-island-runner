@@ -7,7 +7,7 @@
 //
 // Media never touches Cloudflare: the browser talks straight to the card over its direct UDP/TCP port,
 // through the card's own coturn (credentials minted here from the secret the card reports).
-// Regions follow the Lobby rule: EU/AF/ME -> eu, NA/SA -> us; no Asia cards, so Asia is told so.
+// Regions follow the Lobby rule (regionOf in index.js); there are no Asia cards, so Asia plays in the browser.
 import { STREAM_HTML } from "./cloud_page.js";
 
 const CAP = 40;                    // concurrent cloud players across all cards
@@ -18,21 +18,15 @@ const TICKET_MS = 30e3;            // a claimed slot must connect within this
 const QUEUE_STALE_MS = 15e3;       // queue entries that stop polling drop out
 const TICK_MS = 5e3;
 
-export function cloudRegion(request) {
-  const c = request.cf && request.cf.continent;
-  if (c === "NA" || c === "SA") return "us";
-  if (c === "EU" || c === "AF" || c === "ME") return "eu";
-  return "asia";
-}
-
 // Route /cloud/* and /stream.html here from the main fetch handler.
-export async function handleCloud(request, env) {
+// region: the Lobby's regionOf(request), so cloud players follow exactly the same continent rule.
+export async function handleCloud(request, env, region) {
   const url = new URL(request.url);
   if (url.pathname === "/stream.html")
     return new Response(STREAM_HTML, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
   const id = env.CLOUD.idFromName("global");
   const headers = new Headers(request.headers);
-  headers.set("x-region", cloudRegion(request));
+  headers.set("x-region", region || "eu");
   return env.CLOUD.get(id).fetch(new Request(request, { headers }));
 }
 

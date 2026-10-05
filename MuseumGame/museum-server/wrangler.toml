@@ -21,3 +21,12 @@ class_name = "Lobby"
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["Lobby"]
+
+# cloud streaming broker (cards, slots, signalling): see src/cloud.js. Needs: npx wrangler secret put CLOUD_SECRET
+[[durable_objects.bindings]]
+name = "CLOUD"
+class_name = "CloudBroker"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["CloudBroker"]

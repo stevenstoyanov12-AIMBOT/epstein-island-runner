@@ -80,6 +80,12 @@ public class Net : MonoBehaviour
     void Update()
     {
         var root = LocalRoot(); if (root == null) return;
+        // cloud instance: stay offline until a browser player is attached, so idle instances don't hold room seats
+        if (CloudArgs.IsCloud)
+        {
+            if (!CloudArgs.PlayerAttached) return;
+            if (Room == null && CloudArgs.Room.Length > 0) Room = CloudArgs.Room;
+        }
         int st = SockState();
         if (st == 3)
         {

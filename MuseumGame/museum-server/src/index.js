@@ -1,3 +1,7 @@
+// Cloud streaming for weak PCs (Vast cards): /cloud/* and /stream.html, see cloud.js
+import { CloudBroker, handleCloud } from "./cloud.js";
+export { CloudBroker };
+
 // Rooms per region (10 players each) and where Cloudflare should run them.
 const CAP = 10;
 const REGIONS = { eu: { hint: "weur", rooms: 4 }, us: { hint: "enam", rooms: 4 }, asia: { hint: "apac", rooms: 2 } };
@@ -167,6 +171,8 @@ async function serveGame(req, env) {
 
 export default {
   fetch(req, env) {
+    const path = new URL(req.url).pathname;
+    if (path.startsWith("/cloud/") || path === "/stream.html") return handleCloud(req, env, regionOf(req));
     if (req.headers.get("Upgrade") === "websocket") {
       const url = new URL(req.url);
       if (url.pathname === "/lobby") {   // first stop: which room (or which place in the queue)

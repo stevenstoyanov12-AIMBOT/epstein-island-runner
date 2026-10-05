@@ -50,6 +50,9 @@
       if (/RTX|RX\s?[5-9]\d{3}|ARC|APPLE/.test(n)) return false;
       return /GTX|GEFORCE\s+(GT|MX|\d{3}M?\b)|QUADRO\s+[KMP]|RADEON\s+(R[579]|HD|RX\s?[45]\d{2}\b|VEGA)|INTEL.*(HD|UHD)/.test(n);
     }
+    // weak GPUs (see oldGpu) play a stream from a cloud machine instead; /stream.html falls back to here with ?nocloud=1
+    var cloud = oldGpu(gpuName()) && !/[?&]nocloud=1/.test(location.search);
+    if (cloud) location.replace('/stream.html');
     var useGL = !navigator.gpu || oldGpu(gpuName());
     // Unity uses WebGPU when the browser offers it and falls back to WebGL2 otherwise: hiding WebGPU forces the WebGL path
     if (useGL) { try { Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true }); } catch (e) {} }
@@ -91,7 +94,7 @@
         .then(function () { document.getElementById('loading').style.display = 'none'; window.gameReady = true; updateHint(); canvas.focus(); })
         .catch(function (m) { alert(m); });
     };
-    document.body.appendChild(script);
+    if (!cloud) document.body.appendChild(script);   // don't start downloading the game when we're leaving for the stream
   </script>
 </body>
 </html>
