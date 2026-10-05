@@ -318,9 +318,19 @@ def main():
     ap.add_argument("--blend", default=os.path.join(HERE, "blend/VenusStatue.blend"))
     ap.add_argument("--preview", default=os.path.join(HERE, "previews"))
     ap.add_argument("--no-render", action="store_true")
+    ap.add_argument("--cache", default="", help="save/load the cut pieces here (path prefix) to rerun only the Blender step")
     args = ap.parse_args()
 
     t = time.time()
+    if args.cache and os.path.exists(args.cache + ".npz"):
+        z = np.load(args.cache + ".npz", allow_pickle=True)
+        vol, lo = np.load(args.cache + ".vol.npy", mmap_mode="r"), z["lo"]
+        pieces = [(n, trimesh.Trimesh(v, f, process=False)) for n, v, f in z["pieces"]]
+        intact = trimesh.Trimesh(z["iv"], z["if"], process=False)
+        print(f"loaded {len(pieces)} pieces from cache")
+        blender_scene(pieces, intact, vol, lo, args.voxel, args.tris, args.blend, args.fbx, args.preview, not args.no_render)
+        print(f"done in {time.time() - t:.0f}s")
+        return
     vol, lo = sample(args.voxel)
     print(f"sdf {vol.shape} in {time.time() - t:.0f}s")
 
@@ -340,6 +350,14 @@ def main():
     trimesh.smoothing.filter_taubin(intact, iterations=4)
     intact = decimate(intact, len(intact.faces) // 4)
 
+    if args.cache:
+        np.save(args.cache + ".vol.npy", vol)
+        np.savez(args.cache + ".npz", lo=lo, iv=intact.vertices, **{"if": intact.faces},
+                 pieces=np.array([(n, m.vertices, m.faces) for n, m in pieces], dtype=object))
+    if args.cache:
+        np.save(args.cache + ".vol.npy", vol)
+        np.savez(args.cache + ".npz", lo=lo, iv=intact.vertices, **{"if": intact.faces},
+                 pieces=np.array([(n, m.vertices, m.faces) for n, m in pieces], dtype=object))
     blender_scene(pieces, intact, vol, lo, args.voxel, args.tris, args.blend, args.fbx, args.preview, not args.no_render)
     print(f"done in {time.time() - t:.0f}s")
 
