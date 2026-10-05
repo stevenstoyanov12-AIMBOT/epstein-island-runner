@@ -156,7 +156,6 @@ def broken_faces(m, vol, lo, voxel):
 
 def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, preview_dir, render):
     import bpy
-    import bmesh
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
@@ -201,13 +200,7 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
         ob.location = centre @ to_b.T
         ob.parent = root
         scene.collection.objects.link(ob)
-        bm = bmesh.new()
-        bm.from_mesh(ob.data)
-        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-        bm.to_mesh(ob.data)
-        bm.free()
-        for poly in ob.data.polygons:
-            poly.use_smooth = True
+        me.polygons.foreach_set("use_smooth", np.ones(len(me.polygons), bool))   # faces already wound outward (trimesh)
 
     # sharp edges where fracture faces meet the polished surface, smooth elsewhere
     bpy.ops.object.select_all(action="DESELECT")
