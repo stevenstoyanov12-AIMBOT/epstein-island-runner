@@ -3,59 +3,14 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// Builds a test scene for the destructible Venus statue: Tools > Build Venus Statue Scene.
+// Places the destructible Venus statue (used by Tools > Build Statue Scene, the Statue Garden).
 // Fly with WASD, click to capture the mouse, click again to shoot, R for a fresh statue.
 // The statue itself comes from tools/statue_gen/build_venus.py (Blender), exported to VenusStatue.fbx.
 public static class VenusSceneBuilder
 {
-    const string ScenePath = "Assets/Scenes/VenusStatue.unity";
     const string FbxPath = "Assets/Models/Statues/VenusStatue.fbx";
     const string MaterialFolder = "Assets/Materials";
     const float PlinthHeight = 0.80f;   // the plinth foot sits at y = -0.8 in the model
-
-    [MenuItem("Tools/Build Venus Statue Scene")]
-    public static void Build()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath) == null)
-        {
-            Debug.LogError($"Missing {FbxPath}. Run tools/statue_gen/build_venus.py first.");
-            return;
-        }
-        var floor = GetMaterial("VenusFloor", new Color(0.72f, 0.60f, 0.66f), 0.25f);
-
-        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
-        // warm late-afternoon light like the reference clip, pinkish bounce from the ground
-        var sun = new GameObject("Sun").AddComponent<Light>();
-        sun.type = LightType.Directional;
-        sun.intensity = 1.6f;
-        sun.color = new Color(1f, 0.86f, 0.72f);
-        sun.shadows = LightShadows.Soft;
-        sun.transform.rotation = Quaternion.Euler(38f, 145f, 0f);
-        RenderSettings.ambientMode = AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = new Color(0.62f, 0.55f, 0.66f);
-        RenderSettings.ambientEquatorColor = new Color(0.55f, 0.45f, 0.5f);
-        RenderSettings.ambientGroundColor = new Color(0.35f, 0.28f, 0.3f);
-
-        var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        ground.name = "Ground";
-        ground.transform.localScale = new Vector3(4f, 1f, 4f);
-        ground.GetComponent<Renderer>().sharedMaterial = floor;
-
-        var cam = new GameObject("Main Camera");
-        cam.tag = "MainCamera";
-        cam.AddComponent<Camera>().nearClipPlane = 0.05f;
-        cam.AddComponent<AudioListener>();
-        cam.AddComponent<FlyCamera>();
-        cam.transform.position = new Vector3(0.6f, 1.7f, -5.5f);
-        cam.transform.LookAt(new Vector3(0f, 1.6f, 0f));
-        PlaceStatue(Vector3.zero, Quaternion.Euler(0f, 180f, 0f), cam);
-
-        EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
-        Debug.Log($"Venus statue scene built and saved to {ScenePath}");
-    }
 
     // Puts the statue with its plinth foot at groundPos and makes the camera the test gun (click shoots, R respawns).
     // The model faces +Z; turn it 180 degrees to face a camera standing on the -Z side.
