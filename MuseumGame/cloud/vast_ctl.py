@@ -58,7 +58,7 @@ def rent(offer_id, region, instances):
 
 
 def ours():
-    rows = call("GET", "/instances/?owner=me").get("instances", [])
+    rows = call("GET", "/instances?owner=me").get("instances", [])
     return [i for i in rows if (i.get("label") or "").startswith(LABEL)]
 
 
