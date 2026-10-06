@@ -42,6 +42,8 @@ public static class VenusSceneBuilder
         gun.statueRotation = rot;
         gun.dustMaterial = dust;
         gun.gritMaterial = grit;
+        var bullet = AssetDatabase.LoadAllAssetsAtPath("Assets/Models/Weapons/BulletCasing.obj");
+        foreach (var o in bullet) if (o is Mesh m) { gun.bulletMesh = m; break; }
         return statue;
     }
 
