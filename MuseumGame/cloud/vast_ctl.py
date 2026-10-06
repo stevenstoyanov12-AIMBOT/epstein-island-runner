@@ -32,6 +32,17 @@ if os.path.exists(_envfile):
     for _k, _v in re.findall(r'([A-Z_][A-Z0-9_]*)=("[^"]*"|\S+)', open(_envfile, encoding="utf-8-sig").read()):
         os.environ[_k] = _v.strip('"')    # .env wins over stale shell variables
 
+# Vast needs a 2FA session for instance actions: `vastai tfa login ...` stores that session key in the
+# vastai CLI's key file, so use it when present (falls back to VAST_API_KEY from .env).
+for _p in (os.path.expanduser("~/.config/vastai/vast_api_key"), os.path.expanduser("~/.vast_api_key"),
+           os.path.join(os.environ.get("APPDATA", ""), "vastai", "vast_api_key")):
+    if os.path.isfile(_p):
+        _key = open(_p, encoding="utf-8-sig").read().strip()
+        if _key:
+            os.environ["VAST_API_KEY"] = _key
+            os.environ["VAST_KEY_SOURCE"] = _p
+            break
+
 API = "https://console.vast.ai/api/v0"
 IMAGE = os.environ.get("CLOUD_IMAGE", "aimbot66/museum-cloud:latest")
 LABEL = "museum-cloud"
@@ -53,8 +64,9 @@ def call(method, path, body=None):
             return json.loads(txt) if txt else {}
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")[:400]
-        src = "cloud/.env" if os.path.exists(_envfile) and "VAST_API_KEY" in open(_envfile, encoding="utf-8-sig").read() else "Windows environment"
-        raise SystemExit(f"Vast API {method} {path} -> HTTP {e.code}: {detail}\n"
+        src = os.environ.get("VAST_KEY_SOURCE") or ("cloud/.env" if os.path.exists(_envfile) else "Windows environment")
+        hint = "\nRun: vastai tfa login --method-type totp -c <code>  (2FA session expired)" if e.code == 401 else ""
+        raise SystemExit(f"Vast API {method} {path} -> HTTP {e.code}: {detail}{hint}\n"
                          f"(key from {src}: {len(key)} chars, ends ...{key[-4:]})")
 
 
