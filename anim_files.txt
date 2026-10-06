@@ -1,0 +1,44 @@
+E:\My project\Assets\Animations\PistolLocomotion
+E:\My project\Assets\Animations\PistolLocomotion.meta
+E:\My project\Assets\Animations\PistolLocomotion\KidSoldier_PistolIdle_1.fbx
+E:\My project\Assets\Animations\PistolLocomotion\KidSoldier_PistolIdle_1.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol idle.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol idle.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol jump (2).fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol jump (2).fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol jump.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol jump.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol kneel to stand.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol kneel to stand.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol kneeling idle.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol kneeling idle.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol run arc (2).fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol run arc (2).fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol run arc.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol run arc.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol run backward arc (2).fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol run backward arc (2).fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol run backward arc.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol run backward arc.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol run backward.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol run backward.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol run.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol run.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol stand to kneel.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol stand to kneel.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol strafe (2).fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol strafe (2).fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol strafe.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol strafe.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk arc (2).fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk arc (2).fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk arc.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk arc.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk backward arc (2).fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk backward arc (2).fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk backward arc.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk backward arc.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk backward.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk backward.fbx.meta
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk.fbx
+E:\My project\Assets\Animations\PistolLocomotion\pistol walk.fbx.meta
