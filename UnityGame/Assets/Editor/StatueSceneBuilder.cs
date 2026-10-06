@@ -73,6 +73,8 @@ public static class StatueSceneBuilder
         var statue = VenusSceneBuilder.PlaceStatue(new Vector3(0f, 0.1f, -0.5f), Quaternion.Euler(0f, 180f, 0f), cam);
         cam.transform.LookAt(new Vector3(0f, 1.8f, -0.5f));
         if (statue == null) return;
+        // reload animation preview, standing beside the statue facing the camera
+        ReloadTestBuilder.Place(new Vector3(1.8f, 0.1f, -1.2f), 180f);
 
         Bloom();
         EditorSceneManager.SaveScene(scene, ScenePath);
