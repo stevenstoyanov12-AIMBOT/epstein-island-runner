@@ -146,11 +146,17 @@ def cut_pieces(vol, lo, voxel, groups, gap):
             a = np.maximum(bmin[i] - 4, 0)
             b = np.minimum(bmax[i] + 5, shape)
             sub = vol[a[0]:b[0], a[1]:b[1], a[2]:b[2]]
-            g = np.stack(np.meshgrid(*[np.arange(a[j], b[j]) for j in range(3)], indexing="ij"), -1).reshape(-1, 3)
-            p = lo + g * voxel
-            f = cell_field(warp(p), seeds, i) + gap / 2
-            f = np.maximum(f, -p[:, 1] if side > 0 else p[:, 1] + gap / 2)
-            field = np.maximum(sub, f.reshape(sub.shape).astype(np.float32))
+            field = np.empty(sub.shape, np.float32)
+            ys_, zs_ = np.arange(a[1], b[1]), np.arange(a[2], b[2])
+            step = max(1, 1_500_000 // (len(ys_) * len(zs_)))          # x-slabs of ~1.5M points: bounded memory
+            for x0 in range(a[0], b[0], step):
+                xs_ = np.arange(x0, min(x0 + step, b[0]))
+                g = np.stack(np.meshgrid(xs_, ys_, zs_, indexing="ij"), -1).reshape(-1, 3)
+                p = lo + g * voxel
+                f = cell_field(warp(p), seeds, i) + gap / 2
+                f = np.maximum(f, -p[:, 1] if side > 0 else p[:, 1] + gap / 2)
+                sl = slice(x0 - a[0], x0 - a[0] + len(xs_))
+                field[sl] = np.maximum(sub[sl], f.reshape(len(xs_), len(ys_), len(zs_)).astype(np.float32))
             pad = np.pad(field, 1, constant_values=1.0)
             try:
                 v, fc, _, _ = marching_cubes(pad, 0.0, spacing=(voxel,) * 3)
