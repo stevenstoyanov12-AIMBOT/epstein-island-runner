@@ -66,17 +66,40 @@ class VenusStatue:
         d = smin(d, ellipsoid(q, (0, -0.091, -0.068), (0.0135, 0.012, 0.0125)), 0.018)         # chin
         d = smin(d, ellipsoid(q, (0, 0.040, -0.072), (0.050, 0.035, 0.030)), 0.03)             # forehead
         d = smin(d, ellipsoid(q, (0, -0.056, -0.072), (0.026, 0.022, 0.016)), 0.025)           # muzzle under the lips
-        # eyes: deep sockets under the brow, almond lids, blank classical eyeballs
+        # eyes: socket under the brow, a full eyeball with a carved iris ring and drilled pupil, thin almond lids
         for s in (-1, 1):
             ex = s * 0.0295
-            d = smax(d, -ellipsoid(q, (ex, 0.001, -0.099), (0.021, 0.0125, 0.017)), 0.008)        # socket
-            d = smin(d, sphere(q, (ex, -0.001, -0.0745), 0.0175), 0.002)                         # eyeball
-            up = ellipsoid(q, (ex, 0.0055, -0.0905), (0.0165, 0.0055, 0.0065))
-            up = smax(up, -(q[:, 1] - 0.0015), 0.002)                                             # upper lid edge
-            d = smin(d, up, 0.003)
-            lo = ellipsoid(q, (ex, -0.0085, -0.0895), (0.0145, 0.0035, 0.0055))
-            d = smin(d, smax(lo, q[:, 1] + 0.0065, 0.0015), 0.003)                               # lower lid
-            d = smax(d, -ellipsoid(q, (ex + s * 0.0165, -0.002, -0.087), (0.003, 0.003, 0.004)), 0.002)  # outer corner
+            ec = np.array([ex, -0.0005, -0.0715])                                                # eyeball centre
+            d = smax(d, -ellipsoid(q, (ex, 0.0015, -0.100), (0.0225, 0.0145, 0.017)), 0.008)      # socket
+            ball = sphere(q, ec, 0.0195)
+            # iris ring and pupil, looking slightly down and toward the free leg
+            look = np.array([-0.08, -0.12, -1.0]); look /= np.linalg.norm(look)
+            rel = q - ec
+            along = rel @ look
+            rho = length(rel - along[:, None] * look)
+            # broad shapes that survive the game mesh: a recessed iris disc and a drilled pupil
+            disc = np.maximum(rho - 0.0060, 0.0182 - along)                                      # 1.3 mm deep
+            ball = smax(ball, -disc, 0.0012)
+            ball = smax(ball, -sphere(q, ec + look * 0.0212, 0.0030), 0.0008)                    # pupil
+            d = smin(d, ball, 0.0015)
+            # almond opening: upper arc taller and peaking toward the nose, lower arc flatter
+            dx = (x - ex) * s                                                                    # + toward the temple
+            w = 0.0150
+            t = np.clip(1 - ((dx + 0.0015) / w) ** 2, 0, None)
+            yc = -0.0008 + 0.0012 * (dx / w)                                                     # outer corner a touch higher
+            above = (y - yc) - 0.0064 * t ** 0.8                                                 # > 0 above the opening
+            below = (yc - y) - 0.0046 * t ** 0.9                                                 # > 0 below it
+            outside = np.maximum(above, below)
+            lid = sphere(q, ec, 0.0207)                                                          # lids wrap the ball
+            lid = smax(lid, -outside, 0.0012)
+            lid = smax(lid, ellipsoid(q, (ex, 0.0, -0.086), (0.0215, 0.0165, 0.016)), 0.002)    # keep them round the eye
+            d = smin(d, lid, 0.0025)
+            # upper lid crease and the soft fold under the lower lid
+            crease = np.abs(ellipsoid(q, (ex + s * 0.001, 0.0005, -0.0875), (0.0185, 0.0118, 0.0125))) - 0.0007
+            crease = smax(crease, -(y - yc - 0.0075), 0.001)
+            d = smax(d, -crease, 0.0012)
+            d = smin(d, ellipsoid(q, (ex + s * 0.002, -0.0105, -0.0905), (0.0150, 0.0040, 0.0050)), 0.006)  # soft under-eye
+            d = smax(d, -sphere(q, (ex - s * 0.0155, -0.0012, -0.0905), 0.0016), 0.0012)         # tear duct corner
         d = smin(d, capsule(q, (-0.045, 0.0165, -0.088), (0.045, 0.0165, -0.088), 0.006), 0.016)  # soft brow
         # nose: one straight line with the forehead, narrow bridge, rounded tip, wings, flat base
         nose = round_cone(q, (0, 0.016, -0.0935), (0, -0.0355, -0.1215), 0.0066, 0.0095)

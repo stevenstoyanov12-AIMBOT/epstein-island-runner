@@ -16,8 +16,8 @@ public static class VenusSceneBuilder
     // The model faces +Z; turn it 180 degrees to face a camera standing on the -Z side.
     public static GameObject PlaceStatue(Vector3 groundPos, Quaternion turn, GameObject cam)
     {
-        var marble = GetMaterial("VenusMarble", new Color(0.88f, 0.86f, 0.82f), 0.62f);
-        var broken = GetMaterial("VenusMarbleBroken", new Color(0.95f, 0.94f, 0.91f), 0.2f);
+        var marble = GetMaterial("VenusMarble", new Color(0.97f, 0.96f, 0.94f), 0.55f);          // white Carrara, soft polish
+        var broken = GetMaterial("VenusMarbleBroken", new Color(1f, 1f, 0.99f), 0.12f);           // fresh break: brighter, chalky
         var dust = ParticleMaterial("StatueDust");
         var grit = ParticleMaterial("StatueGrit");
         SetupImporter(marble, broken);

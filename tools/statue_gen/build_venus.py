@@ -23,8 +23,32 @@ from sdf import fbm
 from venus_statue import PLINTH_H, VenusStatue
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+HEAD_C = np.array([0.02, 1.925, -0.06])   # statue space; the face keeps its detail when meshes are thinned
+HEAD_R = 0.135
 REPO = os.path.dirname(os.path.dirname(HERE))
 M = VenusStatue()
+
+
+def decimate_keep_head(m, target, head_budget):
+    """Decimate, but give the head region its own (much larger) triangle budget. Both parts keep their shared
+    border fixed (pyfqmr preserve_border), so the seam closes again when they are welded back together."""
+    import pyfqmr
+    near = np.linalg.norm(m.triangles_center - HEAD_C, axis=1) < HEAD_R
+    if not near.any() or near.all():
+        return decimate(m, target) if target < len(m.faces) else m
+    parts = []
+    for mask, budget in ((near, min(head_budget, near.sum())), (~near, max(300, target - min(head_budget, near.sum())))):
+        sub = m.submesh([np.where(mask)[0]], append=True)
+        if budget < len(sub.faces):
+            simp = pyfqmr.Simplify()
+            simp.setMesh(sub.vertices.astype(np.float64), sub.faces.astype(np.int32))
+            simp.simplify_mesh(target_count=int(budget), aggressiveness=6, preserve_border=True, verbose=False)
+            v, f, _ = simp.getMesh()
+            sub = trimesh.Trimesh(v, f, process=False)
+        parts.append(sub)
+    out = trimesh.util.concatenate(parts)
+    out.merge_vertices()
+    return out
 
 
 # --- sampling ----------------------------------------------------------------------
@@ -140,7 +164,7 @@ def cut_pieces(vol, lo, voxel, groups, gap):
             if m.volume < 0:
                 m.invert()
             trimesh.smoothing.filter_taubin(m, iterations=4)
-            m = decimate(m, max(2000, len(m.faces) // 4))     # Blender does the final reduction
+            m = decimate_keep_head(m, max(2000, len(m.faces) // 4), 10**9)   # Blender does the final reduction
             pieces.append((f"{prefix}_{k:02d}", m))
     return pieces
 
@@ -170,8 +194,8 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
         bsdf.inputs["Subsurface Radius"].default_value = (0.02, 0.015, 0.01)
         return mat
 
-    marble = material("Marble", (0.86, 0.84, 0.80), 0.32)
-    core = material("MarbleBroken", (0.93, 0.92, 0.89), 0.75)
+    marble = material("Marble", (0.95, 0.94, 0.92), 0.32)
+    core = material("MarbleBroken", (0.99, 0.99, 0.97), 0.8)
 
     root = bpy.data.objects.new("VenusStatue", None)
     scene.collection.objects.link(root)
@@ -186,7 +210,7 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
         elif name.startswith("Base"):
             target = max(300, target // 3)                  # flat plinth faces decimate well
         if target < len(m.faces):
-            m = decimate(m, target)
+            m = decimate_keep_head(m, target, 45000 if name == "Intact" else 12000)
         flags = broken_faces(m, vol, lo, voxel) if name != "Intact" else np.zeros(len(m.faces), bool)
         centre = m.centroid
         verts = (m.vertices - centre) @ to_b.T
@@ -302,7 +326,7 @@ def renders(scene, root, objs, out):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--voxel", type=float, default=0.0026)
+    ap.add_argument("--voxel", type=float, default=0.0022)
     ap.add_argument("--fig", type=int, default=34)
     ap.add_argument("--base", type=int, default=10)
     ap.add_argument("--tris", type=int, default=190000)
@@ -341,7 +365,7 @@ def main():
     if intact.volume < 0:
         intact.invert()
     trimesh.smoothing.filter_taubin(intact, iterations=4)
-    intact = decimate(intact, len(intact.faces) // 4)
+    intact = decimate_keep_head(intact, len(intact.faces) // 4, 10**9)
 
     if args.cache:
         np.save(args.cache + ".vol.npy", vol)
