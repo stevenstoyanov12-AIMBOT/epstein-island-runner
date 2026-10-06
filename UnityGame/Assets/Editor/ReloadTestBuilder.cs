@@ -4,7 +4,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 // Places tjr playing the Blender-made pistol reload (tools/anim_gen/pistol_reload.py) on loop; used by
-// Tools > Build Statue Scene. In Play: Space restarts, 1/2/3 = speed 1x / 0.5x / 0.25x.
+// Tools > Build Statue Scene. In Play: T restarts, 1/2/3 = speed 1x / 0.5x / 0.25x.
 public static class ReloadTestBuilder
 {
     const string ClipFbx = "Assets/Animations/PistolReload.fbx";
