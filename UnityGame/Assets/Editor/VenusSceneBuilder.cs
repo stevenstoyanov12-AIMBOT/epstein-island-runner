@@ -18,18 +18,12 @@ public static class VenusSceneBuilder
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
-        var marble = GetMaterial("VenusMarble", new Color(0.88f, 0.86f, 0.82f), 0.62f);
-        var broken = GetMaterial("VenusMarbleBroken", new Color(0.95f, 0.94f, 0.91f), 0.2f);
-        var floor = GetMaterial("VenusFloor", new Color(0.72f, 0.60f, 0.66f), 0.25f);
-        var dust = DustMaterial();
-        SetupImporter(marble, broken);
-
-        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath);
-        if (prefab == null)
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath) == null)
         {
             Debug.LogError($"Missing {FbxPath}. Run tools/statue_gen/build_venus.py first.");
             return;
         }
+        var floor = GetMaterial("VenusFloor", new Color(0.72f, 0.60f, 0.66f), 0.25f);
 
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -50,28 +44,46 @@ public static class VenusSceneBuilder
         ground.transform.localScale = new Vector3(4f, 1f, 4f);
         ground.GetComponent<Renderer>().sharedMaterial = floor;
 
-        var pos = new Vector3(0f, PlinthHeight, 0f);
-        var statue = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-        statue.transform.position = pos;
-        statue.AddComponent<DestructibleStatue>().dustMaterial = dust;
-
-        // the model faces +Z: stand a few metres in front of it, looking back at it
         var cam = new GameObject("Main Camera");
         cam.tag = "MainCamera";
-        var c = cam.AddComponent<Camera>();
-        c.nearClipPlane = 0.05f;
+        cam.AddComponent<Camera>().nearClipPlane = 0.05f;
         cam.AddComponent<AudioListener>();
-        cam.transform.position = new Vector3(0.6f, 1.7f, 5.5f);
-        cam.transform.LookAt(new Vector3(0f, 1.6f, 0f));
         cam.AddComponent<FlyCamera>();
-        var gun = cam.AddComponent<StatueShooter>();
-        gun.statuePrefab = prefab;
-        gun.statuePosition = pos;
-        gun.statueRotation = prefab.transform.rotation;
-        gun.dustMaterial = dust;
+        cam.transform.position = new Vector3(0.6f, 1.7f, -5.5f);
+        cam.transform.LookAt(new Vector3(0f, 1.6f, 0f));
+        PlaceStatue(Vector3.zero, Quaternion.Euler(0f, 180f, 0f), cam);
 
         EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
         Debug.Log($"Venus statue scene built and saved to {ScenePath}");
+    }
+
+    // Puts the statue with its plinth foot at groundPos and makes the camera the test gun (click shoots, R respawns).
+    // The model faces +Z; turn it 180 degrees to face a camera standing on the -Z side.
+    public static GameObject PlaceStatue(Vector3 groundPos, Quaternion turn, GameObject cam)
+    {
+        var marble = GetMaterial("VenusMarble", new Color(0.88f, 0.86f, 0.82f), 0.62f);
+        var broken = GetMaterial("VenusMarbleBroken", new Color(0.95f, 0.94f, 0.91f), 0.2f);
+        var dust = DustMaterial();
+        SetupImporter(marble, broken);
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath);
+        if (prefab == null)
+        {
+            Debug.LogError($"Missing {FbxPath}. Run tools/statue_gen/build_venus.py first.");
+            return null;
+        }
+        var pos = groundPos + Vector3.up * PlinthHeight;
+        var rot = turn * prefab.transform.rotation;
+        var statue = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        statue.transform.SetPositionAndRotation(pos, rot);
+        statue.AddComponent<DestructibleStatue>().dustMaterial = dust;
+
+        var gun = cam.GetComponent<StatueShooter>();
+        if (gun == null) gun = cam.AddComponent<StatueShooter>();
+        gun.statuePrefab = prefab;
+        gun.statuePosition = pos;
+        gun.statueRotation = rot;
+        gun.dustMaterial = dust;
+        return statue;
     }
 
     // Read/Write so the runtime convex MeshColliders work in builds; Blender materials mapped to ours.
