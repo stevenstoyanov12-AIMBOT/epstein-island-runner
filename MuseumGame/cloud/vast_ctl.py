@@ -18,6 +18,8 @@ import json
 import os
 import sys
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
 from vast_find import EU, US, country, search
@@ -36,13 +38,22 @@ LABEL = "museum-cloud"
 
 
 def call(method, path, body=None):
-    req = urllib.request.Request(API + path, method=method,
+    """Vast API call. Sends the key both as a Bearer header and as api_key=, like Vast's own CLI,
+    and prints Vast's error text instead of a bare traceback."""
+    key = os.environ["VAST_API_KEY"]
+    sep = "&" if "?" in path else "?"
+    url = f"{API}{path}{sep}api_key={urllib.parse.quote(key)}"
+    req = urllib.request.Request(url, method=method,
                                  data=json.dumps(body).encode() if body is not None else None,
-                                 headers={"Authorization": "Bearer " + os.environ["VAST_API_KEY"],
-                                          "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        txt = r.read().decode()
-        return json.loads(txt) if txt else {}
+                                 headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
+                                          "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            txt = r.read().decode()
+            return json.loads(txt) if txt else {}
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode(errors="replace")[:400]
+        raise SystemExit(f"Vast API {method} {path} -> HTTP {e.code}: {detail}")
 
 
 def rent(offer_id, region, instances):
@@ -58,7 +69,7 @@ def rent(offer_id, region, instances):
 
 
 def ours():
-    rows = call("GET", "/instances?owner=me").get("instances", [])
+    rows = call("GET", "/instances/?owner=me").get("instances", [])
     return [i for i in rows if (i.get("label") or "").startswith(LABEL)]
 
 
