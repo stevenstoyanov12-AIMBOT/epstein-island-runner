@@ -27,7 +27,11 @@ public class DestructibleStatue : MonoBehaviour
         public Bounds bounds;
         public bool figure, loose;
         public List<Piece> touching = new List<Piece>();
+        public List<Contact> contacts = new List<Contact>();
     }
+
+    // How two pieces actually meet: how many surface points lie on the other piece, and where.
+    class Contact { public Piece other; public int points; public Vector3 centre; }
 
     readonly List<Piece> pieces = new List<Piece>();
     readonly List<Collider> statueColliders = new List<Collider>();
@@ -37,7 +41,7 @@ public class DestructibleStatue : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("DestructibleStatue v3: game stone FX, heavy falling pieces, unbreakable plinth");
+        Debug.Log("DestructibleStatue v4: real-contact support, no floating pieces");
         var tr = transform.Find("Intact");
         if (tr != null)
         {
@@ -64,15 +68,41 @@ public class DestructibleStatue : MonoBehaviour
             pieces.Add(new Piece { t = c, col = mc, figure = fig, bounds = r.bounds });
             statueColliders.Add(mc);
         }
-        // which pieces rest on which: overlapping bounds, slightly grown
+        // which pieces really touch: sample each piece's surface and count points lying on its neighbour
+        foreach (var p in pieces) p.col.enabled = true;
         for (int i = 0; i < pieces.Count; i++)
             for (int j = i + 1; j < pieces.Count; j++)
             {
-                var a = pieces[i].bounds; a.Expand(0.01f);
+                var a = pieces[i].bounds; a.Expand(0.02f);
                 if (!a.Intersects(pieces[j].bounds)) continue;
-                pieces[i].touching.Add(pieces[j]);
-                pieces[j].touching.Add(pieces[i]);
+                Measure(pieces[i], pieces[j]);
             }
+        if (intact != null) foreach (var p in pieces) p.col.enabled = false;
+    }
+
+    const float ContactGap = 0.006f;     // surface points this close to the neighbour count as touching
+    const int MinContact = 6;            // fewer touching points than this is a crumb-thin link: it holds nothing
+
+    void Measure(Piece a, Piece b)
+    {
+        int n = 0; var sum = Vector3.zero;
+        foreach (var (from, to) in new[] { (a, b), (b, a) })
+        {
+            var verts = from.t.GetComponent<MeshFilter>().sharedMesh.vertices;
+            int step = Mathf.Max(1, verts.Length / 400);
+            for (int k = 0; k < verts.Length; k += step)
+            {
+                var w = from.t.TransformPoint(verts[k]);
+                if (!to.bounds.Contains(w) && to.bounds.SqrDistance(w) > ContactGap * ContactGap) continue;
+                var c = to.col.ClosestPoint(w);
+                if ((c - w).sqrMagnitude < ContactGap * ContactGap) { n++; sum += w; }
+            }
+        }
+        if (n < MinContact) return;
+        var centre = sum / n;
+        a.touching.Add(b); b.touching.Add(a);
+        a.contacts.Add(new Contact { other = b, points = n, centre = centre });
+        b.contacts.Add(new Contact { other = a, points = n, centre = centre });
     }
 
     public bool Collapsed => hits >= hitsToCollapse;
@@ -155,7 +185,8 @@ public class DestructibleStatue : MonoBehaviour
         StartCoroutine(Sink(p.t, rb));
     }
 
-    // Figure pieces that no longer connect to the plinth (which always stands) fall.
+    // Figure pieces that are no longer carried up from the plinth fall. A piece is carried by a standing neighbour
+    // it really touches, where the touch is below or beside its centre (a piece can't hang from one above it).
     void DropUnsupported()
     {
         var held = new HashSet<Piece>();
@@ -163,8 +194,16 @@ public class DestructibleStatue : MonoBehaviour
         foreach (var p in pieces)
             if (!p.figure) { held.Add(p); queue.Enqueue(p); }
         while (queue.Count > 0)
-            foreach (var n in queue.Dequeue().touching)
-                if (!n.loose && held.Add(n)) queue.Enqueue(n);
+        {
+            var s = queue.Dequeue();
+            foreach (var c in s.contacts)
+            {
+                var up = c.other;
+                if (up.loose || held.Contains(up)) continue;
+                if (c.centre.y > up.bounds.center.y + 0.03f) continue;     // touching only from above: no support
+                held.Add(up); queue.Enqueue(up);
+            }
+        }
         foreach (var p in pieces)
             if (!p.loose && !held.Contains(p)) Break(p, p.bounds.center, UnityEngine.Random.onUnitSphere, 0.1f);
     }
