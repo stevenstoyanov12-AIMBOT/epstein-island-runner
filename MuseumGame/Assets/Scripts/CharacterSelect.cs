@@ -29,8 +29,10 @@ public class CharacterSelect : MonoBehaviour
 
     Behaviour[] frozen;
 
-    void Start()
+    System.Collections.IEnumerator Start()
     {
+        // the baked pose can be a moment late (asset import / registry); building without it leaves the gun solved in the wrong pose, pointing at the camera
+        for (float w = 0f; Baked.Get(null) == null && w < 3f; w += Time.unscaledDeltaTime) yield return null;
         BuildModels();
         // freeze the player + gun while the screen is open
         var list = new System.Collections.Generic.List<Behaviour>();
@@ -75,7 +77,7 @@ public class CharacterSelect : MonoBehaviour
             var prefab = Res.Load<GameObject>("SelectModels/" + Names[i]);
             if (prefab == null) { Debug.LogWarning("CharacterSelect: prefab 'SelectModels/" + Names[i] + "' not found in the registry"); return false; }
             var pos = stage.position + new Vector3(i * 4f, 0f, 0f);
-            var inst = Instantiate(prefab, pos, Quaternion.Euler(0f, 25f, 0f), stage);     // mostly facing the camera
+            var inst = Instantiate(prefab, pos, Quaternion.Euler(0f, 25f, 0f), stage);   // mostly facing the camera
             FixSleeves(inst, Names[i]);
             foreach (var a in inst.GetComponentsInChildren<Animator>()) { a.enabled = false; a.applyRootMotion = false; if (anims[i] == null) anims[i] = a; }   // neutral pose until hovered
             instT[i] = inst.transform; boneMap[i] = new System.Collections.Generic.Dictionary<string, Transform>(); foreach (var tt in inst.GetComponentsInChildren<Transform>(true)) boneMap[i][tt.name] = tt;
@@ -110,6 +112,7 @@ public class CharacterSelect : MonoBehaviour
         int h = (hover >= 0 && hover < Names.Length && rts[hover] != null && Baked.names != null) ? hover : -1;
         if (h != playing) { SetPlaying(h); renderFrames = 0; }
         if (playing >= 0) { var bc = Baked.Get(Names[playing]); Baked.Apply(instT[playing], boneMap[playing], (int)(Time.unscaledTime * (bc != null ? bc.fps : 30f)), Names[playing]); }
+        foreach (var pg in stage.GetComponentsInChildren<PistolGrip>()) pg.Apply();   // the grip goes on before the portraits are rendered
         if (renderFrames <= 3)
         {
             renderFrames++;
@@ -208,6 +211,7 @@ public class CharacterSelect : MonoBehaviour
         float s = 0.003595496f; float cur = mf.transform.lossyScale.x; if (cur > 1e-6f) mf.transform.localScale *= s / cur;
         mf.transform.rotation = nh.rotation * new Quaternion(d.rot[0], d.rot[1], d.rot[2], d.rot[3]);
         mf.transform.position = nh.TransformPoint(new Vector3(d.pos[0], d.pos[1], d.pos[2]));
+        PistolGrip.Ensure(inst);   // proper two-handed grip: fingers around the grip, index on the trigger
     }
 
     void AttachGun(GameObject inst, int idx)
@@ -223,6 +227,7 @@ public class CharacterSelect : MonoBehaviour
         float s = 0.003595496f; float cur = mf.transform.lossyScale.x; if (cur > 1e-6f) mf.transform.localScale *= s / cur;
         mf.transform.rotation = nh.rotation * new Quaternion(d.rot[0], d.rot[1], d.rot[2], d.rot[3]);
         mf.transform.position = nh.TransformPoint(new Vector3(d.pos[0], d.pos[1], d.pos[2]));
+        // select screen: no grip solver. The gun keeps its calibrated attach (barrel along the arms, as animated); a solver pass flips it toward the camera
     }
 
     // every non-orangie character gets the same tidy sleeve ends as orangie (sleeves lengthened over the gloves)
@@ -232,6 +237,7 @@ public class CharacterSelect : MonoBehaviour
         foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>(true))
         {
             if (smr.gameObject.name.StartsWith("m6_Prom_220")) { smr.gameObject.SetActive(false); continue; }   // loose skin piece at the wrists
+            if (name == "yolo" && smr.sharedMesh != null && smr.sharedMesh.name == "yolo_mesh_cut") { var ym = Res.Load<Material>("SelectModels/Sleeves/yolo_wrist"); var ms = smr.sharedMaterials; if (ym != null && ms.Length > 4) { ms[4] = ym; smr.sharedMaterials = ms; } continue; }   // skin patch showing through the gloves at the wrists
             string mn = smr.gameObject.name.StartsWith("m3_Prom_212") ? "m3_Prom_212_cut" : smr.gameObject.name.StartsWith("m4_Prom_214") ? "m4_Prom_214_cut" : null;
             if (mn == null) continue;
             var m = Res.Load<Mesh>("SelectModels/Sleeves/" + mn); if (m != null) smr.sharedMesh = m;
@@ -264,6 +270,7 @@ public class CharacterSelect : MonoBehaviour
         }
         oldRoot.SetActive(false);
         av.Rebind();
+        PistolGrip.Ensure(inst);
     }
 
     void Pick(int i)
@@ -282,7 +289,8 @@ public class CharacterSelect : MonoBehaviour
         if (white == null) { white = new Texture2D(1, 1); white.SetPixel(0, 0, Color.white); white.Apply(); }
         GUI.depth = -100;
         float W = Screen.width, H = Screen.height;
-        GUI.color = new Color(0.14f, 0.50f, 0.19f); GUI.DrawTexture(new Rect(0, 0, W, H), white);                  // green background
+        GUI.color = new Color(0x52 / 255f, 0xD5 / 255f, 0x93 / 255f); GUI.DrawTexture(new Rect(0, 0, W * 0.5f, H), white);   // pill green #52D593 (left half)
+        GUI.color = Color.white; GUI.DrawTexture(new Rect(W * 0.5f, 0, W - W * 0.5f, H), white);                                   // pill white #FFFFFF (right half)
         if (nameStyle == null)
         {
             nameStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
@@ -349,7 +357,7 @@ public class CharacterSelect : MonoBehaviour
             if (cache.TryGetValue(k, out c)) return c;
             c = key != null ? Read("SelectModels/PistolAnim_" + key) : null;
             if (c == null) c = (key != null && cache.TryGetValue("", out var dflt)) ? dflt : Read("SelectModels/PistolAnim");
-            cache[k] = c; if (key != null && !cache.ContainsKey("") && c != null) { }
+            if (c != null) cache[k] = c;   // never remember a miss: a late-loading asset must be picked up on the next call
             return c;
         }
         public static void Apply(Transform root, System.Collections.Generic.Dictionary<string, Transform> map, int f, string key = null)

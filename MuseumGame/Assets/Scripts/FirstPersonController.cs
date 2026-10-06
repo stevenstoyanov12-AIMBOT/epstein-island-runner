@@ -20,6 +20,10 @@ public class FirstPersonController : MonoBehaviour
     public float crouchHeight = 1.0f, crouchSpeedMultiplier = 0.45f;
     public static bool Crouching, ForceCrouch; float standHeight = -1f, standCenterY, crouchBlend;
 
+    // frame on which a click re-captured the mouse; guns ignore that click so getting back in doesn't fire a shot
+    public static int RelockFrame = -1;
+    void OnApplicationFocus(bool focused) { if (!focused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } }
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -36,8 +40,13 @@ void Update()
         var mouse = Mouse.current;
         if (keyboard == null) return;
 
-        // Mouse look
-        if (mouse != null)
+        // Re-grab the mouse after alt-tab / Esc / leaving fullscreen: the browser drops pointer lock, so any click back in the game locks it again
+        if (mouse != null && Cursor.lockState != CursorLockMode.Locked && CharacterSelect.Chosen != null && !keyboard.escapeKey.isPressed
+            && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame))
+        { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; RelockFrame = Time.frameCount; }
+
+        // Mouse look (only while the mouse is captured, so moving over the page doesn't spin the camera)
+        if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
         {
             Vector2 delta = mouse.delta.ReadValue();
             float mouseX = delta.x * mouseSensitivity;

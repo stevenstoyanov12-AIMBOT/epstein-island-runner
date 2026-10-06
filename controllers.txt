@@ -1,0 +1,4 @@
+E:\My project\Assets\Characters\HeistCharacter.controller
+E:\My project\Assets\Characters\HeistCharacterMixamo.controller
+E:\My project\Assets\Characters\MouthChar\SniperGuard.controller
+E:\My project\Assets\Characters\MouthChar\SniperIdle.controller

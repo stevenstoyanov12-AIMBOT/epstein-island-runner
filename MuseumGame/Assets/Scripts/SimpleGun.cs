@@ -9,7 +9,8 @@ public class SimpleGun : MonoBehaviour
     void Update()
     {
         var m = Mouse.current; var cam = Camera.main;
-        Recoil(); if (CrateSpawn.Hidden) return; if (m == null || cam == null || !m.leftButton.wasPressedThisFrame || Time.time < next) return; // semi-auto: one shot per click
+        Recoil(); if (CrateSpawn.Hidden) return; if (m == null || cam == null || !m.leftButton.wasPressedThisFrame || Time.time < next) return;
+        if (Cursor.lockState != CursorLockMode.Locked || FirstPersonController.RelockFrame == Time.frameCount) return; // the click that grabs the mouse back doesn't shoot // semi-auto: one shot per click
         Kick();
         next = Time.time + fireDelay;
         var hits = Physics.RaycastAll(cam.transform.position, cam.transform.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
@@ -30,11 +31,36 @@ public class SimpleGun : MonoBehaviour
         }
         if (found)
         {
-            var mr = hit.collider.GetComponent<Renderer>();
-            if (mr && mr.sharedMaterial && mr.sharedMaterial.name.StartsWith("Hall_Stone")) { StoneImpactFX.Play(hit, mr.sharedMaterial); }
-            else if (!hit.collider.GetComponentInParent<GlassCase>()) Impact(hit);
-            hit.collider.SendMessageUpwards("OnBulletHit", hit, SendMessageOptions.DontRequireReceiver);
+            ApplyHit(hit);
             FlyBullet(cam, hit.point, hit.normal);
+        }
+        // everyone else replays this shot in their copy of the world (barrels, columns, glass, statues... break the same way for all)
+        if (Net.I != null) Net.I.SendShot(chest, found ? hit.point : aimPoint);
+    }
+
+    // what a bullet does where it lands: impact effect + the object's own reaction (OnBulletHit)
+    public static void ApplyHit(RaycastHit hit)
+    {
+        var mr = hit.collider.GetComponent<Renderer>();
+        if (mr && mr.sharedMaterial && mr.sharedMaterial.name.StartsWith("Hall_Stone")) { StoneImpactFX.Play(hit, mr.sharedMaterial); }
+        else if (!hit.collider.GetComponentInParent<GlassCase>()) Impact(hit);
+        hit.collider.SendMessageUpwards("OnBulletHit", hit, SendMessageOptions.DontRequireReceiver);
+    }
+
+    static bool IsPlayer(Collider c)
+    {
+        return c.GetComponentInParent<RemotePlayer>() != null || c.GetComponentInParent<FirstPersonController>() != null || c.GetComponentInParent<CharacterController>() != null;
+    }
+    // another player's shot, replayed here: same ray, same world -> same object hit. Players are skipped (their damage comes with the "hit" message).
+    public static void RemoteShot(Vector3 from, Vector3 to)
+    {
+        var d = to - from; float len = d.magnitude; if (len < 0.01f) return;
+        var hits = Physics.RaycastAll(from, d / len, len + 0.3f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
+        foreach (var h in hits)
+        {
+            if (IsPlayer(h.collider)) { if (h.distance < 0.6f) continue; return; }   // skip the shooter's own body near the start; a player further on stopped the bullet
+            ApplyHit(h); return;
         }
     }
     public static void Impact(RaycastHit hit)

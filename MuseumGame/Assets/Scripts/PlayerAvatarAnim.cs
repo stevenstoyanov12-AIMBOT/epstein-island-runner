@@ -12,6 +12,7 @@ public class PlayerAvatarAnim : MonoBehaviour
         bool run = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
         bool crouch = FirstPersonController.Crouching; anim.SetBool("Crouch", crouch);
         anim.SetFloat("Speed", sp < 0.2f ? 0f : (crouch ? 1.5f : (run ? 6f : 2f)), 0.15f, Time.deltaTime);
+        { var lv = transform.InverseTransformDirection(v); if (sp < 0.2f) lv = Vector3.zero; anim.SetFloat("MoveX", lv.x, 0.12f, Time.deltaTime); anim.SetFloat("MoveZ", lv.z, 0.12f, Time.deltaTime); }   // 8-direction locomotion
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) lastShot = Time.time;
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) flashTimer = 0.06f;
         bool shooting = Time.time - lastShot < 0.8f; shootingNow = shooting;
@@ -163,6 +164,8 @@ public class PlayerAvatarAnim : MonoBehaviour
     // The gun and hands can't pass through the player's own legs (crouched and looking down): if the pistol
     // (grip, middle or muzzle) or a hand is inside a leg, both hands are pushed out of it together.
     public float legRadius = 0.11f;
+    // how far the eye sits in front of the chest: less = the arms reach further out in front of the view (the gun sits more in front)
+    public static float chestClear = 0.08f;
     void LegAvoid()
     {
         var rh = anim.GetBoneTransform(HumanBodyBones.RightHand); var lh = anim.GetBoneTransform(HumanBodyBones.LeftHand);
@@ -200,6 +203,20 @@ public class PlayerAvatarAnim : MonoBehaviour
             TwoBoneIK(rua, rla, rh, rh.position + push, rua.position - transform.up * 0.4f + transform.right * 0.25f);
             TwoBoneIK(lua, lla, lh, lh.position + push, lua.position - transform.up * 0.4f - transform.right * 0.25f);
             rh.rotation = rRot; lh.rotation = lRot;
+        }
+    }
+    // another player's body takes this player's walking hold (gun lowered, both hands on it): arms relative to the body, fingers relative to the hand
+    public bool HasHold { get { return haveHold && holdRot != null && holdFinger != null; } }
+    public void ApplyHoldTo(Animator a, Quaternion bodyRot, float w)
+    {
+        if (!HasHold || a == null || w <= 0f) return;
+        for (int i = 0; i < ArmBones.Length; i++) { var t = a.GetBoneTransform(ArmBones[i]); if (t) t.rotation = Quaternion.Slerp(t.rotation, bodyRot * holdRot[i], w); }
+        int k = 0;
+        for (int b = (int)HumanBodyBones.LeftThumbProximal; b <= (int)HumanBodyBones.RightLittleDistal; b++)
+        {
+            var t = a.GetBoneTransform((HumanBodyBones)b); if (!t) continue;
+            if (k < holdFinger.Length) t.localRotation = Quaternion.Slerp(t.localRotation, holdFinger[k], w);
+            k++;
         }
     }
     void ApplyHold(float w)
@@ -317,7 +334,7 @@ public class PlayerAvatarAnim : MonoBehaviour
             var chest = anim.GetBoneTransform(HumanBodyBones.UpperChest) ?? anim.GetBoneTransform(HumanBodyBones.Chest);
             if (chest)
             {
-                float need = 0.2f + 0.16f * down;
+                float need = chestClear + 0.16f * down;
                 float dd = Vector3.Dot(ct.position - chest.position, transform.forward);
                 if (dd < need) ct.position += transform.forward * (need - dd);
             }
