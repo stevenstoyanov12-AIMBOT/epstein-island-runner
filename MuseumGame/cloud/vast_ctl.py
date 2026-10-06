@@ -27,7 +27,7 @@ from vast_find import EU, US, country, search
 # keys can live in cloud/.env next to this script (KEY=value lines), so they stay with the project only
 _envfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 if os.path.exists(_envfile):
-    for _line in open(_envfile, encoding="utf-8"):
+    for _line in open(_envfile, encoding="utf-8-sig"):   # -sig: Notepad adds a BOM
         _k, _, _v = _line.strip().partition("=")
         if _k and not _k.startswith("#") and _v:
             os.environ[_k.strip()] = _v.strip().strip('"')    # .env wins over stale shell variables
@@ -53,7 +53,9 @@ def call(method, path, body=None):
             return json.loads(txt) if txt else {}
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")[:400]
-        raise SystemExit(f"Vast API {method} {path} -> HTTP {e.code}: {detail}")
+        src = "cloud/.env" if os.path.exists(_envfile) and "VAST_API_KEY" in open(_envfile, encoding="utf-8-sig").read() else "Windows environment"
+        raise SystemExit(f"Vast API {method} {path} -> HTTP {e.code}: {detail}\n"
+                         f"(key from {src}: {len(key)} chars, ends ...{key[-4:]})")
 
 
 def rent(offer_id, region, instances):
