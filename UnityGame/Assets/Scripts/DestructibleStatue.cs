@@ -12,7 +12,7 @@ public class DestructibleStatue : MonoBehaviour
 {
     public int chipOnlyHits = 2;            // these first hits only chip the surface
     public float hitRadius = 0.18f;         // figure pieces whose surface is this close to the impact break off
-    public int hitsToCollapse = 7;          // this shot brings the rest of the figure down
+    public int hitsToCollapse = 6;          // this hit on the figure brings the rest of it down (plinth hits don't count)
     public Vector2 pushSpeed = new Vector2(0.2f, 0.6f);   // m/s along the bullet for a piece that is hit directly
     public float debrisLifetime = 8f;       // then the debris sinks into the ground and is removed
     public Material dustMaterial, gritMaterial;
@@ -82,15 +82,14 @@ public class DestructibleStatue : MonoBehaviour
     public void Hit(Vector3 point, Vector3 direction, Vector3 normal)
     {
         OnHit?.Invoke(point, direction);
-        hits++;
         direction = direction.normalized;
         normal = normal.sqrMagnitude > 0 ? normal.normalized : -direction;
 
         StatueImpactFX.Play(point, normal, marble, dustMaterial, gritMaterial, 1f, true, statueColliders);
-        if (hits <= chipOnlyHits) return;                     // still just chipping the surface
-
         var nearest = Nearest(point);
-        if (nearest == null || !nearest.figure) return;       // the plinth only chips
+        if (nearest == null || !nearest.figure) return;       // the plinth only chips, and doesn't count as a hit
+        hits++;
+        if (hits <= chipOnlyHits) return;                     // still just chipping the surface
         ShowPieces();
         if (hits >= hitsToCollapse)
         {
