@@ -37,6 +37,7 @@ public class DestructibleStatue : MonoBehaviour
 
     void Awake()
     {
+        Debug.Log("DestructibleStatue v3: game stone FX, heavy falling pieces, unbreakable plinth");
         var tr = transform.Find("Intact");
         if (tr != null)
         {
