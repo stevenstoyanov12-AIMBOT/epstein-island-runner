@@ -23,31 +23,29 @@ from sdf import fbm
 from venus_statue import PLINTH_H, VenusStatue
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-HEAD_C = np.array([0.02, 1.925, -0.06])   # statue space; the face keeps its detail when meshes are thinned
-HEAD_R = 0.135
+HEAD_C = np.array([0.02, 1.93, -0.08])   # statue space; the face keeps its detail when meshes are thinned
+HEAD_R = 0.21
 REPO = os.path.dirname(os.path.dirname(HERE))
 M = VenusStatue()
 
 
 def decimate_keep_head(m, target, head_budget):
-    """Decimate, but give the head region its own (much larger) triangle budget. Both parts keep their shared
-    border fixed (pyfqmr preserve_border), so the seam closes again when they are welded back together."""
-    import pyfqmr
+    """Decimate, but give the head region its own (much larger) triangle budget. The two parts are thinned
+    separately with the same clean decimator as everything else, then welded back together at the seam."""
     near = np.linalg.norm(m.triangles_center - HEAD_C, axis=1) < HEAD_R
     if not near.any() or near.all():
         return decimate(m, target) if target < len(m.faces) else m
+    hb = int(min(head_budget, near.sum()))
     parts = []
-    for mask, budget in ((near, min(head_budget, near.sum())), (~near, max(300, target - min(head_budget, near.sum())))):
+    for mask, budget in ((near, hb), (~near, max(300, target - hb))):
         sub = m.submesh([np.where(mask)[0]], append=True)
         if budget < len(sub.faces):
-            simp = pyfqmr.Simplify()
-            simp.setMesh(sub.vertices.astype(np.float64), sub.faces.astype(np.int32))
-            simp.simplify_mesh(target_count=int(budget), aggressiveness=6, preserve_border=True, verbose=False)
-            v, f, _ = simp.getMesh()
-            sub = trimesh.Trimesh(v, f, process=False)
+            sub = decimate(sub, budget)
         parts.append(sub)
     out = trimesh.util.concatenate(parts)
-    out.merge_vertices()
+    out.merge_vertices(digits_vertex=4)                 # weld the seam (0.1 mm)
+    out.update_faces(out.nondegenerate_faces())
+    out.remove_unreferenced_vertices()
     return out
 
 
@@ -239,11 +237,6 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
         o.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]
     bpy.ops.object.shade_smooth_by_angle(angle=np.radians(50))
-    # UVs for marble textures later
-    bpy.ops.object.mode_set(mode="EDIT")
-    bpy.ops.mesh.select_all(action="SELECT")
-    bpy.ops.uv.smart_project(angle_limit=np.radians(60), island_margin=0.004)
-    bpy.ops.object.mode_set(mode="OBJECT")
     tris = sum(len(o.data.polygons) for o in objs)
     print(f"  blender: {len(objs)} pieces, {tris} triangles")
 
