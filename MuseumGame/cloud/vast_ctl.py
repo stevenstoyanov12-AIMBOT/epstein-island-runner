@@ -27,10 +27,10 @@ from vast_find import EU, US, country, search
 # keys can live in cloud/.env next to this script (KEY=value lines), so they stay with the project only
 _envfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 if os.path.exists(_envfile):
-    for _line in open(_envfile, encoding="utf-8-sig"):   # -sig: Notepad adds a BOM
-        _k, _, _v = _line.strip().partition("=")
-        if _k and not _k.startswith("#") and _v:
-            os.environ[_k.strip()] = _v.strip().strip('"')    # .env wins over stale shell variables
+    import re
+    # KEY=value pairs, one per line or several on one line separated by spaces
+    for _k, _v in re.findall(r'([A-Z_][A-Z0-9_]*)=("[^"]*"|\S+)', open(_envfile, encoding="utf-8-sig").read()):
+        os.environ[_k] = _v.strip('"')    # .env wins over stale shell variables
 
 API = "https://console.vast.ai/api/v0"
 IMAGE = os.environ.get("CLOUD_IMAGE", "aimbot66/museum-cloud:latest")
