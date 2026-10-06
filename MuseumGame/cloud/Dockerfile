@@ -1,8 +1,9 @@
 # Cloud streaming image for Vast.ai cards: Linux build + coturn + supervisor.
-#   docker build -t <dockerhub-user>/museum-cloud:latest -f cloud/Dockerfile .    (run from MuseumGame/, after Build > Cloud Streaming)
+#   docker build -t <dockerhub-user>/museum-cloud:latest -f cloud/Dockerfile .    (run from the Unity project folder, after Build > Cloud Streaming)
 #   docker push <dockerhub-user>/museum-cloud:latest
 # No secrets in here: CLOUD_KEY / CLOUD_REGION come from the Vast template's env vars.
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+# plain Ubuntu: the NVIDIA container runtime on the card mounts the driver (Vulkan, NVENC, nvidia-smi) itself
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_DRIVER_CAPABILITIES=all \
