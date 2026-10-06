@@ -63,7 +63,8 @@ public static class VenusSceneBuilder
     {
         var marble = GetMaterial("VenusMarble", new Color(0.88f, 0.86f, 0.82f), 0.62f);
         var broken = GetMaterial("VenusMarbleBroken", new Color(0.95f, 0.94f, 0.91f), 0.2f);
-        var dust = DustMaterial();
+        var dust = ParticleMaterial("StatueDust");
+        var grit = ParticleMaterial("StatueGrit");
         SetupImporter(marble, broken);
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath);
         if (prefab == null)
@@ -75,7 +76,9 @@ public static class VenusSceneBuilder
         var rot = turn * prefab.transform.rotation;
         var statue = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         statue.transform.SetPositionAndRotation(pos, rot);
-        statue.AddComponent<DestructibleStatue>().dustMaterial = dust;
+        var ds = statue.AddComponent<DestructibleStatue>();
+        ds.dustMaterial = dust;
+        ds.gritMaterial = grit;
 
         var gun = cam.GetComponent<StatueShooter>();
         if (gun == null) gun = cam.AddComponent<StatueShooter>();
@@ -83,6 +86,7 @@ public static class VenusSceneBuilder
         gun.statuePosition = pos;
         gun.statueRotation = rot;
         gun.dustMaterial = dust;
+        gun.gritMaterial = grit;
         return statue;
     }
 
@@ -99,16 +103,21 @@ public static class VenusSceneBuilder
         imp.SaveAndReimport();
     }
 
-    // soft round puff, alpha blended, URP particle shader
-    static Material DustMaterial()
+    // Same setup as the game's FX_Dust / FX_Grit: URP Particles/Unlit, alpha blended, SoftDot texture.
+    static Material ParticleMaterial(string name)
     {
-        string path = $"{MaterialFolder}/VenusDust.mat";
+        string path = $"{MaterialFolder}/{name}.mat";
         var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-        if (mat != null) return mat;
-        if (!AssetDatabase.IsValidFolder(MaterialFolder))
-            AssetDatabase.CreateFolder("Assets", "Materials");
-        mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
-        mat.SetTexture("_BaseMap", AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Particle.psd"));
+        if (mat == null)
+        {
+            if (!AssetDatabase.IsValidFolder(MaterialFolder))
+                AssetDatabase.CreateFolder("Assets", "Materials");
+            mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+            AssetDatabase.CreateAsset(mat, path);
+        }
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Textures/SoftDot.png")
+                  ?? AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Particle.psd");
+        mat.SetTexture("_BaseMap", tex);
         mat.SetColor("_BaseColor", Color.white);
         mat.SetFloat("_Surface", 1f);
         mat.SetFloat("_Blend", 0f);
@@ -117,7 +126,7 @@ public static class VenusSceneBuilder
         mat.SetFloat("_ZWrite", 0f);
         mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
         mat.renderQueue = (int)RenderQueue.Transparent;
-        AssetDatabase.CreateAsset(mat, path);
+        EditorUtility.SetDirty(mat);
         return mat;
     }
 

@@ -9,7 +9,7 @@ public class StatueShooter : MonoBehaviour
     public GameObject statuePrefab;          // set by the scene builder so R can respawn a fresh statue
     public Vector3 statuePosition;
     public Quaternion statueRotation = Quaternion.identity;
-    public Material dustMaterial;
+    public Material dustMaterial, gritMaterial;
 
     void Update()
     {
@@ -32,7 +32,9 @@ public class StatueShooter : MonoBehaviour
         foreach (var s in FindObjectsByType<DestructibleStatue>(FindObjectsSortMode.None)) Destroy(s.gameObject);
         var go = Instantiate(statuePrefab, statuePosition, statueRotation);
         go.name = statuePrefab.name;
-        go.AddComponent<DestructibleStatue>().dustMaterial = dustMaterial;
+        var ds = go.AddComponent<DestructibleStatue>();
+        ds.dustMaterial = dustMaterial;
+        ds.gritMaterial = gritMaterial;
     }
 
     void OnGUI()
