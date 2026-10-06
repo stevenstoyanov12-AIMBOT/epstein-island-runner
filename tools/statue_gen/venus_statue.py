@@ -55,53 +55,70 @@ class VenusStatue:
     # -- anatomy ---------------------------------------------------------------------
 
     def face(self, q):
-        """Head in head-local space, looking toward -Z, eyes open, hair parted into waves and a bun."""
-        d = ellipsoid(q, (0, 0.022, 0.012), (0.072, 0.094, 0.094))                          # cranium
-        d = smin(d, ellipsoid(q, (0, -0.032, -0.032), (0.049, 0.070, 0.068)), 0.03)          # face mass
-        d = smin(d, ellipsoid(q, (0, -0.090, -0.068), (0.021, 0.019, 0.021)), 0.025)         # chin
+        """Head in head-local space, looking toward -Z: classical oval face, straight Greek nose,
+        almond eyes under a soft brow, full lips, hair parted in the middle and waved back over the ears into a bun."""
+        x, y, z = q[:, 0], q[:, 1], q[:, 2]
+        d = ellipsoid(q, (0, 0.022, 0.012), (0.071, 0.092, 0.095))                            # cranium
+        d = smin(d, ellipsoid(q, (0, -0.028, -0.036), (0.053, 0.074, 0.062)), 0.035)          # face oval
         for s in (-1, 1):
-            d = smin(d, ellipsoid(q, (s * 0.036, -0.030, -0.071), (0.019, 0.022, 0.018)), 0.03)   # cheeks
-            d = smin(d, ellipsoid(q, (s * 0.043, -0.066, -0.040), (0.015, 0.028, 0.030)), 0.035)  # jaw
-        d = smin(d, capsule(q, (-0.036, 0.015, -0.080), (0.036, 0.015, -0.080), 0.0075), 0.02)   # brow ridge
+            d = smin(d, capsule(q, (s * 0.054, -0.028, 0.002), (s * 0.008, -0.090, -0.062), 0.012), 0.03)  # jaw line
+            d = smin(d, ellipsoid(q, (s * 0.038, -0.022, -0.070), (0.020, 0.018, 0.016)), 0.025)  # cheekbones
+        d = smin(d, ellipsoid(q, (0, -0.091, -0.068), (0.0135, 0.012, 0.0125)), 0.018)         # chin
+        d = smin(d, ellipsoid(q, (0, 0.040, -0.072), (0.050, 0.035, 0.030)), 0.03)             # forehead
+        d = smin(d, ellipsoid(q, (0, -0.056, -0.072), (0.026, 0.022, 0.016)), 0.025)           # muzzle under the lips
+        # eyes: deep sockets under the brow, almond lids, blank classical eyeballs
         for s in (-1, 1):
-            d = smax(d, -ellipsoid(q, (s * 0.029, 0.000, -0.098), (0.018, 0.011, 0.013)), 0.010)  # socket
-            d = smin(d, sphere(q, (s * 0.029, -0.002, -0.074), 0.0175), 0.004)                     # eyeball
-            d = smin(d, ellipsoid(q, (s * 0.029, 0.0075, -0.088), (0.016, 0.004, 0.007)), 0.004)  # upper lid
-            d = smin(d, ellipsoid(q, (s * 0.029, -0.0105, -0.088), (0.014, 0.003, 0.006)), 0.004) # lower lid
-        d = smin(d, round_cone(q, (0, 0.010, -0.087), (0, -0.036, -0.113), 0.006, 0.0085), 0.012)  # straight nose
+            ex = s * 0.0295
+            d = smax(d, -ellipsoid(q, (ex, 0.001, -0.099), (0.021, 0.0125, 0.017)), 0.008)        # socket
+            d = smin(d, sphere(q, (ex, -0.001, -0.0745), 0.0175), 0.002)                         # eyeball
+            up = ellipsoid(q, (ex, 0.0055, -0.0905), (0.0165, 0.0055, 0.0065))
+            up = smax(up, -(q[:, 1] - 0.0015), 0.002)                                             # upper lid edge
+            d = smin(d, up, 0.003)
+            lo = ellipsoid(q, (ex, -0.0085, -0.0895), (0.0145, 0.0035, 0.0055))
+            d = smin(d, smax(lo, q[:, 1] + 0.0065, 0.0015), 0.003)                               # lower lid
+            d = smax(d, -ellipsoid(q, (ex + s * 0.0165, -0.002, -0.087), (0.003, 0.003, 0.004)), 0.002)  # outer corner
+        d = smin(d, capsule(q, (-0.045, 0.0165, -0.088), (0.045, 0.0165, -0.088), 0.006), 0.016)  # soft brow
+        # nose: one straight line with the forehead, narrow bridge, rounded tip, wings, flat base
+        nose = round_cone(q, (0, 0.016, -0.0935), (0, -0.0355, -0.1215), 0.0066, 0.0095)
         for s in (-1, 1):
-            d = smin(d, sphere(q, (s * 0.0085, -0.040, -0.098), 0.0052), 0.007)                    # nostrils
-            d = smin(d, round_cone(q, (s * 0.016, -0.059, -0.090), (0.0, -0.057, -0.095), 0.002, 0.0032), 0.005)
-            d = smin(d, round_cone(q, (s * 0.013, -0.068, -0.089), (0.0, -0.069, -0.093), 0.0022, 0.0036), 0.006)
-        d = smax(d, -capsule(q, (-0.016, -0.0635, -0.103), (0.016, -0.0635, -0.103), 0.0011), 0.0015)  # lip line
-        d = smax(d, -sphere(q, (0, -0.050, -0.110), 0.004), 0.004)                                   # philtrum
-        for s in (-1, 1):                                                                            # ears
-            ear = ellipsoid(q, (s * 0.068, -0.012, 0.014), (0.008, 0.022, 0.014))
-            ear = smax(ear, -ellipsoid(q, (s * 0.075, -0.012, 0.012), (0.004, 0.014, 0.008)), 0.003)
-            d = smin(d, ear, 0.006)
+            nose = smin(nose, ellipsoid(q, (s * 0.0108, -0.0375, -0.1065), (0.0068, 0.0058, 0.0068)), 0.004)
+        nose = smax(nose, -(q[:, 1] + 0.0425), 0.003)
+        d = smin(d, nose, 0.006)
+        for s in (-1, 1):
+            d = smax(d, -sphere(q, (s * 0.0075, -0.0425, -0.1055), 0.0028), 0.002)              # nostrils
+        # mouth: cupid's bow upper lip, fuller lower lip, parting line, deep corners
+        d = smax(d, -capsule(q, (0, -0.046, -0.1065), (0, -0.054, -0.1035), 0.0022), 0.003)    # philtrum
+        for s in (-1, 1):
+            d = smin(d, ellipsoid(q, (s * 0.0062, -0.0582, -0.0975), (0.0085, 0.0036, 0.0050)), 0.003)  # upper lip
+        d = smin(d, ellipsoid(q, (0, -0.0662, -0.0955), (0.0115, 0.0045, 0.0058)), 0.004)      # lower lip
+        d = smax(d, -capsule(q, (-0.0155, -0.0622, -0.0935), (0.0155, -0.0622, -0.0935), 0.0009), 0.0012)
+        for s in (-1, 1):
+            d = smax(d, -sphere(q, (s * 0.0165, -0.062, -0.092), 0.0018), 0.003)
+        d = smax(d, -ellipsoid(q, (0, -0.077, -0.096), (0.012, 0.004, 0.004)), 0.006)           # under-lip dip
 
-        # hair: centre parting, waves swept back from the face over the ears, a bun at the back
-        hair = ellipsoid(q, (0, 0.030, 0.018), (0.081, 0.097, 0.100))
-        side = np.abs(q[:, 0]) + 1e-4
-        sweep = np.arctan2(q[:, 1] - 0.10, side)          # angle down from the parting
-        waves = np.abs(np.sin(sweep * 18 + q[:, 2] * 35))
-        hair = hair - 0.0045 * waves - 0.002 * np.abs(np.sin(q[:, 2] * 160 + sweep * 6))
-        hair = smax(hair, -(-q[:, 2] - 0.045 + 0.30 * np.maximum(q[:, 1] - 0.02, 0)), 0.012)  # hairline
-        hair = smax(hair, -(0.0 - q[:, 1] - 0.4 * np.maximum(q[:, 2], 0)), 0.02)            # nape cut
-        part = capsule(q, (0, 0.12, -0.06), (0, 0.10, 0.07), 0.003)
-        hair = smax(hair, -part, 0.004)
-        bun = ellipsoid(q, (0, 0.040, 0.105), (0.040, 0.034, 0.032))
-        ang = np.arctan2(q[:, 1] - 0.04, q[:, 0])
-        bun = bun - 0.003 * np.abs(np.sin(ang * 5 + length(q - [0, 0.04, 0.105]) * 120))
-        hair = smin(hair, bun, 0.012)
-        fillet = torus_y(q, (0, 0.052, 0.014), 0.079, 0.0035)                             # thin ribbon band
-        hair = smin(hair, fillet, 0.006)
-        return smin(d, hair, 0.012)
+        # hair: thick waved mass, centre parting, swept back over the ears to a bun
+        hair = ellipsoid(q, (0, 0.028, 0.016), (0.084, 0.104, 0.108))
+        hair = smin(hair, ellipsoid(q, (0, -0.010, 0.020), (0.082, 0.060, 0.090)), 0.03)       # over the ears
+        side = np.abs(x) + 1e-4
+        sweep = np.arctan2(y - 0.03, side)                                                     # angle from the head centre
+        wave = np.sin(sweep * 13 + 6.0 * np.sin(z * 40 + 1.0))
+        calm = np.clip(side / 0.012, 0, 1)                                                      # no spikes at the parting
+        hair = hair - 0.006 * calm * (1 - np.abs(wave)) ** 2 + 0.002
+        hair = hair - 0.0006 * calm * np.abs(np.sin(sweep * 30 + z * 50))                               # strands
+        hair = smax(hair, -ellipsoid(q, (0, -0.032, -0.112), (0.061, 0.098, 0.074)), 0.006)     # face window
+        hair = smax(hair, -(y + 0.050 - 0.55 * np.maximum(z, 0)), 0.01)                         # hem over ears to nape
+        hair = smax(hair, -capsule(q, (0, 0.125, -0.07), (0, 0.11, 0.06), 0.0028), 0.003)       # parting
+        bun = ellipsoid(q, (0, 0.040, 0.108), (0.044, 0.037, 0.035))
+        ang = np.arctan2(y - 0.040, x)
+        rr = length(q - np.array([0, 0.040, 0.108]))
+        bun = bun - 0.004 * (1 - np.abs(np.sin(ang * 3 + rr * 160))) ** 2
+        hair = smin(hair, bun, 0.01)
+        return smin(d, hair, 0.006)
 
     def head(self, p):
         q = (p - self.head_c) @ self.head_R
         d = ellipsoid(q, (0, 0.0, 0.0), (0.095, 0.125, 0.135))   # cheap bound away from the head
-        near = length(q) < 0.19
+        near = length(q) < 0.2
         if near.any():
             d[near] = self.face(q[near])
         return d
@@ -208,7 +225,7 @@ class VenusStatue:
         body = smin(body, self.head(q), 0.02)
         cloth = self.drapery(f, torso)
         d = np.minimum(body, cloth)
-        d = d - 0.0006 * fbm(f * 140.0, 2, self.seed + 30)          # weathered marble grain
+        d = d - 0.00025 * fbm(f * 60.0, 2, self.seed + 30)         # faint weathering, not pitting
         d = d * SCALE
         return smin(d, self.rock(p), 0.012)
 
