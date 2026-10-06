@@ -29,7 +29,9 @@ public static class StatueImpactFX
     }
 
     // fragments = false: dust and grit only (used for the puff when a whole piece comes loose)
-    public static void Play(Vector3 p, Vector3 n, Material stone, Material dustMat, Material gritMat, float scale = 1f, bool fragments = true)
+    // ignore: colliders the fragments must not touch (the statue they came off)
+    public static void Play(Vector3 p, Vector3 n, Material stone, Material dustMat, Material gritMat, float scale = 1f, bool fragments = true,
+                            System.Collections.Generic.IList<Collider> ignore = null)
     {
         Init();
         // 1. fragments
@@ -43,6 +45,7 @@ public static class StatueImpactFX
             g.AddComponent<MeshFilter>().sharedMesh = rocks[Random.Range(0, rocks.Length)];
             g.AddComponent<MeshRenderer>().sharedMaterial = stone;
             var c = g.AddComponent<BoxCollider>(); c.size = Vector3.one * 0.6f;
+            if (ignore != null) foreach (var o in ignore) if (o) Physics.IgnoreCollision(c, o);   // fragments spawn inside the statue: never shove it
             var rb = g.AddComponent<Rigidbody>(); rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative; rb.interpolation = RigidbodyInterpolation.Interpolate; rb.mass = size * 8f; rb.linearDamping = 0.1f; rb.angularDamping = 0.2f;
             var dir = (n + Random.insideUnitSphere * 0.7f + Vector3.up * 0.3f).normalized;
             rb.linearVelocity = dir * Random.Range(1.5f, 5f); rb.angularVelocity = Random.insideUnitSphere * 15f;

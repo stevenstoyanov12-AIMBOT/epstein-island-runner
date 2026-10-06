@@ -13,7 +13,7 @@ public class DestructibleStatue : MonoBehaviour
     public int chipOnlyHits = 2;            // these first hits only chip the surface
     public float hitRadius = 0.18f;         // figure pieces whose surface is this close to the impact break off
     public int hitsToCollapse = 7;          // this shot brings the rest of the figure down
-    public Vector2 pushSpeed = new Vector2(0.3f, 1.1f);   // m/s along the bullet for a piece that is hit directly
+    public Vector2 pushSpeed = new Vector2(0.2f, 0.6f);   // m/s along the bullet for a piece that is hit directly
     public float debrisLifetime = 8f;       // then the debris sinks into the ground and is removed
     public Material dustMaterial, gritMaterial;
 
@@ -30,6 +30,7 @@ public class DestructibleStatue : MonoBehaviour
     }
 
     readonly List<Piece> pieces = new List<Piece>();
+    readonly List<Collider> statueColliders = new List<Collider>();
     GameObject intact;
     Material marble;
     int hits;
@@ -44,6 +45,7 @@ public class DestructibleStatue : MonoBehaviour
             // the shell gets its own collider so the chip-only shots land on the real surface
             var mc = intact.AddComponent<MeshCollider>();
             mc.sharedMesh = intact.GetComponent<MeshFilter>().sharedMesh;
+            statueColliders.Add(mc);
         }
         foreach (Transform c in transform)
         {
@@ -59,6 +61,7 @@ public class DestructibleStatue : MonoBehaviour
             r.enabled = intact == null;
             if (marble == null) marble = r.sharedMaterial;
             pieces.Add(new Piece { t = c, col = mc, figure = fig, bounds = r.bounds });
+            statueColliders.Add(mc);
         }
         // which pieces rest on which: overlapping bounds, slightly grown
         for (int i = 0; i < pieces.Count; i++)
@@ -82,7 +85,7 @@ public class DestructibleStatue : MonoBehaviour
         direction = direction.normalized;
         normal = normal.sqrMagnitude > 0 ? normal.normalized : -direction;
 
-        StatueImpactFX.Play(point, normal, marble, dustMaterial, gritMaterial);
+        StatueImpactFX.Play(point, normal, marble, dustMaterial, gritMaterial, 1f, true, statueColliders);
         if (hits <= chipOnlyHits) return;                     // still just chipping the surface
 
         var nearest = Nearest(point);
@@ -148,6 +151,7 @@ public class DestructibleStatue : MonoBehaviour
         rb.AddTorque(UnityEngine.Random.insideUnitSphere * 1.5f * strength, ForceMode.VelocityChange);
 
         StatueImpactFX.Play(b.center, -direction, marble, dustMaterial, gritMaterial, 1.5f, false);
+        p.t.gameObject.AddComponent<StatueDebris>();
         StartCoroutine(Sink(p.t, rb));
     }
 
@@ -176,5 +180,22 @@ public class DestructibleStatue : MonoBehaviour
             yield return null;
         }
         Destroy(t.gameObject);
+    }
+}
+
+// Keeps a falling statue piece honest: it may slide and tumble, but it never gets thrown upward or flung far
+// (whatever it bumps into), so it always drops like a heavy stone.
+public class StatueDebris : MonoBehaviour
+{
+    Rigidbody rb;
+    void Awake() { rb = GetComponent<Rigidbody>(); }
+    void FixedUpdate()
+    {
+        var v = rb.linearVelocity;
+        if (v.y > 0.3f) v.y = 0.3f;                                    // a small bounce at most
+        var flat = new Vector2(v.x, v.z);
+        if (flat.magnitude > 2.5f) { flat = flat.normalized * 2.5f; v.x = flat.x; v.z = flat.y; }
+        rb.linearVelocity = v;
+        if (rb.angularVelocity.magnitude > 8f) rb.angularVelocity = rb.angularVelocity.normalized * 8f;
     }
 }
