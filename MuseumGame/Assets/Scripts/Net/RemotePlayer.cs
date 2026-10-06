@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 // Another player as seen locally.
 // - Buffered interpolation: drawn ~120 ms in the past, blended between two real snapshots (no chasing, no teleport jitter).
 // - Aim: camera pitch bends the spine so the body and gun point where the player actually looks.
 // - Hitboxes: colliders on skeleton bones (head, torso, limbs) that follow animation and crouch.
+// - Death: everyone sees the body fall with the same death animation (Resources/Death) until the player respawns.
 public class RemotePlayer : MonoBehaviour
 {
     public string id;
@@ -24,6 +27,7 @@ public class RemotePlayer : MonoBehaviour
     Transform spine, chest, upperChest;
     readonly List<Collider> hitboxes = new List<Collider>();
     CapsuleCollider rootCol; float standH, standCY, crouchH = 1f;
+    PlayableGraph deathGraph; bool deadShown; Vector3 modelLocal;
 
     public static RemotePlayer Create(string id, string character, Transform localRoot)
     {
@@ -51,7 +55,7 @@ public class RemotePlayer : MonoBehaviour
         var a = inst.GetComponent<Animator>(); if (a == null) a = inst.AddComponent<Animator>();
         a.enabled = true; a.applyRootMotion = false; a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         if (localAnim != null) a.runtimeAnimatorController = localAnim.runtimeAnimatorController;
-        rp.anim = a; rp.model = inst.transform;
+        rp.anim = a; rp.model = inst.transform; rp.modelLocal = inst.transform.localPosition;
         rp.BuildFallbackHold(inst.transform);
         rp.localAv = av; if (av != null) rp.bodyRel = Quaternion.Inverse(localRoot.rotation) * av.transform.rotation;
         CharacterSelect.AttachGunTo(inst, a);
@@ -214,15 +218,17 @@ public class RemotePlayer : MonoBehaviour
         else shown = Vector3.SmoothDamp(shown, pos, ref shownVel, 0.045f, Mathf.Infinity, Time.deltaTime);
         transform.SetPositionAndRotation(shown, Quaternion.Euler(0f, yaw, 0f));
 
-        bool show = alive && !InCrate(shown);   // a player hiding in a crate is never drawn, whatever his client reports
+        if (!alive && !deadShown) StartDeath();
+        else if (alive && deadShown) EndDeath();
+        bool show = (alive || deadShown) && !InCrate(shown);   // a player hiding in a crate is never drawn, whatever his client reports
         if (model != null && model.gameObject.activeSelf != show) model.gameObject.SetActive(show);
 
         // fallback root capsule (only used when the model has no humanoid bones) shrinks when crouching
         float h = crouch ? Mathf.Min(standH, crouchH) : standH;
         rootCol.height = Mathf.Lerp(rootCol.height, h, 1f - Mathf.Exp(-12f * Time.deltaTime));
         rootCol.center = new Vector3(rootCol.center.x, standCY - (standH - rootCol.height) * 0.5f, rootCol.center.z);
-        rootCol.enabled = show && hitboxes.Count == 0;
-        for (int i = 0; i < hitboxes.Count; i++) if (hitboxes[i] != null) hitboxes[i].enabled = show;
+        rootCol.enabled = alive && show && hitboxes.Count == 0;
+        for (int i = 0; i < hitboxes.Count; i++) if (hitboxes[i] != null) hitboxes[i].enabled = alive && show;   // a dead body can't be shot
 
         if (anim != null && anim.runtimeAnimatorController != null && alive)
         {
@@ -238,6 +244,7 @@ public class RemotePlayer : MonoBehaviour
     // after the Animator has posed the skeleton: bend the spine by the camera pitch so body + gun aim where the player looks
     void LateUpdate()
     {
+        if (deadShown) { KeepBodyOnFloor(); return; }
         if (first || !alive) return;
         float p = Mathf.Clamp(pitch, -60f, 60f);
         Vector3 axis = transform.right;
@@ -255,6 +262,43 @@ public class RemotePlayer : MonoBehaviour
         }
     }
 
+    // ---------- death, seen by everyone ----------
+    void StartDeath()
+    {
+        deadShown = true;
+        if (anim == null) return;
+        AnimationClip clip = null;
+        foreach (var c in Res.LoadAll<AnimationClip>("Death")) { if (c.name == "mixamo.com") clip = c; if (clip == null) clip = c; }
+        if (clip == null) return;
+        deathGraph = PlayableGraph.Create("RemoteDeath_" + id);
+        deathGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
+        var o = AnimationPlayableOutput.Create(deathGraph, "death", anim);
+        o.SetSourcePlayable(AnimationClipPlayable.Create(deathGraph, clip));
+        deathGraph.Play();
+    }
+
+    void EndDeath()
+    {
+        deadShown = false;
+        if (deathGraph.IsValid()) deathGraph.Destroy();
+        if (model != null) model.localPosition = modelLocal;
+        if (anim != null) anim.Rebind();   // back to the normal locomotion controller
+    }
+
+    // the death clip's hip height is for a different rig: keep the collapsing body on the floor, never under it
+    void KeepBodyOnFloor()
+    {
+        if (anim == null || model == null || !anim.isHuman) return;
+        float lo = float.MaxValue;
+        foreach (var hb in new[] { HumanBodyBones.Hips, HumanBodyBones.Head, HumanBodyBones.Chest, HumanBodyBones.LeftHand, HumanBodyBones.RightHand,
+                                   HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftLowerArm, HumanBodyBones.RightLowerArm })
+        { var bt = anim.GetBoneTransform(hb); if (bt) lo = Mathf.Min(lo, bt.position.y); }
+        float floor = transform.position.y + 0.04f;
+        if (lo < floor) model.position += Vector3.up * (floor - lo);
+    }
+
+    void OnDestroy() { if (deathGraph.IsValid()) deathGraph.Destroy(); }
+
     // SimpleGun: hit.collider.SendMessageUpwards("OnBulletHit", hit)
     void OnBulletHit(RaycastHit hit)
     {
@@ -266,6 +310,8 @@ public class RemotePlayer : MonoBehaviour
         var g = fpc != null ? fpc.GetComponent<GazeTarget>() : null;
         float body = g != null ? Random.Range(g.bodyDamageMin, g.bodyDamageMax) : Random.Range(15f, 16.8f);
         float hd = g != null ? g.headDamage : 34f;
-        Net.I.SendHit(id, head ? hd : body);
+        float dmg = head ? hd : body;
+        DamageNumbers.Show(hit.point, dmg, head);   // Fortnite-style number right where the bullet landed
+        Net.I.SendHit(id, dmg);
     }
 }
