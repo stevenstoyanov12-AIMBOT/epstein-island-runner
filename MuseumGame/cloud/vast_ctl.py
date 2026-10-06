@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Rent, check and destroy the cloud streaming cards from the command line (run on your PC).
 
-  set VAST_API_KEY=...          your Vast API key
-  set CLOUD_KEY=...             the same string as the Worker's CLOUD_SECRET (passed to the cards as an env var)
+  Instance actions go through Vast's own CLI (pip install vastai), which needs a 2FA session:
+    vastai tfa login --method-type totp -c <6-digit code>
+  cloud/.env holds VAST_API_KEY (offer search) and CLOUD_KEY.
 
   python cloud/vast_ctl.py up --eu 1 --us 0 --instances 2     rent the best-ranked cards (datacenter first)
   python cloud/vast_ctl.py up --offer 40114418 --region eu    rent one specific offer
@@ -16,6 +17,8 @@ Only touches instances labelled "museum-cloud-*", so nothing else on the account
 import argparse
 import json
 import os
+import shutil
+import subprocess
 import sys
 import time
 import urllib.error
@@ -31,17 +34,6 @@ if os.path.exists(_envfile):
     # KEY=value pairs, one per line or several on one line separated by spaces
     for _k, _v in re.findall(r'([A-Z_][A-Z0-9_]*)=("[^"]*"|\S+)', open(_envfile, encoding="utf-8-sig").read()):
         os.environ[_k] = _v.strip('"')    # .env wins over stale shell variables
-
-# Vast needs a 2FA session for instance actions: `vastai tfa login ...` stores that session key in the
-# vastai CLI's key file, so use it when present (falls back to VAST_API_KEY from .env).
-for _p in (os.path.expanduser("~/.config/vastai/vast_api_key"), os.path.expanduser("~/.vast_api_key"),
-           os.path.join(os.environ.get("APPDATA", ""), "vastai", "vast_api_key")):
-    if os.path.isfile(_p):
-        _key = open(_p, encoding="utf-8-sig").read().strip()
-        if _key:
-            os.environ["VAST_API_KEY"] = _key
-            os.environ["VAST_KEY_SOURCE"] = _p
-            break
 
 API = "https://console.vast.ai/api/v0"
 IMAGE = os.environ.get("CLOUD_IMAGE", "aimbot66/museum-cloud:latest")
@@ -70,20 +62,33 @@ def call(method, path, body=None):
                          f"(key from {src}: {len(key)} chars, ends ...{key[-4:]})")
 
 
+def vastai(*args, raw=False, answer=None):
+    """Run Vast's own CLI (it carries the 2FA session from `vastai tfa login`)."""
+    exe = shutil.which("vastai") or os.path.join(sys.prefix, "Scripts", "vastai.exe")
+    cmd = [exe, *map(str, args)] + (["--raw"] if raw else [])
+    r = subprocess.run(cmd, capture_output=True, text=True, input=answer)
+    out = (r.stdout or "") + (r.stderr or "")
+    if r.returncode != 0 or "2FA session" in out or "Two Factor" in out:
+        raise SystemExit(out.strip() + "\n\nIf this is the 2FA error: vastai tfa login --method-type totp -c <code>  then retry.")
+    if raw:
+        try:
+            return json.loads(r.stdout)
+        except ValueError:
+            raise SystemExit(out.strip())
+    return out
+
+
 def rent(offer_id, region, instances):
-    env = {
-        "CLOUD_KEY": os.environ["CLOUD_KEY"], "CLOUD_REGION": region, "INSTANCES": str(instances),
-        "-p 3478:3478/udp": "1", "-p 3478:3478/tcp": "1",
-    }
-    r = call("PUT", f"/asks/{offer_id}/", {
-        "client_id": "me", "image": IMAGE, "env": env, "disk": 20,
-        "runtype": "args", "label": f"{LABEL}-{region}",
-    })
-    print(f"rented offer {offer_id} ({region}):", r.get("new_contract") or r)
+    env = (f"-p 3478:3478/udp -p 3478:3478/tcp -e CLOUD_KEY={os.environ['CLOUD_KEY']} "
+           f"-e CLOUD_REGION={region} -e INSTANCES={instances}")
+    out = vastai("create", "instance", offer_id, "--image", IMAGE, "--env", env, "--disk", 20,
+                 "--label", f"{LABEL}-{region}")
+    print(f"rented offer {offer_id} ({region}): {out.strip()}")
 
 
 def ours():
-    rows = call("GET", "/instances/?owner=me").get("instances", [])
+    rows = vastai("show", "instances", raw=True)
+    rows = rows.get("instances", rows) if isinstance(rows, dict) else rows
     return [i for i in rows if (i.get("label") or "").startswith(LABEL)]
 
 
@@ -122,25 +127,13 @@ def cmd_list(a):
 
 
 def cmd_logs(a):
-    r = call("PUT", f"/instances/request_logs/{a.id}/", {"tail": "200"})
-    url = r.get("result_url")
-    if not url:
-        print(r)
-        return
-    for _ in range(15):          # the log file appears after a few seconds
-        try:
-            print(urllib.request.urlopen(url, timeout=20).read().decode())
-            return
-        except Exception:
-            time.sleep(2)
-    print("log not ready yet, try again")
+    print(vastai("logs", a.id, "--tail", 200))
 
 
 def cmd_down(a):
     ids = [a.id] if a.id else [i["id"] for i in ours()]
     for i in ids:
-        call("DELETE", f"/instances/{i}/")
-        print("destroyed", i)
+        print(vastai("destroy", "instance", i, answer="y\n").strip() or f"destroyed {i}")
     if not ids:
         print("nothing to destroy")
 
@@ -160,7 +153,7 @@ def main():
     dn = sub.add_parser("down")
     dn.add_argument("id", type=int, nargs="?")
     a = ap.parse_args()
-    for k in ("VAST_API_KEY",) + (("CLOUD_KEY",) if a.cmd == "up" else ()):
+    for k in (("VAST_API_KEY", "CLOUD_KEY") if a.cmd == "up" else ()):
         if not os.environ.get(k):
             sys.exit(f"set {k} first")
     {"up": cmd_up, "list": cmd_list, "logs": cmd_logs, "down": cmd_down}[a.cmd](a)
