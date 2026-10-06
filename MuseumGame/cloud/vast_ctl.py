@@ -84,6 +84,8 @@ def rent(offer_id, region, instances):
            f"-e CLOUD_REGION={region} -e INSTANCES={instances}")
     out = vastai("create", "instance", offer_id, "--image", IMAGE, "--env", env, "--disk", 20,
                  "--label", f"{LABEL}-{region}")
+    if "Failed" in out or "error" in out.lower():
+        raise SystemExit(f"could not rent offer {offer_id} ({region}): {out.strip()}")
     print(f"rented offer {offer_id} ({region}): {out.strip()}")
 
 
