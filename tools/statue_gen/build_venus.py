@@ -23,30 +23,8 @@ from sdf import fbm
 from venus_statue import PLINTH_H, VenusStatue
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-HEAD_C = np.array([0.02, 1.93, -0.08])   # statue space; the face keeps its detail when meshes are thinned
-HEAD_R = 0.21
 REPO = os.path.dirname(os.path.dirname(HERE))
 M = VenusStatue()
-
-
-def decimate_keep_head(m, target, head_budget):
-    """Decimate, but give the head region its own (much larger) triangle budget. The two parts are thinned
-    separately with the same clean decimator as everything else, then welded back together at the seam."""
-    near = np.linalg.norm(m.triangles_center - HEAD_C, axis=1) < HEAD_R
-    if not near.any() or near.all():
-        return decimate(m, target) if target < len(m.faces) else m
-    hb = int(min(head_budget, near.sum()))
-    parts = []
-    for mask, budget in ((near, hb), (~near, max(300, target - hb))):
-        sub = m.submesh([np.where(mask)[0]], append=True)
-        if budget < len(sub.faces):
-            sub = decimate(sub, budget)
-        parts.append(sub)
-    out = trimesh.util.concatenate(parts)
-    out.merge_vertices(digits_vertex=4)                 # weld the seam (0.1 mm)
-    out.update_faces(out.nondegenerate_faces())
-    out.remove_unreferenced_vertices()
-    return out
 
 
 # --- sampling ----------------------------------------------------------------------
@@ -168,6 +146,7 @@ def cut_pieces(vol, lo, voxel, groups, gap):
             if m.volume < 0:
                 m.invert()
             trimesh.smoothing.filter_taubin(m, iterations=4)
+            m = decimate(m, max(2000, len(m.faces) // 4))     # Blender does the final reduction
             pieces.append((f"{prefix}_{k:02d}", m))
     return pieces
 
@@ -180,73 +159,6 @@ def broken_faces(m, vol, lo, voxel):
 
 
 # --- Blender -----------------------------------------------------------------------
-
-def blender_decimate(ob, target, head_budget, centre):
-    """Seamless thinning in Blender: pass 1 thins everything but the head, pass 2 thins only the head to its own
-    budget. One mesh, no split, so no cracks; Blender's collapse doesn't leave needle triangles."""
-    import bpy
-    import gc
-
-    def bake(mod_setup):
-        """Apply a temporary modifier by evaluating it into a new mesh (cheaper than modifier_apply)."""
-        mod_setup()
-        ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get())
-        new = bpy.data.meshes.new_from_object(ev)
-        old = ob.data
-        ob.modifiers.clear()
-        ob.data = new
-        bpy.data.meshes.remove(old)
-        gc.collect()
-
-    # very dense meshes: an even first pass in Blender keeps memory in check (Blender's collapse leaves no needles)
-    nf = len(ob.data.polygons)
-    if nf > 1_200_000:
-        bake(lambda: setattr(ob.modifiers.new("pre", "DECIMATE"), "ratio", 1_200_000 / nf))
-    me = ob.data
-    co = np.empty(len(me.vertices) * 3, np.float32)
-    me.vertices.foreach_get("co", co)
-    to_b = np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], float)
-    pts = co.reshape(-1, 3) @ to_b + centre                               # statue space
-    inside = np.linalg.norm(pts - HEAD_C, axis=1) < HEAD_R
-    dg = bpy.context.evaluated_depsgraph_get
-
-    def faces_after():
-        ev = ob.evaluated_get(dg())
-        mm = ev.to_mesh()
-        n = len(mm.polygons)
-        ev.to_mesh_clear()
-        return n
-
-    def search(mod, want):
-        lo_, hi_ = 0.002, 1.0
-        for _ in range(6):
-            mod.ratio = (lo_ + hi_) / 2
-            n = faces_after()
-            if n > want: hi_ = mod.ratio
-            else: lo_ = mod.ratio
-        mod.ratio = lo_
-
-    if head_budget and inside.any() and not inside.all():
-        vg = ob.vertex_groups.new(name="head")
-        vg.add(np.where(inside)[0].tolist(), 1.0, "REPLACE")
-        nhead = int(np.count_nonzero(inside)) * 2                            # ~2 triangles per vertex
-        body = ob.modifiers.new("body", "DECIMATE")                          # pass 1: head protected
-        body.vertex_group, body.invert_vertex_group = "head", True
-        head = ob.modifiers.new("head", "DECIMATE")                          # pass 2: only the head
-        head.vertex_group, head.invert_vertex_group = "head", False
-        head.ratio = min(1.0, head_budget / max(nhead, 1))
-        search(body, target)
-    else:
-        mod = ob.modifiers.new("all", "DECIMATE")
-        search(mod, target)
-    ev = ob.evaluated_get(dg())
-    new = bpy.data.meshes.new_from_object(ev)
-    old = ob.data
-    ob.modifiers.clear()
-    ob.vertex_groups.clear()
-    ob.data = new
-    bpy.data.meshes.remove(old)
-
 
 def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, preview_dir, render):
     import bpy
@@ -272,53 +184,29 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
     total = sum(len(m.faces) for _, m in pieces)
     to_b = np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], float)   # Y-up (figure faces -Z) -> Z-up (faces -Y)
 
-    pieces.append(("Intact", intact))                                      # the biggest mesh last
-    order = pieces                                                         # popped one by one: frees as we go
-    del intact
-    while order:
-        name, m = order.pop(0)
+    for name, m in [("Intact", intact)] + pieces:
         share = len(m.faces) / total
         target = max(400, int(budget * share))
-        head_budget = 0
         if name == "Intact":
-            target, head_budget = int(budget * 0.8), 30000          # seamless shell shown until the first hit
+            target = int(budget * 1.1)                       # seamless shell shown until the first hit (enough for the face)
         elif name.startswith("Base"):
-            target = max(300, target // 3)                          # flat plinth faces decimate well
-        else:
-            head_budget = 9000
+            target = max(300, target // 3)                  # flat plinth faces decimate well
+        if target < len(m.faces):
+            m = decimate(m, target)
+        flags = broken_faces(m, vol, lo, voxel) if name != "Intact" else np.zeros(len(m.faces), bool)
         centre = m.centroid
-        verts = ((m.vertices - centre) @ to_b.T).astype(np.float32)
+        verts = (m.vertices - centre) @ to_b.T
         me = bpy.data.meshes.new(name)
-        me.vertices.add(len(verts))
-        me.vertices.foreach_set("co", verts.ravel())
-        nf = len(m.faces)
-        me.loops.add(nf * 3)
-        me.loops.foreach_set("vertex_index", m.faces.astype(np.int32).ravel())
-        me.polygons.add(nf)
-        me.polygons.foreach_set("loop_start", np.arange(0, nf * 3, 3, dtype=np.int32))
-        me.polygons.foreach_set("loop_total", np.full(nf, 3, np.int32))
-        me.update(calc_edges=True)
-        me.validate()
+        me.from_pydata(verts.tolist(), [], m.faces.tolist())
+        me.materials.append(marble)
+        me.materials.append(core)
+        me.polygons.foreach_set("material_index", flags.astype(np.int32))
+        me.update()
         ob = bpy.data.objects.new(name, me)
         ob.location = centre @ to_b.T
         ob.parent = root
         scene.collection.objects.link(ob)
-        del m, verts                                                         # free the source mesh
-        if target < nf:
-            blender_decimate(ob, target, head_budget, centre)
-        # fracture faces get the second material (sampled from the volume at each face centre)
-        me = ob.data
-        me.materials.clear()
-        me.materials.append(marble)
-        me.materials.append(core)
-        cen = np.empty(len(me.polygons) * 3, np.float32)
-        me.polygons.foreach_get("center", cen)
-        world = cen.reshape(-1, 3) @ to_b + centre                        # back to statue space (to_b is orthonormal)
-        flags = np.zeros(len(world), bool) if name == "Intact" else \
-            map_coordinates(vol, ((world - lo) / voxel).T, order=1, mode="nearest") < -1.2 * voxel
-        me.polygons.foreach_set("material_index", flags.astype(np.int32))
-        me.polygons.foreach_set("use_smooth", np.ones(len(me.polygons), bool))
-        me.update()
+        me.polygons.foreach_set("use_smooth", np.ones(len(me.polygons), bool))   # faces already wound outward (trimesh)
 
     # sharp edges where fracture faces meet the polished surface, smooth elsewhere
     bpy.ops.object.select_all(action="DESELECT")
@@ -454,6 +342,7 @@ def main():
     if intact.volume < 0:
         intact.invert()
     trimesh.smoothing.filter_taubin(intact, iterations=4)
+    intact = decimate(intact, len(intact.faces) // 4)
 
     if args.cache:
         np.save(args.cache + ".vol.npy", vol)
