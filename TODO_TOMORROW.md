@@ -8,3 +8,9 @@
 
 Background: statue eyes/whiter rebuild. The last build had a mouth hole and needle spikes, so it was discarded.
 Current committed VenusStatue.fbx is the good one. Still pending: copy it into the game + Tools > Place Venus Statues.
+
+## Statue workflow (no more full rebuilds)
+Start from the good tools/statue_gen/blend/VenusStatue.blend and make small local edits there, one at a time:
+- Whiter: material colour only (Blender material + Unity remap). No mesh rebuild.
+- Eyes: edit only the head region of the existing mesh, render one close-up of the face, check it, then export.
+Never rerun build_venus.py from scratch for a small change.
