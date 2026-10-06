@@ -22,7 +22,7 @@ public class StatueShooter : MonoBehaviour
         var ray = new Ray(transform.position, transform.forward);
         if (!Physics.Raycast(ray, out var hit, range)) return;
         var statue = hit.collider.GetComponentInParent<DestructibleStatue>();
-        if (statue != null) statue.Hit(hit.point, ray.direction);
+        if (statue != null) statue.Hit(hit.point, ray.direction, hit.normal);
         else if (hit.rigidbody != null) hit.rigidbody.AddForceAtPosition(ray.direction * 3f, hit.point, ForceMode.Impulse);
     }
 
