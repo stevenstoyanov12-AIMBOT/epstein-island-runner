@@ -20,11 +20,11 @@ public class Net : MonoBehaviour
     static string Url => Room == null ? Base + "lobby" : Base + "?room=" + Room;
     float lobbyPingT; int roomFails;
     public static Net I;
-    [Serializable] public class Msg { public string t, id, to, c, room; public int pos; public float x, y, z, r, p, ts, sp, d, tx, ty, tz; public int cr, sh, al, sl; }   // sl = the crate number the server gave us, plus one (0 = none)
+    [Serializable] public class Msg { public string t, id, to, c, room; public int pos; public float x, y, z, r, p, ts, sp, d, tx, ty, tz, rl; public int cr, sh, al, sl; }   // rl = reload progress 0..1 (0 = not reloading)   // sl = the crate number the server gave us, plus one (0 = none)
 
     string myId = ""; float sendT, retryT; bool wasOpen;
     readonly Dictionary<string, RemotePlayer> remotes = new Dictionary<string, RemotePlayer>();
-    float lastShot = -10f;
+    float lastShot = -10f, lastFiredSeen = -10f;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot() { if (I != null) return; var g = new GameObject("Net"); g.AddComponent<Net>(); DontDestroyOnLoad(g); }
@@ -111,7 +111,7 @@ public class Net : MonoBehaviour
         FlushWorld();
         if (st != 1) return;
 
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !CrateSpawn.Hidden && Cursor.lockState == CursorLockMode.Locked && FirstPersonController.RelockFrame != Time.frameCount) lastShot = Time.unscaledTime;
+        if (SimpleGun.LastFired > lastFiredSeen) { lastFiredSeen = SimpleGun.LastFired; lastShot = Time.unscaledTime; }   // real shots only (not empty clicks or reloads)
         sendT -= Time.unscaledDeltaTime;
         if (sendT <= 0f)
         {
@@ -123,7 +123,7 @@ public class Net : MonoBehaviour
             float px = cam != null ? cam.transform.eulerAngles.x : 0f; if (px > 180f) px -= 360f;
             var o = new Msg { t = "s", c = CharacterSelect.Chosen, x = root.position.x, y = root.position.y, z = root.position.z, r = root.eulerAngles.y, p = px, ts = Time.unscaledTime, sp = sp,
                 cr = (FirstPersonController.Crouching || CrateSpawn.Hidden) ? 1 : 0,   // inside a crate he is always crouched
-                sh = (Time.unscaledTime - lastShot < 0.8f) ? 1 : 0, al = (g == null || g.Alive) && !CrateSpawn.Hidden ? 1 : 0 };
+                sh = (Time.unscaledTime - lastShot < 0.8f) ? 1 : 0, al = (g == null || g.Alive) && !CrateSpawn.Hidden ? 1 : 0, rl = SimpleGun.ReloadProgress };
             SockSend(JsonUtility.ToJson(o));
         }
     }

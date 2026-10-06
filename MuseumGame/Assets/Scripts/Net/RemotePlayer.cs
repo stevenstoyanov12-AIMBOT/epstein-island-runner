@@ -12,7 +12,7 @@ public class RemotePlayer : MonoBehaviour
 {
     public string id;
     Animator anim; Transform model; GazeTarget gaze;
-    float speed, pitch; bool crouch, shoot, wasShoot, alive = true, first = true;
+    float speed, pitch, reload, reloadT; bool crouch, shoot, wasShoot, alive = true, first = true;   // reload: progress from the last message, reloadT: when it arrived
     readonly List<Transform> holdBones = new List<Transform>(); readonly List<Quaternion> holdRel = new List<Quaternion>();   // fallback hold (arms + fingers of the select-screen aiming pose, relative to the model root)
     PlayerAvatarAnim localAv; Quaternion bodyRel = Quaternion.identity; float carryW;   // walking hold: gun lowered, both hands on it (same as the local body)
 
@@ -137,7 +137,7 @@ public class RemotePlayer : MonoBehaviour
     // ---------- network input ----------
     public void Apply(Net.Msg m)
     {
-        speed = m.sp; crouch = m.cr == 1; shoot = m.sh == 1; alive = m.al == 1;
+        speed = m.sp; crouch = m.cr == 1; shoot = m.sh == 1; alive = m.al == 1; reload = m.rl; reloadT = Time.time;
         if (gaze != null) { gaze.proxyAlive = alive; if (shoot && !wasShoot) gaze.MakeNoise(); wasShoot = shoot; }
 
         // timestamp on the local clock: use sender time when available so packets that arrive bunched together stay spaced out
@@ -260,6 +260,8 @@ public class RemotePlayer : MonoBehaviour
             if (localAv != null && localAv.HasHold) localAv.ApplyHoldTo(anim, transform.rotation * bodyRel, carryW);
             else ApplyFallbackHold(carryW);
         }
+        // reload: run the same motion locally between messages (~30 per second), so it plays smoothly
+        if (reload > 0f) ReloadPose.Apply(anim, transform, Mathf.Min(0.999f, reload + (Time.time - reloadT) / SimpleGun.ReloadTime));
     }
 
     // ---------- death, seen by everyone ----------

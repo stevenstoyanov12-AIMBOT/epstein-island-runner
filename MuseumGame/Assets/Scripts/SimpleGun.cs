@@ -6,11 +6,41 @@ public class SimpleGun : MonoBehaviour
 {
     public float range = 200f, fireDelay = 0.09f; public float kickUp = 2.4f, kickSide = 0.7f, recover = 0.65f; float pendUp, pendSide, owed, spread;
     float next; static Material holeMat, dustMat;
+
+    // ---- magazine: 20 rounds, R reloads (no auto reload), refilled on respawn ----
+    public const int MagSize = 20;
+    public const float ReloadTime = 1.7f;
+    public static int Ammo = MagSize;
+    public static bool Reloading => reloadEnd > 0f;
+    public static float ReloadProgress => Reloading ? Mathf.Clamp01(1f - (reloadEnd - Time.time) / ReloadTime) : 0f;
+    public static float LastFired = -10f;
+    static float reloadEnd, emptyFlash;
+    bool wasDead;
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void ResetAmmo() { Ammo = MagSize; reloadEnd = 0f; LastFired = -10f; }
+
+    void Magazine()
+    {
+        var pd = GetComponentInParent<PlayerDeath>();
+        bool dead = pd != null && pd.dead;
+        if (dead) reloadEnd = 0f;                                         // dying cancels a reload
+        if (wasDead && !dead) Ammo = MagSize;                             // fresh magazine after respawning
+        wasDead = dead;
+        if (Reloading && Time.time >= reloadEnd) { reloadEnd = 0f; Ammo = MagSize; }
+        var kb = Keyboard.current;
+        if (!dead && !Reloading && Ammo < MagSize && !CrateSpawn.Hidden && kb != null && kb.rKey.wasPressedThisFrame)
+            reloadEnd = Time.time + ReloadTime;
+        emptyFlash = Mathf.Max(0f, emptyFlash - Time.deltaTime);
+    }
+
     void Update()
     {
         var m = Mouse.current; var cam = Camera.main;
+        Magazine();
         Recoil(); if (CrateSpawn.Hidden) return; if (m == null || cam == null || !m.leftButton.wasPressedThisFrame || Time.time < next) return;
         if (Cursor.lockState != CursorLockMode.Locked || FirstPersonController.RelockFrame == Time.frameCount) return; // the click that grabs the mouse back doesn't shoot // semi-auto: one shot per click
+        if (Reloading) return;
+        if (Ammo <= 0) { emptyFlash = 0.6f; return; }                         // empty: click, no shot, "R to reload"
+        Ammo--; LastFired = Time.time;
         Kick();
         next = Time.time + fireDelay;
         var hits = Physics.RaycastAll(cam.transform.position, cam.transform.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
@@ -141,6 +171,46 @@ public class SimpleGun : MonoBehaviour
         float cx = Screen.width / 2f, cy = Screen.height / 2f, R = 11f + spread * 0.9f, s = R * 128f / 58f;
         GUI.DrawTexture(new Rect(cx - s / 2f, cy - s / 2f, s, s), ring);
         GUI.DrawTexture(new Rect(cx - 8, cy - 8, 16, 16), dot);
+        AmmoHud();
+    }
+
+    static GUIStyle bigStyle, smallStyle;
+    void AmmoHud()
+    {
+        if (CrateSpawn.Hidden) return;
+        float h = Screen.height;
+        if (bigStyle == null)
+        {
+            bigStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.LowerRight, fontStyle = FontStyle.Bold };
+            smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+        }
+        bigStyle.fontSize = Mathf.RoundToInt(h * 0.06f);
+        smallStyle.fontSize = Mathf.RoundToInt(h * 0.028f);
+        string txt = Ammo + " / " + MagSize;
+        var r = new Rect(Screen.width - h * 0.42f, h * 0.84f, h * 0.38f, h * 0.12f);
+        bool low = Ammo <= 5;
+        GUI.color = new Color(0f, 0f, 0f, 0.7f); GUI.Label(new Rect(r.x + 2, r.y + 2, r.width, r.height), txt, bigStyle);
+        GUI.color = Ammo == 0 ? new Color(1f, 0.3f, 0.25f) : low ? new Color(1f, 0.8f, 0.3f) : Color.white;
+        GUI.Label(r, txt, bigStyle);
+        float cx = Screen.width / 2f;
+        if (Reloading)
+        {
+            float w = h * 0.22f, bh = h * 0.008f, y = h * 0.6f;
+            GUI.color = new Color(0f, 0f, 0f, 0.55f); GUI.DrawTexture(new Rect(cx - w / 2, y, w, bh), Texture2D.whiteTexture);
+            GUI.color = Color.white; GUI.DrawTexture(new Rect(cx - w / 2, y, w * ReloadProgress, bh), Texture2D.whiteTexture);
+            GUI.Label(new Rect(cx - w, y - h * 0.045f, w * 2, h * 0.04f), "RELOADING", smallStyle);
+        }
+        else if (Ammo == 0 || emptyFlash > 0f)
+        {
+            GUI.color = new Color(1f, 0.35f, 0.3f, Ammo == 0 ? 0.9f : emptyFlash / 0.6f);
+            GUI.Label(new Rect(cx - h * 0.3f, h * 0.58f, h * 0.6f, h * 0.05f), "PRESS R TO RELOAD", smallStyle);
+        }
+        else if (low)
+        {
+            GUI.color = new Color(1f, 0.8f, 0.3f, 0.8f);
+            GUI.Label(new Rect(cx - h * 0.3f, h * 0.58f, h * 0.6f, h * 0.05f), "LOW AMMO", smallStyle);
+        }
+        GUI.color = Color.white;
     }
 }
 
