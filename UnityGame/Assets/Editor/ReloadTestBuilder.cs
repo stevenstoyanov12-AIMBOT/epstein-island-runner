@@ -51,61 +51,6 @@ public static class ReloadTestBuilder
         return ch;
     }
 
-    // Public-domain revolver reload (github.com/ZenXChaos/ThirdPersonShooter-AnimationSets): open, load (x3), close, on loop.
-    public static GameObject PlaceRevolver(Vector3 pos, float yaw)
-    {
-        string dir = "Assets/Animations/Revolver/";
-        var names = new[] { "RevolverReloadInit", "RevolverReloadLoop", "RevolverReloadEnd" };
-        var clips = new AnimationClip[names.Length];
-        for (int i = 0; i < names.Length; i++)
-        {
-            var path = dir + names[i] + ".fbx";
-            Humanoid(path, true, names[i]);
-            clips[i] = AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview"));
-            if (clips[i] == null) { Debug.LogError("Missing " + path); return null; }
-        }
-        var ctrl = AnimatorController.CreateAnimatorControllerAtPath(dir + "RevolverReloadTest.controller");
-        var sm = ctrl.layers[0].stateMachine;
-        var init = sm.AddState("Init"); init.motion = clips[0];
-        var load = sm.AddState("Load"); load.motion = clips[1];
-        var end = sm.AddState("End"); end.motion = clips[2];
-        sm.defaultState = init;
-        void Next(AnimatorState a, AnimatorState b, float exit) { var t = a.AddTransition(b); t.hasExitTime = true; t.exitTime = exit; t.duration = 0.1f; }
-        Next(init, load, 0.95f);
-        Next(load, end, 2.9f);        // three rounds
-        Next(end, init, 0.95f);
-
-        var ch = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(CharFbx));
-        ch.name = "ReloadDemo_Revolver";
-        ch.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
-        var rs = ch.GetComponentsInChildren<Renderer>();
-        if (rs.Length > 0) { var bb = rs[0].bounds; foreach (var r in rs) bb.Encapsulate(r.bounds); if (bb.size.y > 1e-5f) ch.transform.localScale *= 1.8f / bb.size.y; }
-        var anim = ch.GetComponent<Animator>();
-        if (anim == null) anim = ch.AddComponent<Animator>();
-        anim.runtimeAnimatorController = ctrl;
-        anim.applyRootMotion = false;
-        ch.AddComponent<ReloadDemo>();
-        return ch;
-    }
-
-    static void Humanoid(string path, bool isClip, string clipName)
-    {
-        var imp = AssetImporter.GetAtPath(path) as ModelImporter;
-        if (imp == null) { Debug.LogError("Missing " + path); return; }
-        imp.animationType = ModelImporterAnimationType.Human;
-        imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-        var clips = imp.defaultClipAnimations;
-        foreach (var c in clips)
-        {
-            c.name = clipName;
-            c.loopTime = clipName.EndsWith("Loop");
-            c.lockRootRotation = c.lockRootHeightY = c.lockRootPositionXZ = true;
-            c.keepOriginalOrientation = c.keepOriginalPositionY = c.keepOriginalPositionXZ = true;
-        }
-        imp.clipAnimations = clips;
-        imp.SaveAndReimport();
-    }
-
     static void Humanoid(string path, bool isClip)
     {
         var imp = AssetImporter.GetAtPath(path) as ModelImporter;

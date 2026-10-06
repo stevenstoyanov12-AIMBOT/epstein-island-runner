@@ -75,7 +75,6 @@ public static class StatueSceneBuilder
         if (statue == null) return;
         // reload animation preview, standing beside the statue facing the camera
         ReloadTestBuilder.Place(new Vector3(1.8f, 0.1f, -1.2f), 180f);
-        ReloadTestBuilder.PlaceRevolver(new Vector3(3.0f, 0.1f, -1.2f), 180f);   // public-domain revolver reload, for comparison
 
         Bloom();
         EditorSceneManager.SaveScene(scene, ScenePath);
