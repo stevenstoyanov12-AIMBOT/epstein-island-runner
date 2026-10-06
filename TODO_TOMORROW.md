@@ -6,8 +6,8 @@
 2. Fetch the pistol animations (Tripo export WITH animation: Mixamo skeleton + clip).
    Wire it as the reload clip: UnityGame (ReloadTestBuilder) first, then the game (replaces ReloadPose).
 
-Background: statue eyes/whiter rebuild. The last build had a mouth hole and needle spikes, so it was discarded.
-Current committed VenusStatue.fbx is the good one. Still pending: copy it into the game + Tools > Place Venus Statues.
+Statue: head swapped for a clean fine-SDF head (no mouth hole), whiter marble. Head PIECES (Fig_00-04, shown after the first hit) still have the old face: next small step.
+Still pending: copy it into the game + Tools > Place Venus Statues.
 
 ## Statue workflow (no more full rebuilds)
 Start from the good tools/statue_gen/blend/VenusStatue.blend and make small local edits there, one at a time:

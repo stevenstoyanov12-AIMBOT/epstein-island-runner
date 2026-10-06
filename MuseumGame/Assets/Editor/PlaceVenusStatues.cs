@@ -78,7 +78,7 @@ public static class PlaceVenusStatues
         if (imp == null) return;
         imp.isReadable = true;
         imp.importAnimation = false;
-        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "Marble"), Mat("VenusMarble", new Color(0.97f, 0.96f, 0.94f), 0.55f));
+        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "Marble"), Mat("VenusMarble", new Color(0.99f, 0.985f, 0.975f), 0.55f));
         imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "MarbleBroken"), Mat("VenusMarbleBroken", new Color(1f, 1f, 0.99f), 0.12f));
         imp.SaveAndReimport();
     }
