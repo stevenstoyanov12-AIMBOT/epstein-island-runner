@@ -229,6 +229,13 @@ public class Net : MonoBehaviour
     public void SendHit(string targetId, float dmg)
     {
         if (SockState() != 1) return;
+        // Fortnite-style number over the player we hit (RemotePlayer sends 34 for a headshot, ~15-17 for the body)
+        RemotePlayer rp;
+        if (remotes.TryGetValue(targetId, out rp) && rp != null)
+        {
+            bool head = dmg >= 30f;
+            DamageNumbers.Show(rp.transform.position + Vector3.up * (head ? 1.85f : 1.3f), dmg, head);
+        }
         SockSend(JsonUtility.ToJson(new Msg { t = "hit", to = targetId, d = dmg }));
     }
 }
