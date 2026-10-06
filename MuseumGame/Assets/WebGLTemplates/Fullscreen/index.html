@@ -42,13 +42,13 @@
       try { var c = document.createElement('canvas'); var gl = c.getContext('webgl'); var ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
             return ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : ''; } catch (e) { return ''; }
     }
-    // older than NVIDIA RTX 20-series class: GTX/GT cards, old Quadros, AMD before RX 5000 or with under 4 GB, Intel HD/UHD integrated
+    // older than NVIDIA RTX 20-series class: GTX/GT cards, old Quadros, AMD before RX 5000 or with under 4 GB, Intel HD/UHD/Iris integrated
     function oldGpu(n) {
       n = n.toUpperCase();
       // AMD with under 4 GB of video memory: RX 5300 (3 GB), RX 6300 (2 GB) and every integrated Radeon (Vega, 610M-780M, "Radeon Graphics": they share system RAM)
       if (/RX\s?(5300|6300)\b|RADEON(\(TM\))?\s+(\d{3}M\b|GRAPHICS)/.test(n)) return true;
       if (/RTX|RX\s?[5-9]\d{3}|ARC|APPLE/.test(n)) return false;
-      return /GTX|GEFORCE\s+(GT|MX|\d{3}M?\b)|QUADRO\s+[KMP]|RADEON\s+(R[579]|HD|RX\s?[45]\d{2}\b|VEGA)|INTEL.*(HD|UHD)/.test(n);
+      return /GTX|GEFORCE\s+(GT|MX|\d{3}M?\b)|QUADRO\s+[KMP]|RADEON\s+(R[579]|HD|RX\s?[45]\d{2}\b|VEGA)|INTEL.*(HD|UHD|IRIS)/.test(n);
     }
     // weak GPUs (see oldGpu) play a stream from a cloud machine instead; /stream.html falls back to here with ?nocloud=1
     var cloud = oldGpu(gpuName()) && !/[?&]nocloud=1/.test(location.search);
