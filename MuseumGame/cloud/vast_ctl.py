@@ -22,6 +22,14 @@ import urllib.request
 
 from vast_find import EU, US, country, search
 
+# keys can live in cloud/.env next to this script (KEY=value lines), so they stay with the project only
+_envfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if os.path.exists(_envfile):
+    for _line in open(_envfile, encoding="utf-8"):
+        _k, _, _v = _line.strip().partition("=")
+        if _k and not _k.startswith("#") and _v:
+            os.environ.setdefault(_k.strip(), _v.strip().strip('"'))
+
 API = "https://console.vast.ai/api/v0"
 IMAGE = os.environ.get("CLOUD_IMAGE", "aimbot66/museum-cloud:latest")
 LABEL = "museum-cloud"
