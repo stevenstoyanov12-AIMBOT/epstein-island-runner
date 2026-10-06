@@ -116,7 +116,13 @@ def main():
         cr = arm.pose.bones[B(side + "Hand")].constraints.new("COPY_ROTATION")
         cr.target = t
 
+    last_q = {}
     def key(e, f, pos, rot):
+        rot = rot.copy()
+        prev = last_q.get(e.name)
+        if prev is not None and prev.dot(rot) < 0:                      # same hemisphere as the last key: no wrist flips
+            rot.negate()
+        last_q[e.name] = rot
         e.location = pos
         e.rotation_quaternion = rot
         e.keyframe_insert("location", frame=f)
@@ -125,36 +131,87 @@ def main():
     r0q, l0q = R0.to_quaternion(), L0.to_quaternion()
     rp0, lp0 = R0.translation.copy(), L0.translation.copy()
 
-    # right hand: gun comes in toward the chest, lowers, rolls the grip toward the left hand and tips the muzzle down
-    tilt = Quaternion(fwd, math.radians(-55)) @ Quaternion(left, math.radians(-25)) @ r0q
-    rp1 = rp0 + (-fwd) * 0.16 * k - up * 0.14 * k + left * 0.08 * k
-    key(tr, 1, rp0, r0q)
-    key(tr, 9, rp1, tilt)
-    key(tr, 28, rp1, tilt)
-    key(tr, 30, rp1 + up * 0.04 * k, tilt)               # the mag slap knocks the gun up a touch
-    key(tr, 33, rp1, tilt)
-    key(tr, 38, rp1 + (-fwd) * 0.01 * k, Quaternion(fwd, math.radians(-15)) @ r0q)   # gun straightens for the rack
-    key(tr, 42, rp1 + fwd * 0.02 * k, Quaternion(fwd, math.radians(-15)) @ r0q)
-    key(tr, 49, rp0, r0q)
-    key(tr, END, rp0, r0q)
+    # ---- the gun is animated; the right hand follows it, the left hand works on it ----
+    # gun frame: X = gun's right side, Y = barrel, Z = top of the slide; origin = the grip (right hand)
+    def frame(barrel, top):
+        barrel, top = barrel.normalized(), top.normalized()
+        right = barrel.cross(top).normalized()
+        top = right.cross(barrel).normalized()
+        m = Matrix((right, barrel, top)).transposed()
+        return m.to_quaternion()
+    g0 = frame(fwd, up)
+    hand_in_gun = g0.inverted() @ r0q                                 # right hand orientation relative to the gun
+    left_in_gun = g0.inverted() @ (lp0 - rp0)                         # support hand on the gun, gun space
+    left_rot_in_gun = g0.inverted() @ l0q
 
-    # left hand: off the gun, down to the magazine pouch on the left hip, up under the grip, slap, rack the slide, back
-    pouch = hips + left * 0.2 * k + fwd * 0.05 * k + up * 0.02 * k
-    grip_bottom = rp1 - up * 0.11 * k + left * 0.01 * k
-    slide_top = rp1 + fwd * 0.07 * k + up * 0.09 * k
-    lq_pouch = Quaternion(left, math.radians(70)) @ Quaternion(up, math.radians(20)) @ l0q
-    lq_mag = Quaternion(left, math.radians(-25)) @ l0q
-    lq_rack = Quaternion(fwd, math.radians(80)) @ Quaternion(left, math.radians(-30)) @ l0q
+    def gun_pts(gp, gq):
+        X, Y, Z = gq @ Vector((1, 0, 0)), gq @ Vector((0, 1, 0)), gq @ Vector((0, 0, 1))
+        return dict(X=X, Y=Y, Z=Z,
+                    magwell=gp - Z * 0.075 * k - Y * 0.015 * k,          # bottom of the grip
+                    rear=gp + Z * 0.065 * k - Y * 0.035 * k,             # back of the slide
+                    support=gp + gq @ left_in_gun)
+
+    def hand_rot(fingers, palm):
+        """Hand orientation from where the fingers point and where the palm faces (bone Y = fingers, Z = palm)."""
+        y, z = fingers.normalized(), palm.normalized()
+        x = y.cross(z).normalized()
+        z = x.cross(y).normalized()
+        return Matrix((x, y, z)).transposed().to_quaternion()
+
+    gkeys = {}                                                        # frame -> (gun pos, gun rot)
+    def gkey(f, gp, gq):
+        gkeys[f] = (gp, gq)
+        key(tr, f, gp, gq @ hand_in_gun)
+
+    inspect_p = rp0 + (-fwd) * 0.07 * k - up * 0.11 * k + left * 0.05 * k             # in front of the chest, not under the chin
+    inspect_q = Quaternion(fwd, math.radians(-38)) @ Quaternion(left, math.radians(28)) @ g0   # canted, muzzle up a bit
+    rack_q = Quaternion(fwd, math.radians(-22)) @ Quaternion(left, math.radians(10)) @ g0
+    gkey(1, rp0, g0)
+    gkey(4, rp0 + (-fwd) * 0.03 * k, g0)
+    gkey(9, inspect_p, inspect_q)
+    gkey(27, inspect_p, inspect_q)
+    gkey(30, inspect_p + (inspect_q @ Vector((0, 0, 1))) * 0.03 * k, inspect_q)      # the slap knocks it up
+    gkey(33, inspect_p, inspect_q)
+    gkey(37, inspect_p + fwd * 0.02 * k, rack_q)
+    gkey(40, inspect_p + fwd * 0.05 * k, rack_q)                                      # pushed forward as the slide racks
+    gkey(43, inspect_p + fwd * 0.02 * k, rack_q)
+    gkey(49, rp0, g0)
+    gkey(END, rp0, g0)
+
+    def at(f):
+        """Gun pose at frame f (linear between gun keys; the IK target curves smooth it)."""
+        fs = sorted(gkeys)
+        for a_, b_ in zip(fs, fs[1:]):
+            if a_ <= f <= b_:
+                t = (f - a_) / (b_ - a_)
+                return gkeys[a_][0].lerp(gkeys[b_][0], t), gkeys[a_][1].slerp(gkeys[b_][1], t)
+        return gkeys[fs[-1]]
+
+    # ---- left hand: off the gun, magazine from the left hip pouch, in, slap, rack, back ----
+    pouch = hips + left * 0.19 * k + fwd * 0.03 * k + up * 0.04 * k
+    pouch_q = hand_rot(-up + fwd * 0.2, -left)                         # fingers down, palm against the hip
     key(tl, 1, lp0, l0q)
-    key(tl, 6, lp0 + left * 0.05 * k - up * 0.04 * k, l0q)
-    key(tl, 14, pouch, lq_pouch)
-    key(tl, 18, pouch - up * 0.02 * k, lq_pouch)          # grab the magazine
-    key(tl, 25, grip_bottom - up * 0.06 * k, lq_mag)
-    key(tl, 29, grip_bottom + up * 0.03 * k, lq_mag)      # slap it home
-    key(tl, 32, grip_bottom, lq_mag)
-    key(tl, 37, slide_top, lq_rack)
-    key(tl, 40, slide_top + (-fwd) * 0.11 * k, lq_rack)   # rack the slide back
-    key(tl, 43, slide_top, lq_rack)
+    key(tl, 5, lp0 + left * 0.06 * k - up * 0.04 * k, l0q)
+    key(tl, 12, pouch + up * 0.03 * k, pouch_q)
+    key(tl, 16, pouch, pouch_q)                                       # grab
+    key(tl, 19, pouch + up * 0.05 * k, pouch_q)                       # pull the magazine out
+    gp, gq = at(24); g = gun_pts(gp, gq)
+    key(tl, 24, g["magwell"] - g["Z"] * 0.14 * k, hand_rot(g["Y"], g["Z"]))           # magazine lined up under the grip
+    gp, gq = at(28); g = gun_pts(gp, gq)
+    key(tl, 28, g["magwell"] - g["Z"] * 0.05 * k, hand_rot(g["Y"], g["Z"]))           # sliding in
+    gp, gq = at(30); g = gun_pts(gp, gq)
+    key(tl, 30, g["magwell"] - g["Z"] * 0.01 * k, hand_rot(g["Y"], g["Z"]))           # heel of the hand slaps it home
+    gp, gq = at(32); g = gun_pts(gp, gq)
+    key(tl, 32, g["magwell"] - g["Z"] * 0.04 * k, hand_rot(g["Y"], g["Z"]))
+    gp, gq = at(37); g = gun_pts(gp, gq)
+    over = hand_rot(g["X"] + g["Y"] * 0.3, -g["Z"])                   # palm down on the slide, fingers across it
+    key(tl, 37, g["rear"] + g["Z"] * 0.04 * k - g["X"] * 0.03 * k, over)
+    gp, gq = at(40); g = gun_pts(gp, gq)
+    key(tl, 40, g["rear"] + g["Z"] * 0.03 * k - g["Y"] * 0.09 * k - g["X"] * 0.03 * k, over)   # rack it back hard
+    gp, gq = at(43); g = gun_pts(gp, gq)
+    key(tl, 43, g["rear"] + g["Z"] * 0.06 * k - g["Y"] * 0.06 * k - g["X"] * 0.05 * k, over)   # let go
+    gp, gq = at(47); g = gun_pts(gp, gq)
+    key(tl, 47, g["support"], gq @ left_rot_in_gun)                  # back on the grip
     key(tl, 49, lp0, l0q)
     key(tl, END, lp0, l0q)
 
@@ -175,11 +232,12 @@ def main():
         for f, deg in frames_deg:
             pb.rotation_quaternion = b @ Quaternion(axis, math.radians(deg))
             pb.keyframe_insert("rotation_quaternion", frame=f)
-    add_rot("Head", [(1, 0), (10, 14), (28, 18), (40, 10), (49, 0), (END, 0)], Vector((1, 0, 0)))
-    add_rot("Spine2", [(1, 0), (10, 4), (40, 4), (49, 0), (END, 0)], Vector((1, 0, 0)))
+    add_rot("Head", [(1, 0), (9, 9), (16, 6), (24, 11), (32, 11), (40, 8), (49, 0), (END, 0)], Vector((1, 0, 0)))
+    add_rot("Spine2", [(1, 0), (9, 2), (14, 3), (24, 2), (40, 2), (49, 0), (END, 0)], Vector((1, 0, 0)))
+    add_rot("Spine1", [(1, 0), (12, 6), (19, 6), (26, 0), (END, 0)], Vector((0, 1, 0)))   # turn toward the pouch
 
     if a.preview:
-        preview(arm, a.preview, k, hips)
+        preview(arm, a.preview, k, hips, hand_in_gun)
 
     # ---- export: armature + animation only ----
     for o in bpy.data.objects:
@@ -192,26 +250,41 @@ def main():
     print("exported", a.out)
 
 
-def preview(arm, out, k, hips):
-    """Workbench renders of a few key frames with a pistol proxy in the right hand."""
+def preview(arm, out, k, hips, hand_in_gun):
+    """Renders every 3rd frame with a pistol in the right hand and a magazine in the left while it carries one."""
     scene = bpy.context.scene
     os.makedirs(out, exist_ok=True)
-    scene.frame_set(1)
-    hand = arm.pose.bones[B("RightHand")]
-    hm = arm.matrix_world @ hand.matrix
-    gun = bpy.data.objects.new("GunProxy", bpy.data.meshes.new("gun"))
     import bmesh
-    bm = bmesh.new()
-    bmesh.ops.create_cube(bm, size=1.0)
-    bmesh.ops.scale(bm, vec=(0.035 * k, 0.19 * k, 0.035 * k), verts=bm.verts)     # slide/barrel along -Y
-    bmesh.ops.translate(bm, vec=(0, -0.06 * k, 0.03 * k), verts=bm.verts)
-    bm.to_mesh(gun.data)
-    bm.free()
-    scene.collection.objects.link(gun)
-    gun.parent = arm
-    gun.parent_type = "BONE"
-    gun.parent_bone = hand.name
-    gun.matrix_world = Matrix.Translation(hm.translation)
+
+    def box(name, parts):
+        me = bpy.data.meshes.new(name)
+        bm = bmesh.new()
+        for size, centre in parts:
+            r = bmesh.ops.create_cube(bm, size=1.0)
+            bmesh.ops.scale(bm, vec=size, verts=r["verts"])
+            bmesh.ops.translate(bm, vec=centre, verts=r["verts"])
+        bm.to_mesh(me); bm.free()
+        o = bpy.data.objects.new(name, me)
+        scene.collection.objects.link(o)
+        return o
+
+    def attach(o, bone_name, local_rot):
+        pb = arm.pose.bones[B(bone_name)]
+        scene.frame_set(1)
+        hm = arm.matrix_world @ pb.matrix
+        o.parent, o.parent_type, o.parent_bone = arm, "BONE", pb.name
+        wq = hm.to_quaternion() @ local_rot
+        o.matrix_world = Matrix.Translation(hm.translation) @ wq.to_matrix().to_4x4() @ Matrix.Scale(k, 4)
+
+    # pistol in gun space: Y barrel, Z slide top, origin at the grip
+    gun = box("Pistol", [((0.032, 0.19, 0.035), (0, 0.03, 0.06)),       # slide
+                         ((0.03, 0.045, 0.11), (0, -0.02, -0.005))])    # grip
+    attach(gun, "RightHand", hand_in_gun.inverted())
+    mag = box("Magazine", [((0.022, 0.035, 0.11), (0, 0.05, 0.0))])
+    attach(mag, "LeftHand", Quaternion())
+    for f, vis in ((1, False), (15, False), (16, True), (30, True), (31, False)):
+        mag.hide_render = not vis
+        mag.keyframe_insert("hide_render", frame=f)
 
     scene.render.engine = "CYCLES"                  # CPU renderer (no GPU here)
     scene.cycles.device = "CPU"
@@ -219,26 +292,29 @@ def preview(arm, out, k, hips):
     scene.cycles.use_denoising = True
     world = bpy.data.worlds.new("W")
     world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.2
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 3.5
     scene.world = world
     sun = bpy.data.objects.new("Sun", bpy.data.lights.new("Sun", "SUN"))
-    sun.data.energy = 3.0
+    sun.data.energy = 6.0
     sun.rotation_euler = (math.radians(40), 0, math.radians(-30))
     scene.collection.objects.link(sun)
-    scene.render.resolution_x, scene.render.resolution_y = 420, 520
+    scene.render.resolution_x, scene.render.resolution_y = 360, 440
     cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam"))
     scene.collection.objects.link(cam)
     scene.camera = cam
-    cam.data.lens = 50
-    tgt = hips + Vector((0.0, -0.2, 0.3)) * k
-    cam.location = hips + Vector((1.2, -2.3, 0.6)) * k            # from the front, a bit to his left
+    cam.data.lens = 55
     cam.data.clip_start = 0.01 * k
-    cam.rotation_euler = (tgt - cam.location).to_track_quat("-Z", "Y").to_euler()
-    for f in (1, 9, 14, 18, 25, 29, 37, 40, 51):
+    tgt = hips + Vector((0.05, -0.2, 0.42)) * k
+    views = {"front": Vector((0.25, -1.6, 0.5)), "left": Vector((1.6, -0.5, 0.45))}
+    for f in (1, 9, 14, 18, 24, 28, 30, 37, 40, 47):
         scene.frame_set(f)
-        scene.render.filepath = os.path.join(out, f"reload_{f:02d}.png")
-        bpy.ops.render.render(write_still=True)
+        for vn, off in views.items():
+            cam.location = hips + off * k
+            cam.rotation_euler = (tgt - cam.location).to_track_quat("-Z", "Y").to_euler()
+            scene.render.filepath = os.path.join(out, f"reload_{vn}_{f:02d}.png")
+            bpy.ops.render.render(write_still=True)
     bpy.data.objects.remove(gun)
+    bpy.data.objects.remove(mag)
     bpy.data.objects.remove(cam)
 
 
