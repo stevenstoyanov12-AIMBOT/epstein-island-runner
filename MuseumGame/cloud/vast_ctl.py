@@ -28,7 +28,7 @@ if os.path.exists(_envfile):
     for _line in open(_envfile, encoding="utf-8"):
         _k, _, _v = _line.strip().partition("=")
         if _k and not _k.startswith("#") and _v:
-            os.environ.setdefault(_k.strip(), _v.strip().strip('"'))
+            os.environ[_k.strip()] = _v.strip().strip('"')    # .env wins over stale shell variables
 
 API = "https://console.vast.ai/api/v0"
 IMAGE = os.environ.get("CLOUD_IMAGE", "aimbot66/museum-cloud:latest")
