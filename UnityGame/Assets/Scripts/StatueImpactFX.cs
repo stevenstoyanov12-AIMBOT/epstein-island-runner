@@ -39,6 +39,7 @@ public static class StatueImpactFX
         for (int i = 0; i < count; i++)
         {
             var g = new GameObject("StoneFrag");
+            g.layer = 2;   // Ignore Raycast: the next shot goes through debris to the statue
             float size = (i < 2 ? Random.Range(0.12f, 0.22f) : Random.Range(0.03f, 0.1f)) * scale;
             g.transform.SetPositionAndRotation(p + n * 0.05f + Random.insideUnitSphere * 0.08f, Random.rotation);
             g.transform.localScale = Vector3.one * size;

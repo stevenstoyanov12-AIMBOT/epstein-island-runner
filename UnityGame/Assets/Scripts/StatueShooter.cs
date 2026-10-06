@@ -43,6 +43,7 @@ public class StatueShooter : MonoBehaviour
         var t = transform;
         Vector3 from = t.position + t.right * 0.15f - t.up * 0.12f + t.forward * 0.4f;
         var g = new GameObject("Bullet");
+        g.layer = 2;   // Ignore Raycast: a landed bullet must not block the next shot
         g.transform.position = from;
         g.transform.localScale = Vector3.one * 0.0095f * 1.6f;
         g.transform.rotation = Quaternion.LookRotation(target - from) * Quaternion.Euler(90f, 0, 0);
