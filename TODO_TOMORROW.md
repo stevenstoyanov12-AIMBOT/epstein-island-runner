@@ -6,7 +6,7 @@
 2. Fetch the pistol animations (Tripo export WITH animation: Mixamo skeleton + clip).
    Wire it as the reload clip: UnityGame (ReloadTestBuilder) first, then the game (replaces ReloadPose).
 
-Statue: head swapped for a clean fine-SDF head (no mouth hole), whiter marble. Head PIECES (Fig_00-04, shown after the first hit) still have the old face: next small step.
+Statue: head and head pieces rebuilt from a clean fine-SDF head (no mouth hole), whiter marble.
 Still pending: copy it into the game + Tools > Place Venus Statues.
 
 ## Statue workflow (no more full rebuilds)
