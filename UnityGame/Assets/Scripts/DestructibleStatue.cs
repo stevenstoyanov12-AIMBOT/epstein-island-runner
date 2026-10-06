@@ -70,6 +70,7 @@ public class DestructibleStatue : MonoBehaviour
         }
         // which pieces really touch: sample each piece's surface and count points lying on its neighbour
         foreach (var p in pieces) p.col.enabled = true;
+        Physics.SyncTransforms();
         for (int i = 0; i < pieces.Count; i++)
             for (int j = i + 1; j < pieces.Count; j++)
             {
@@ -86,15 +87,15 @@ public class DestructibleStatue : MonoBehaviour
     void Measure(Piece a, Piece b)
     {
         int n = 0; var sum = Vector3.zero;
-        foreach (var (from, to) in new[] { (a, b), (b, a) })
+        foreach (var (src, dst) in new[] { (a, b), (b, a) })
         {
-            var verts = from.t.GetComponent<MeshFilter>().sharedMesh.vertices;
+            var verts = src.t.GetComponent<MeshFilter>().sharedMesh.vertices;
             int step = Mathf.Max(1, verts.Length / 400);
             for (int k = 0; k < verts.Length; k += step)
             {
-                var w = from.t.TransformPoint(verts[k]);
-                if (!to.bounds.Contains(w) && to.bounds.SqrDistance(w) > ContactGap * ContactGap) continue;
-                var c = to.col.ClosestPoint(w);
+                var w = src.t.TransformPoint(verts[k]);
+                if (!dst.bounds.Contains(w) && dst.bounds.SqrDistance(w) > ContactGap * ContactGap) continue;
+                var c = dst.col.ClosestPoint(w);
                 if ((c - w).sqrMagnitude < ContactGap * ContactGap) { n++; sum += w; }
             }
         }
@@ -195,8 +196,8 @@ public class DestructibleStatue : MonoBehaviour
             if (!p.figure) { held.Add(p); queue.Enqueue(p); }
         while (queue.Count > 0)
         {
-            var s = queue.Dequeue();
-            foreach (var c in s.contacts)
+            var below = queue.Dequeue();
+            foreach (var c in below.contacts)
             {
                 var up = c.other;
                 if (up.loose || held.Contains(up)) continue;
