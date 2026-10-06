@@ -66,7 +66,8 @@ def vastai(*args, raw=False, answer=None):
     """Run Vast's own CLI (it carries the 2FA session from `vastai tfa login`)."""
     exe = shutil.which("vastai") or os.path.join(sys.prefix, "Scripts", "vastai.exe")
     cmd = [exe, *map(str, args)] + (["--raw"] if raw else [])
-    r = subprocess.run(cmd, capture_output=True, text=True, input=answer)
+    env = {k: v for k, v in os.environ.items() if k != "VAST_API_KEY"}   # else the CLI ignores its 2FA session
+    r = subprocess.run(cmd, capture_output=True, text=True, input=answer, env=env)
     out = (r.stdout or "") + (r.stderr or "")
     if r.returncode != 0 or "2FA session" in out or "Two Factor" in out:
         raise SystemExit(out.strip() + "\n\nIf this is the 2FA error: vastai tfa login --method-type totp -c <code>  then retry.")
