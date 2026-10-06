@@ -185,6 +185,23 @@ def blender_decimate(ob, target, head_budget, centre):
     """Seamless thinning in Blender: pass 1 thins everything but the head, pass 2 thins only the head to its own
     budget. One mesh, no split, so no cracks; Blender's collapse doesn't leave needle triangles."""
     import bpy
+    import gc
+
+    def bake(mod_setup):
+        """Apply a temporary modifier by evaluating it into a new mesh (cheaper than modifier_apply)."""
+        mod_setup()
+        ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        new = bpy.data.meshes.new_from_object(ev)
+        old = ob.data
+        ob.modifiers.clear()
+        ob.data = new
+        bpy.data.meshes.remove(old)
+        gc.collect()
+
+    # very dense meshes: an even first pass in Blender keeps memory in check (Blender's collapse leaves no needles)
+    nf = len(ob.data.polygons)
+    if nf > 1_200_000:
+        bake(lambda: setattr(ob.modifiers.new("pre", "DECIMATE"), "ratio", 1_200_000 / nf))
     me = ob.data
     co = np.empty(len(me.vertices) * 3, np.float32)
     me.vertices.foreach_get("co", co)
@@ -202,7 +219,7 @@ def blender_decimate(ob, target, head_budget, centre):
 
     def search(mod, want):
         lo_, hi_ = 0.002, 1.0
-        for _ in range(7):
+        for _ in range(6):
             mod.ratio = (lo_ + hi_) / 2
             n = faces_after()
             if n > want: hi_ = mod.ratio
@@ -255,7 +272,11 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
     total = sum(len(m.faces) for _, m in pieces)
     to_b = np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], float)   # Y-up (figure faces -Z) -> Z-up (faces -Y)
 
-    for name, m in [("Intact", intact)] + pieces:
+    pieces.append(("Intact", intact))                                      # the biggest mesh last
+    order = pieces                                                         # popped one by one: frees as we go
+    del intact
+    while order:
+        name, m = order.pop(0)
         share = len(m.faces) / total
         target = max(400, int(budget * share))
         head_budget = 0
@@ -282,6 +303,7 @@ def blender_scene(pieces, intact, vol, lo, voxel, budget, blend_path, fbx_path, 
         ob.location = centre @ to_b.T
         ob.parent = root
         scene.collection.objects.link(ob)
+        del m, verts                                                         # free the source mesh
         if target < nf:
             blender_decimate(ob, target, head_budget, centre)
         # fracture faces get the second material (sampled from the volume at each face centre)
