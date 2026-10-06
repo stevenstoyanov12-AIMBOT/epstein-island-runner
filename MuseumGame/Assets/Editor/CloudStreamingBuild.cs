@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 // Build > Cloud Streaming (Linux): the Linux x86_64 player that runs on the Vast cards.
 // Vulkan only, 1280x720 windowed, CLOUD_STREAMING define (enables CloudStreamHost), output CloudBuild/.
 // First run installs com.unity.webrtc if missing; Linux Build Support (IL2CPP or Mono) comes from Unity Hub.
-// Switches the active target to Linux (big reimport); Build > Back To WebGL switches back.
+// First run switches the active target to Linux (big reimport), the next run builds; Build > Back To WebGL switches back.
 public static class CloudStreamingBuild
 {
     const string Define = "CLOUD_STREAMING";
@@ -51,8 +51,20 @@ public static class CloudStreamingBuild
         PlayerSettings.visibleInBackground = true;
         PlayerSettings.usePlayerLog = true;
 
+        // Switching platform needs a reimport and a script reload before anything can build for it, so it is its own step.
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneLinux64)
+        {
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneLinux64);
+            EditorUtility.DisplayDialog("Cloud build",
+                "Switched the project to Linux. Wait until Unity finishes importing and compiling, then run Build > Cloud Streaming (Linux) again.",
+                "OK");
+            return;
+        }
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+        {
+            EditorUtility.DisplayDialog("Cloud build", "Unity is still importing/compiling. Try again when it is done.", "OK");
+            return;
+        }
 
         // Addressables have to be built for Linux too (bundles are per platform). Uses the active profile:
         // make sure its load paths are Local for this build, the cards should not pull bundles from R2.
