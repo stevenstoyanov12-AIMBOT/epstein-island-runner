@@ -107,7 +107,7 @@ export class Room {
     if (m.t === "s") { a.x = +m.x; a.y = +m.y; a.z = +m.z; a.al = m.al; ws.serializeAttachment(a); }
     else if (m.t === "hit") {
       const d = +m.d, now = Date.now();
-      if (!(d > 0 && d <= 40) || a.al === 0 || now - (a.lh || 0) < 90) return;
+      if (!(d > 0 && d <= 40) || a.al === 0 || now - (a.lh || 0) < 60) return;   // anti-spam, under the gun's 90 ms fire delay so network jitter never drops a real hit
       a.lh = now; ws.serializeAttachment(a);
       for (const o of this.state.getWebSockets()) {
         const b = o.deserializeAttachment();
