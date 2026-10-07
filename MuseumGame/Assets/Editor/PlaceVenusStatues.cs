@@ -78,12 +78,13 @@ public static class PlaceVenusStatues
         if (imp == null) return;
         imp.isReadable = true;
         imp.importAnimation = false;
-        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "Marble"), Mat("VenusMarble", new Color(0.99f, 0.985f, 0.975f), 0.55f));
-        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "MarbleBroken"), Mat("VenusMarbleBroken", new Color(1f, 1f, 0.99f), 0.12f));
+        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "Marble"), Mat("VenusMarble", Color.white, 0.55f, 0.10f));
+        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "MarbleBroken"), Mat("VenusMarbleBroken", Color.white, 0.12f, 0.14f));
         imp.SaveAndReimport();
     }
 
-    static Material Mat(string name, Color c, float smooth)
+    // white marble with a faint glow, so it reads white under the warm lamps at night
+    static Material Mat(string name, Color c, float smooth, float glow)
     {
         string path = $"Assets/Materials/{name}.mat";
         var m = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -94,6 +95,8 @@ public static class PlaceVenusStatues
             AssetDatabase.CreateAsset(m, path);
         }
         m.SetColor("_BaseColor", c); m.SetFloat("_Smoothness", smooth); m.SetFloat("_Metallic", 0f);
+        m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(glow, glow, glow * 1.02f));
+        m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
         EditorUtility.SetDirty(m);
         return m;
     }
