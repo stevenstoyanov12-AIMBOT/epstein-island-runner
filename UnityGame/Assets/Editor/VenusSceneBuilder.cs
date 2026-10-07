@@ -16,8 +16,8 @@ public static class VenusSceneBuilder
     // The model faces +Z; turn it 180 degrees to face a camera standing on the -Z side.
     public static GameObject PlaceStatue(Vector3 groundPos, Quaternion turn, GameObject cam)
     {
-        var marble = GetMaterial("VenusMarble", new Color(0.99f, 0.985f, 0.975f), 0.55f);          // white Carrara, soft polish
-        var broken = GetMaterial("VenusMarbleBroken", new Color(1f, 1f, 0.99f), 0.12f);           // fresh break: brighter, chalky
+        var marble = GetMaterial("VenusMarble", Color.white, 0.55f, 0.10f);                         // white Carrara, faint glow so it reads white at night
+        var broken = GetMaterial("VenusMarbleBroken", Color.white, 0.12f, 0.14f);                  // fresh break: brighter, chalky
         var dust = ParticleMaterial("StatueDust");
         var grit = ParticleMaterial("StatueGrit");
         SetupImporter(marble, broken);
@@ -31,6 +31,18 @@ public static class VenusSceneBuilder
         var rot = turn * prefab.transform.rotation;
         var statue = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         statue.transform.SetPositionAndRotation(pos, rot);
+        // neutral white key light on her, so the warm lamps don't turn the marble beige
+        var key = new GameObject("VenusKeyLight").AddComponent<Light>();
+        key.type = LightType.Spot;
+        key.color = new Color(0.95f, 0.97f, 1f);
+        key.intensity = 6f;
+        key.range = 9f;
+        key.spotAngle = 40f;
+        key.shadows = LightShadows.Soft;
+        var front = turn * Vector3.forward;
+        key.transform.position = pos + front * 3.2f + Vector3.up * 2.6f;
+        key.transform.LookAt(pos + Vector3.up * 0.9f);
+        key.transform.SetParent(statue.transform.parent, true);
         var ds = statue.AddComponent<DestructibleStatue>();
         ds.dustMaterial = dust;
         ds.gritMaterial = grit;
@@ -87,7 +99,7 @@ public static class VenusSceneBuilder
         return mat;
     }
 
-    static Material GetMaterial(string name, Color color, float smoothness)
+    static Material GetMaterial(string name, Color color, float smoothness, float glow = 0f)
     {
         if (!AssetDatabase.IsValidFolder(MaterialFolder))
             AssetDatabase.CreateFolder("Assets", "Materials");
@@ -101,6 +113,12 @@ public static class VenusSceneBuilder
         mat.SetColor("_BaseColor", color);
         mat.SetFloat("_Smoothness", smoothness);
         mat.SetFloat("_Metallic", 0f);
+        if (glow > 0f)
+        {
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", new Color(glow, glow, glow * 1.02f));
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        }
         EditorUtility.SetDirty(mat);
         AssetDatabase.SaveAssets();
         return mat;
