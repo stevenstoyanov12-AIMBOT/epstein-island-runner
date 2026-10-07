@@ -14,3 +14,8 @@ Start from the good tools/statue_gen/blend/VenusStatue.blend and make small loca
 - Whiter: material colour only (Blender material + Unity remap). No mesh rebuild.
 - Eyes: edit only the head region of the existing mesh, render one close-up of the face, check it, then export.
 Never rerun build_venus.py from scratch for a small change.
+
+## Status (Oct 7)
+- Done: nearest-GPU routing, hit window fix, late-join world state (deployed with the WebGL build).
+- Next: GPU stream test (worker secret verified), then rebuild + push the cloud Docker image after Steve's game changes.
+- Plan: Workers Paid ($5) before any big event; free plan lasts ~11 min at 100 players.
