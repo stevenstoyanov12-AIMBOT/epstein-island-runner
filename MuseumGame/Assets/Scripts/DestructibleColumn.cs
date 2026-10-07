@@ -79,8 +79,8 @@ public class DestructibleColumn : MonoBehaviour, IWorldState
             float d = (c.GetComponent<Renderer>().bounds.center - hit.point).sqrMagnitude;
             if (d < bd) { bd = d; best = c; }
         }
-        if (best == null || bd > 4f) { WorldState.Changed(key, this); return; }
-        chunks.Remove(best); gone.Add(all.IndexOf(best)); WorldState.Changed(key, this);
+        if (best == null || bd > 4f) { WorldState.Changed(this.key, this); return; }
+        chunks.Remove(best); gone.Add(all.IndexOf(best)); WorldState.Changed(this.key, this);
         best.SetParent(null, true);   // off the scaled chunk set so the rigidbody moves freely
         var mc = best.GetComponent<MeshCollider>(); mc.convex = true;
         var pl = GameObject.Find("Player"); if (pl) foreach (var pc in pl.GetComponentsInChildren<Collider>()) Physics.IgnoreCollision(mc, pc, true);
