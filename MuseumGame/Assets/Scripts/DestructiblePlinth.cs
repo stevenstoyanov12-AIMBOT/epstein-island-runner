@@ -3,13 +3,51 @@ using System.Collections.Generic;
 
 // Column base with 3 fixed breakable spots. Each spot is a slab of Voronoi-cracked stone shards over a rough crater.
 // Shots near a spot crack the stone (visible fissures) and blast shards out as real physics pieces, growing the crater up to 6 shots.
-public class DestructiblePlinth : MonoBehaviour
+public class DestructiblePlinth : MonoBehaviour, IWorldState
 {
     public float spotSize = 0.9f, shardDepth = 0.14f, craterDepth = 0.32f; public int shardCount = 34, maxShotsPerSpot = 6;
     class Shard { public GameObject go; public Vector2 c; public bool gone; }
     class Spot { public Vector3 center, n, u, v; public List<Shard> shards = new List<Shard>(); public int shots; }
     readonly List<Spot> spots = new List<Spot>();
     Material stone, inner;
+    string key;
+    void Awake() { key = Net.PathOf(transform); }
+
+    // late join: per spot "index:shots:gone shards:cracked shards"
+    public string Save()
+    {
+        var a = new List<string>();
+        for (int i = 0; i < spots.Count; i++)
+        {
+            var sp = spots[i]; if (sp.shots == 0) continue;
+            var g = new List<int>(); var c = new List<int>();
+            for (int k = 0; k < sp.shards.Count; k++)
+            {
+                var sh = sp.shards[k];
+                if (sh.gone) g.Add(k); else if (sh.go && sh.go.transform.localScale.x < 0.97f) c.Add(k);
+            }
+            a.Add(i + ":" + sp.shots + ":" + WorldState.Ints(g) + ":" + WorldState.Ints(c));
+        }
+        return string.Join(";", a);
+    }
+    public void Load(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return;
+        foreach (var e in s.Split(';'))
+        {
+            var p = e.Split(':'); if (p.Length < 4) continue;
+            int i = WorldState.PI(p[0]); if (i < 0 || i >= spots.Count) continue;
+            var sp = spots[i]; sp.shots = Mathf.Max(sp.shots, WorldState.PI(p[1]));
+            foreach (var k in WorldState.PInts(p[2]))
+                if (k >= 0 && k < sp.shards.Count && !sp.shards[k].gone) { sp.shards[k].gone = true; if (sp.shards[k].go) Destroy(sp.shards[k].go); }
+            foreach (var k in WorldState.PInts(p[3]))
+            {
+                if (k < 0 || k >= sp.shards.Count || sp.shards[k].gone || !sp.shards[k].go) continue;
+                var t = sp.shards[k].go.transform; if (t.localScale.x < 0.97f) continue;
+                t.localScale = new Vector3(0.95f, 0.95f, 1f); t.localPosition += new Vector3(0, 0, 0.01f);
+            }
+        }
+    }
 
     void Start()
     {
@@ -23,6 +61,7 @@ public class DestructiblePlinth : MonoBehaviour
         r.enabled = false;
         // keep original box collider for the solid body except spots: use shell mesh collider instead
         foreach (var c in GetComponents<Collider>()) c.enabled = false;
+        WorldState.Register(key, this);
     }
 
     void AddSpot(Vector3 c, Vector3 n)
@@ -171,6 +210,7 @@ public class DestructiblePlinth : MonoBehaviour
                 var t = sh.go.transform; if (t.localScale.x > 0.93f) { t.localScale = new Vector3(0.95f, 0.95f, 1f); t.localPosition += new Vector3(0, 0, Random.Range(0.003f, 0.02f)); t.localRotation = Quaternion.Euler(Random.Range(-3f, 3f), Random.Range(-3f, 3f), 0); }
             }
         }
+        WorldState.Changed(key, this);
     }
 }
 public class PlinthRelay : MonoBehaviour { public DestructiblePlinth owner; void OnBulletHit(RaycastHit h){ if (owner) owner.Hit(h); } }

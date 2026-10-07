@@ -61,7 +61,7 @@ public class SimpleGun : MonoBehaviour
         }
         if (found)
         {
-            ApplyHit(hit);
+            WorldState.Local = true; try { ApplyHit(hit); } finally { WorldState.Local = false; }   // our shot: we report what it broke
             FlyBullet(cam, hit.point, hit.normal);
         }
         // everyone else replays this shot in their copy of the world (barrels, columns, glass, statues... break the same way for all)

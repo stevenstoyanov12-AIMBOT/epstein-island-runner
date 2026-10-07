@@ -5,13 +5,29 @@ using System.Collections.Generic;
 // shot by shot; the 6th shot brings down whatever is left. The plinth only loses a chunk every few hits.
 // Works from the pre-cut model (children named Fig_## and Base_##). Other players' shots are replayed through
 // SimpleGun.RemoteShot -> OnBulletHit, so everyone sees the same statue break.
-public class ProgressiveStatue : MonoBehaviour
+public class ProgressiveStatue : MonoBehaviour, IWorldState
 {
     public int shotsToDestroy = 6;
     public float firstRadius = 0.22f, radiusGrowth = 0.05f, debrisLifetime = 7f;
     class Piece { public Transform t; public MeshCollider col; public bool fig, gone; }
     readonly List<Piece> pieces = new List<Piece>();
     int shots, baseHits;
+    string key;
+    void Awake() { key = Net.PathOf(transform); }
+
+    // late join: "shots:plinth hits:gone piece indices"
+    public string Save()
+    {
+        var g = new List<int>(); for (int i = 0; i < pieces.Count; i++) if (pieces[i].gone) g.Add(i);
+        return shots + ":" + baseHits + ":" + WorldState.Ints(g);
+    }
+    public void Load(string s)
+    {
+        var p = s.Split(':'); if (p.Length < 3) return;
+        shots = Mathf.Max(shots, WorldState.PI(p[0])); baseHits = Mathf.Max(baseHits, WorldState.PI(p[1]));
+        foreach (var i in WorldState.PInts(p[2]))
+            if (i >= 0 && i < pieces.Count && !pieces[i].gone) { pieces[i].gone = true; if (pieces[i].t) Destroy(pieces[i].t.gameObject); }
+    }
     static Material marble, inner; static ParticleSystem dustPrefab;
 
     void Start()
@@ -30,9 +46,17 @@ public class ProgressiveStatue : MonoBehaviour
             var c = mf.gameObject.AddComponent<MeshCollider>(); c.sharedMesh = mf.sharedMesh; c.convex = true;
             pieces.Add(new Piece { t = mf.transform, col = c, fig = mf.name.StartsWith("Fig") });
         }
+        WorldState.Register(key, this);
     }
 
     void OnBulletHit(RaycastHit hit)
+    {
+        int s0 = shots, b0 = baseHits;
+        Shot(hit);
+        if (shots != s0 || baseHits != b0) WorldState.Changed(key, this);
+    }
+
+    void Shot(RaycastHit hit)
     {
         if (shots >= shotsToDestroy) return;
         var hp = pieces.Find(p => p.col == hit.collider); if (hp == null || hp.gone) return;

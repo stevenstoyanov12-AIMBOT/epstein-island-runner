@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 // Shots 1-3: pressurised wine jets from each bullet hole (continuous ribbon stream + droplets + splashes + spreading puddle).
 // Shot 4: barrel bursts - wine blast, streaks, mist, flash, flying staves and a big puddle.
-public class WineBarrel : MonoBehaviour
+public class WineBarrel : MonoBehaviour, IWorldState
 {
     public GameObject fracturedPrefab;
     int hits;
@@ -37,6 +37,7 @@ public class WineBarrel : MonoBehaviour
     void OnBulletHit(RaycastHit hit)
     {
         hits++;
+        if (hits <= 4) WorldState.Changed(netPath, this);
         if (hits <= 3) Pour(hit);
         else if (hits == 4) Burst(hit);
     }
@@ -187,9 +188,40 @@ public class WineBarrel : MonoBehaviour
     static readonly Dictionary<string, WineBarrel> registry = new Dictionary<string, WineBarrel>();
     string netPath; float poseSend, lastPose = -10f, fellAt; Vector3 netPos; Quaternion netRot = Quaternion.identity; bool netFollow;
     void Awake() { netPath = Net.PathOf(transform); registry[netPath] = this; }   // id taken before a fall re-parents the barrel
+    void Start() { WorldState.Register(netPath, this); }
+    bool settledSent;
+
+    // ---- late join: hits so far, and where it came to rest if it fell ----
+    public string Save() => hits >= 4 ? "4" : falling ? hits + "|" + WorldState.V(transform.position) + "|" + WorldState.Q(transform.rotation) : hits.ToString();
+    public void Load(string s)
+    {
+        if (hits >= 4 || string.IsNullOrEmpty(s)) return;
+        var p = s.Split('|'); int n = WorldState.PI(p[0]);
+        if (n >= 4)
+        {
+            hits = 4; SnapPuddle(2.4f);
+            foreach (var rr in GetComponentsInChildren<Renderer>()) rr.enabled = false; foreach (var c in GetComponentsInChildren<Collider>()) c.enabled = false;
+            Destroy(gameObject, 0.5f);
+            return;
+        }
+        if (p.Length >= 3)
+        {
+            falling = true; transform.SetParent(null, true);
+            transform.SetPositionAndRotation(WorldState.PV(p[1]), WorldState.PQ(p[2]));
+            var rb = GetComponent<Rigidbody>(); if (rb) rb.isKinematic = true;
+        }
+        if (n > hits) { hits = n; SnapPuddle(0.55f + 0.25f * n); }
+    }
+    void SnapPuddle(float size)
+    {
+        GrowPuddle(size);
+        if (puddle) puddle.localScale = new Vector3(size, puddle.localScale.y, size * 0.85f);
+    }
     void Update()
     {
         if (!falling || hits >= 4) return;
+        // the host reports where a fallen barrel came to rest, for players who join later
+        if (!netFollow && !settledSent && Time.time - fellAt >= 6f && Net.I != null && Net.I.Online && Net.I.IsHost) { settledSent = true; WorldState.Changed(netPath, this, true); }
         if (netFollow)
         {
             if (Time.time - lastPose > 1.5f && Time.time - fellAt > 1.5f) { var rb0 = GetComponent<Rigidbody>(); if (rb0) rb0.isKinematic = false; netFollow = false; return; }   // host silent: fall locally
@@ -254,6 +286,7 @@ public class WineBarrel : MonoBehaviour
             var cp = c.GetContact(0); RaycastHit h = new RaycastHit(); h.point = cp.point; h.normal = cp.normal;
             hits = 4; Burst(h);
             if (Net.I != null && Net.I.Online) Net.I.SendRaw(new Net.Msg { t = "act", to = "burst", c = netPath });
+            WorldState.Changed(netPath, this, true);
         }
     }
     IEnumerator FadeLight(Light l) { float t = 0; while (t < 0.35f) { t += Time.deltaTime; l.intensity = Mathf.Lerp(14f, 0, t / 0.35f); yield return null; } Destroy(l.gameObject); }

@@ -71,8 +71,20 @@ export class Lobby {
 }
 
 // One Durable Object = one room (max 10 players). Relays JSON messages between everyone in the room.
+// World state for late joiners: the latest "ws" (a breakable's current state) per object, kept in memory and
+// saved at most every 5 s, so shots cost no storage writes.
+const SAVE_MS = 5000;
 export class Room {
-  constructor(state, env) { this.state = state; this.env = env; }
+  constructor(state, env) { this.state = state; this.env = env; this.world = null; this.dirty = false; }
+  async loadWorld() {
+    if (!this.world) this.world = new Map(Object.entries((await this.state.storage.get("world")) || {}));
+    return this.world;
+  }
+  async alarm() {
+    if (!this.dirty || !this.world) return;
+    this.dirty = false;
+    await this.state.storage.put("world", Object.fromEntries(this.world));
+  }
   async report(name, n, joined) {
     if (!name || !this.env.LOBBY) return;
     try { await lobbyOf(this.env).fetch("https://lobby/report?room=" + encodeURIComponent(name) + "&n=" + n + (joined ? "&joined=1" : "")); } catch (e) {}
@@ -92,9 +104,8 @@ export class Room {
     this.state.acceptWebSocket(server);
     server.serializeAttachment({ id, slot, room: roomName });
     server.send(JSON.stringify({ t: "hello", id, sl: slot + 1 }));
-    // catch a late joiner up: replay every shot / action this room has seen, so the world is broken the same way for them
-    const ev = (await this.state.storage.get("ev")) || [];
-    for (const e of ev) server.send(JSON.stringify(e));
+    // catch a late joiner up: the current state of every breakable that has changed, so their world looks like everyone else's
+    for (const m of (await this.loadWorld()).values()) server.send(JSON.stringify(m));
     await this.report(roomName, this.state.getWebSockets().length, true);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -121,11 +132,14 @@ export class Room {
       }
       return;
     }
-    if (m.t === "shot" || m.t === "act") {
-      // world events: keep a log (newest 800) for players who join later
-      const ev = (await this.state.storage.get("ev")) || [];
-      ev.push(m); if (ev.length > 800) ev.splice(0, ev.length - 800);
-      await this.state.storage.put("ev", ev);
+    if (m.t === "ws") {
+      // a breakable's new state: only kept for late joiners (everyone here already replayed the shot)
+      if (typeof m.c !== "string" || typeof m.s !== "string" || m.c.length > 200 || m.s.length > 4000) return;
+      const world = await this.loadWorld();
+      if (!world.has(m.c) && world.size >= 2000) return;
+      world.set(m.c, { t: "ws", c: m.c, s: m.s });
+      if (!this.dirty) { this.dirty = true; await this.state.storage.setAlarm(Date.now() + SAVE_MS); }
+      return;
     }
     const out = JSON.stringify(m);
     for (const o of this.state.getWebSockets()) if (o !== ws) o.send(out);
@@ -137,7 +151,7 @@ export class Room {
     let left = 0;
     for (const o of this.state.getWebSockets()) if (o !== ws) { o.send(out); left++; }
     // everyone gone: the next session starts with an untouched world
-    if (left === 0) await this.state.storage.delete("ev");
+    if (left === 0) { this.world = new Map(); this.dirty = false; await this.state.storage.delete(["world", "ev"]); await this.state.storage.deleteAlarm(); }
     await this.report(a.room, left, false);   // a place opened up: the lobby lets the next one in
   }
 }

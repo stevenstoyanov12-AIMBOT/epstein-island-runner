@@ -7,7 +7,7 @@ using UnityEngine;
 // Hits arrive through SimpleGun's OnBulletHit (local and replayed remote shots), so every client breaks it the same way.
 // First shots only chip it (stone impact FX); then pieces near each hit fall; the 6th figure hit drops the rest;
 // pieces no longer carried up from the plinth fall with them.
-public class VenusStatueBreak : MonoBehaviour
+public class VenusStatueBreak : MonoBehaviour, IWorldState
 {
     public int chipOnlyHits = 2;
     public float hitRadius = 0.18f;
@@ -26,9 +26,33 @@ public class VenusStatueBreak : MonoBehaviour
     GameObject intact;
     Material marble;
     int hits;
+    string key;
+
+    void Start() { WorldState.Register(key, this); }
+
+    // late join: "figure hits:loose piece indices"; loose pieces are simply gone (they sink away after a few seconds anyway)
+    public string Save()
+    {
+        var g = new List<int>(); for (int i = 0; i < pieces.Count; i++) if (pieces[i].loose) g.Add(i);
+        return hits + ":" + WorldState.Ints(g);
+    }
+    public void Load(string s)
+    {
+        var p = s.Split(':'); if (p.Length < 2) return;
+        hits = Mathf.Max(hits, WorldState.PI(p[0]));
+        if (hits > chipOnlyHits) ShowPieces();
+        foreach (var i in WorldState.PInts(p[1]))
+        {
+            if (i < 0 || i >= pieces.Count || pieces[i].loose) continue;
+            var q = pieces[i]; q.loose = true;
+            foreach (var o in pieces) if (o != q && o.figure) Physics.IgnoreCollision(q.col, o.col, true);
+            Destroy(q.t.gameObject);
+        }
+    }
 
     void Awake()
     {
+        key = Net.PathOf(transform);
         var tr = transform.Find("Intact");
         if (tr != null)
         {
@@ -90,7 +114,7 @@ public class VenusStatueBreak : MonoBehaviour
         var nearest = Nearest(hit.point);
         if (nearest == null || !nearest.figure) return;              // plinth: chips only, doesn't count
         hits++;
-        if (hits <= chipOnlyHits) return;
+        if (hits <= chipOnlyHits) { WorldState.Changed(key, this); return; }
         ShowPieces();
         var dir = -hit.normal;
         if (hits >= hitsToCollapse) { foreach (var p in pieces) if (p.figure) Break(p, dir, 0.15f); }
@@ -99,6 +123,7 @@ public class VenusStatueBreak : MonoBehaviour
                 if (p.figure && !p.loose && Vector3.Distance(p.col.ClosestPoint(hit.point), hit.point) < hitRadius)
                     Break(p, dir, p == nearest ? 1f : 0.4f);
         DropUnsupported();
+        WorldState.Changed(key, this);
     }
 
     void ShowPieces()

@@ -1,13 +1,23 @@
 using UnityEngine;
 
 // Display cases & desks: shots 1-3 chip/crack progressively, shot 4 breaks apart into pre-fractured pieces.
-public class BreakableProp : MonoBehaviour
+public class BreakableProp : MonoBehaviour, IWorldState
 {
     public GameObject fracturedPrefab; public int breakAt = 4; public Color chipColor = new Color(0.3f,0.1f,0.06f);
-    int hits;
+    int hits; string key;
+    void Awake() { key = Net.PathOf(transform); }
+    void Start() { WorldState.Register(key, this); }
+    public string Save() => hits.ToString();
+    public void Load(string s)   // late join: jump straight to this many hits, no effects
+    {
+        int n = WorldState.PI(s); if (n <= hits) return;
+        if (n >= breakAt) { hits = n; gameObject.SetActive(false); return; }
+        for (; hits < n; hits++) transform.localScale *= 0.995f;
+    }
     void OnBulletHit(RaycastHit hit)
     {
         hits++;
+        if (hits <= breakAt) WorldState.Changed(key, this);
         if (hits < breakAt)
         {
             SimpleGun.Dust(hit.point, hit.normal, 30 + hits * 25, 1.5f + hits, chipColor);          // chips / glass flying

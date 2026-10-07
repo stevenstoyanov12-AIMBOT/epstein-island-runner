@@ -3,11 +3,36 @@ using System.Collections;
 using System.Collections.Generic;
 
 // Display-case glass: shots 1-3 grow a spiderweb crack at each impact; shot 4 shatters every pane into Blender-fractured shards.
-public class GlassCase : MonoBehaviour
+public class GlassCase : MonoBehaviour, IWorldState
 {
     public GameObject shardsPrefab; int hits; bool broken; Bounds glass; Transform webT;
     static Material crackMat, sparkMat, hiddenMat;
     readonly List<GameObject> webs = new List<GameObject>();
+    readonly List<string> cracks = new List<string>();   // "point|normal" of each crack, for the world state
+    string key;
+    void Awake() { key = Net.PathOf(transform); }
+    void Start() { WorldState.Register(key, this); }
+    public string Save() => broken ? "b" : string.Join(";", cracks);
+    public void Load(string s)   // late join: the cracks or the shattered case as they are now, no effects
+    {
+        if (broken || string.IsNullOrEmpty(s)) return; Mats();
+        var r = GetComponent<Renderer>();
+        if (s == "b")
+        {
+            broken = true; hits = 4;
+            foreach (var w in webs) if (w) Destroy(w);
+            int gs = GlassSlot(r); if (gs >= 0) { var ms = r.sharedMaterials; ms[gs] = hiddenMat; r.sharedMaterials = ms; }
+            return;
+        }
+        var parts = s.Split(';');
+        for (int i = hits; i < parts.Length && i < 3; i++)
+        {
+            var pn = parts[i].Split('|'); var h = new RaycastHit(); h.point = WorldState.PV(pn[0]); h.normal = WorldState.PV(pn[1]);
+            glass = GlassBounds(r.bounds); hits = i + 1; cracks.Add(parts[i]);
+            webs.Add(Web(h, 0.09f + 0.04f * hits, hits));
+        }
+    }
+    static Bounds GlassBounds(Bounds b) => new Bounds(new Vector3(b.center.x, b.min.y + b.size.y * 0.765f, b.center.z), new Vector3(b.size.x * 0.94f, b.size.y * 0.45f, b.size.z * 0.94f));
 
     static void Mats()
     {
@@ -24,15 +49,20 @@ public class GlassCase : MonoBehaviour
         // only glass counts: glass box is the upper part of the case
         var b = r.bounds; bool onGlass = hit.point.y > b.min.y + b.size.y * 0.52f;
         if (!onGlass) return;
-        glass = new Bounds(new Vector3(b.center.x, b.min.y + b.size.y * 0.765f, b.center.z), new Vector3(b.size.x * 0.94f, b.size.y * 0.45f, b.size.z * 0.94f));
+        glass = GlassBounds(b);
         // ignore hits on the brass frame (near pane edges)
         var q = hit.point; float m = 0.05f;
         int edges = 0; if (Mathf.Abs(q.x - glass.min.x) < m || Mathf.Abs(q.x - glass.max.x) < m) edges++; if (Mathf.Abs(q.z - glass.min.z) < m || Mathf.Abs(q.z - glass.max.z) < m) edges++; if (Mathf.Abs(q.y - glass.min.y) < m || Mathf.Abs(q.y - glass.max.y) < m) edges++;
         if (edges >= 2) return;
         hits++;
         Sparkle(hit.point, hit.normal, 20 + hits * 15);
-        if (hits < 4) { webs.Add(Web(hit, 0.09f + 0.04f * hits, hits)); return; }
+        if (hits < 4)
+        {
+            cracks.Add(WorldState.V(hit.point) + "|" + WorldState.V(hit.normal)); WorldState.Changed(key, this);
+            webs.Add(Web(hit, 0.09f + 0.04f * hits, hits)); return;
+        }
         StartCoroutine(Shatter(hit));
+        WorldState.Changed(key, this);   // Shatter sets broken before its first yield
     }
 
     GameObject Web(RaycastHit hit, float radius, int level)

@@ -2,11 +2,37 @@ using UnityEngine;
 using System.Collections.Generic;
 
 // Column built from pre-fractured chunks + unbreakable core. Each impact area can lose chunks for up to 6 shots, then the damage there is capped.
-public class DestructibleColumn : MonoBehaviour
+public class DestructibleColumn : MonoBehaviour, IWorldState
 {
     public GameObject fracturedPrefab; public int maxShotsPerArea = 6; public float areaSize = 1.6f;
     readonly List<Transform> chunks = new List<Transform>();
     readonly Dictionary<Vector3Int,int> areaShots = new Dictionary<Vector3Int,int>();
+    readonly List<Transform> all = new List<Transform>();   // every breakable chunk, in build order (same on every client)
+    readonly List<int> gone = new List<int>();
+    string key;
+    void Awake() { key = Net.PathOf(transform); }
+
+    // late join: chunks already knocked out + shots per area
+    public string Save()
+    {
+        var a = new List<string>(); foreach (var kv in areaShots) a.Add(kv.Key.x + "," + kv.Key.y + "," + kv.Key.z + "=" + kv.Value);
+        return WorldState.Ints(gone) + "|" + string.Join(";", a);
+    }
+    public void Load(string s)
+    {
+        var p = s.Split('|');
+        foreach (var i in WorldState.PInts(p[0]))
+        {
+            if (i < 0 || i >= all.Count || gone.Contains(i)) continue;
+            gone.Add(i); var c = all[i]; chunks.Remove(c); if (c) Destroy(c.gameObject);
+        }
+        if (p.Length > 1)
+            foreach (var e in p[1].Split(';'))
+            {
+                var kv = e.Split('='); if (kv.Length != 2) continue; var v = kv[0].Split(',');
+                areaShots[new Vector3Int(WorldState.PI(v[0]), WorldState.PI(v[1]), WorldState.PI(v[2]))] = WorldState.PI(kv[1]);
+            }
+    }
 
     void Start()
     {
@@ -32,9 +58,10 @@ public class DestructibleColumn : MonoBehaviour
                 mr.materials = ms; foreach (var m2 in mr.materials) { if (m2.HasProperty("_Smoothness")) m2.SetFloat("_Smoothness", 0.05f); }
             }
             var mc = mr.gameObject.AddComponent<MeshCollider>(); mc.sharedMesh = mr.GetComponent<MeshFilter>().sharedMesh;
-            if (!mr.name.StartsWith("ColCore")) { chunks.Add(mr.transform); mr.gameObject.AddComponent<ColumnChunkRelay>().owner = this; }
+            if (!mr.name.StartsWith("ColCore")) { chunks.Add(mr.transform); all.Add(mr.transform); mr.gameObject.AddComponent<ColumnChunkRelay>().owner = this; }
         }
         r.enabled = false; r.forceRenderingOff = true; foreach (var c in GetComponents<Collider>()) c.enabled = false;
+        WorldState.Register(key, this);
     }
     static Bounds Bounds(GameObject g){ var rs = g.GetComponentsInChildren<Renderer>(); var b = rs[0].bounds; foreach (var x in rs) b.Encapsulate(x.bounds); return b; }
 
@@ -52,8 +79,8 @@ public class DestructibleColumn : MonoBehaviour
             float d = (c.GetComponent<Renderer>().bounds.center - hit.point).sqrMagnitude;
             if (d < bd) { bd = d; best = c; }
         }
-        if (best == null || bd > 4f) return;
-        chunks.Remove(best);
+        if (best == null || bd > 4f) { WorldState.Changed(key, this); return; }
+        chunks.Remove(best); gone.Add(all.IndexOf(best)); WorldState.Changed(key, this);
         best.SetParent(null, true);   // off the scaled chunk set so the rigidbody moves freely
         var mc = best.GetComponent<MeshCollider>(); mc.convex = true;
         var pl = GameObject.Find("Player"); if (pl) foreach (var pc in pl.GetComponentsInChildren<Collider>()) Physics.IgnoreCollision(mc, pc, true);

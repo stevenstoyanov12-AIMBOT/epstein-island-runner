@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 
 // Press E near a desk to kick it onto its side as cover (top faces away from the player, like Uncharted).
-public class TippableCover : MonoBehaviour
+public class TippableCover : MonoBehaviour, IWorldState
 {
     public float useRange = 3.0f;
     public float tipTime = 0.35f;
@@ -11,7 +11,19 @@ public class TippableCover : MonoBehaviour
     Transform player; Camera cam;
     static TippableCover focused;
 
-    void Start(){ var p = GameObject.Find("Player"); if (p) player = p.transform; cam = Camera.main; }
+    string key;
+    void Awake() { key = Net.PathOf(transform); }
+    void Start(){ var p = GameObject.Find("Player"); if (p) player = p.transform; cam = Camera.main; WorldState.Register(key, this); }
+
+    // late join: a tipped desk is simply placed where it ended up
+    public string Save() => tipped ? WorldState.V(transform.position) + "|" + WorldState.Q(transform.rotation) : "";
+    public void Load(string s)
+    {
+        if (tipped || busy || string.IsNullOrEmpty(s)) return;
+        var p = s.Split('|'); transform.SetPositionAndRotation(WorldState.PV(p[0]), WorldState.PQ(p[1]));
+        tipped = true;
+        foreach (var mc in GetComponentsInChildren<MeshCollider>()) { mc.enabled = false; mc.enabled = true; }
+    }
 
     void Update()
     {
@@ -25,7 +37,7 @@ public class TippableCover : MonoBehaviour
         else if (focused == this) focused = null;
         if (focused == this && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            StartCoroutine(Tip(player.position));
+            StartCoroutine(Tip(player.position, true));
             if (Net.I != null) Net.I.SendAct("tip", transform, player.position);   // the other players see it tip the same way
         }
     }
@@ -36,10 +48,10 @@ public class TippableCover : MonoBehaviour
     public static void RemoteTip(string path, Vector3 from)
     {
         var t = Net.FindByPath(path); var c = t != null ? t.GetComponent<TippableCover>() : null;
-        if (c != null && !c.tipped && !c.busy) c.StartCoroutine(c.Tip(from));
+        if (c != null && !c.tipped && !c.busy) c.StartCoroutine(c.Tip(from, false));
     }
 
-    IEnumerator Tip(Vector3 from)
+    IEnumerator Tip(Vector3 from, bool local)
     {
         busy = true; focused = null;
         var b = GetBounds();
@@ -67,6 +79,7 @@ public class TippableCover : MonoBehaviour
         }
         tipped = true; busy = false;
         foreach (var mc in GetComponentsInChildren<MeshCollider>()) { mc.enabled = false; mc.enabled = true; }
+        if (local) WorldState.Changed(key, this, true);   // we kicked it: report where it ended up
     }
 
     static Vector3 Flat(Vector3 v){ v.y = 0; return v; }

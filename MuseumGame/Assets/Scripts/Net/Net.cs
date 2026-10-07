@@ -20,7 +20,7 @@ public class Net : MonoBehaviour
     static string Url => Room == null ? Base + "lobby" : Base + "?room=" + Room;
     float lobbyPingT; int roomFails;
     public static Net I;
-    [Serializable] public class Msg { public string t, id, to, c, room; public int pos; public float x, y, z, r, p, ts, sp, d, tx, ty, tz, rl; public int cr, sh, al, sl; }   // rl = reload progress 0..1 (0 = not reloading)   // sl = the crate number the server gave us, plus one (0 = none)
+    [Serializable] public class Msg { public string t, id, to, c, room, s; public int pos; public float x, y, z, r, p, ts, sp, d, tx, ty, tz, rl; public int cr, sh, al, sl; }   // rl = reload progress 0..1 (0 = not reloading)   // sl = the crate number the server gave us, plus one (0 = none)
 
     string myId = ""; float sendT, retryT; bool wasOpen;
     readonly Dictionary<string, RemotePlayer> remotes = new Dictionary<string, RemotePlayer>();
@@ -141,7 +141,7 @@ public class Net : MonoBehaviour
                 RemotePlayer rp;
                 if (!remotes.TryGetValue(m.id, out rp) || rp == null) { rp = RemotePlayer.Create(m.id, m.c, LocalRoot()); if (rp == null) return; remotes[m.id] = rp; }
                 rp.Apply(m); break;
-            case "shot": case "act": pendingWorld.Add(m); FlushWorld(); break;
+            case "shot": case "act": case "ws": pendingWorld.Add(m); FlushWorld(); break;   // ws: a breakable's current state (room snapshot on join)
             case "st": StatueGaze.ApplyRemote(m); break;
             case "sg": case "sf": SniperGuard.ApplyRemote(m); break;
             case "bp": WineBarrel.ApplyPose(m); break;
@@ -152,7 +152,7 @@ public class Net : MonoBehaviour
         }
     }
 
-    // world events wait until the street and the museum are both loaded (late joiners get the room's history right away)
+    // world events wait until the street and the museum are both loaded (late joiners get the room's current world state right away)
     readonly List<Msg> pendingWorld = new List<Msg>();
     static bool WorldReady()
     {
@@ -167,6 +167,7 @@ public class Net : MonoBehaviour
             if (m.t == "shot") SimpleGun.RemoteShot(new Vector3(m.x, m.y, m.z), new Vector3(m.tx, m.ty, m.tz));
             else if (m.t == "act" && m.to == "tip") TippableCover.RemoteTip(m.c, new Vector3(m.x, m.y, m.z));
             else if (m.t == "act" && m.to == "burst") WineBarrel.RemoteBurst(m.c);
+            else if (m.t == "ws") WorldState.Apply(m.c, m.s);
         }
         pendingWorld.Clear();
     }
