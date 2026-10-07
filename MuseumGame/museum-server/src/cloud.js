@@ -8,6 +8,8 @@
 // Media never touches Cloudflare: the browser talks straight to the card over its direct UDP/TCP port,
 // through the card's own coturn (credentials minted here from the secret the card reports).
 // Regions follow the Lobby rule (regionOf in index.js); there are no Asia cards, so Asia plays in the browser.
+// Within a region each player goes to the nearest card with a free slot (Cloudflare's geolocation of the player's
+// IP and of the card's own heartbeat); when that card is full, the next nearest; when all are full, the queue.
 import { STREAM_HTML } from "./cloud_page.js";
 
 const CAP = 40;                    // concurrent cloud players across all cards
@@ -17,6 +19,7 @@ const CARD_DEAD_MS = 30e3;
 const TICKET_MS = 30e3;            // a claimed slot must connect within this
 const QUEUE_STALE_MS = 15e3;       // queue entries that stop polling drop out
 const TICK_MS = 5e3;
+const NEAR_KM = 300;               // cards this close to the nearest one count as equally near (fill the busiest)
 
 // Route /cloud/* and /stream.html here from the main fetch handler.
 // region: the Lobby's regionOf(request), so cloud players follow exactly the same continent rule.
@@ -27,6 +30,10 @@ export async function handleCloud(request, env, region) {
   const id = env.CLOUD.idFromName("global");
   const headers = new Headers(request.headers);
   headers.set("x-region", region || "eu");
+  // where Cloudflare places this caller (player or card); never trust a client-sent value
+  headers.delete("x-lat"); headers.delete("x-lon");
+  const cf = request.cf || {};
+  if (cf.latitude && cf.longitude) { headers.set("x-lat", String(cf.latitude)); headers.set("x-lon", String(cf.longitude)); }
   return env.CLOUD.get(id).fetch(new Request(request, { headers }));
 }
 
@@ -44,7 +51,7 @@ export class CloudBroker {
     const region = request.headers.get("x-region") || "eu";
     this.tickArm();
     if (url.pathname === "/cloud/report" && request.method === "POST") return this.report(request);
-    if (url.pathname === "/cloud/claim") return this.claim(url, region);
+    if (url.pathname === "/cloud/claim") return this.claim(url, region, geo(request));
     if (url.pathname === "/cloud/signal" && request.headers.get("Upgrade") === "websocket") return this.signal(url);
     if (url.pathname === "/cloud/status" && this.authorised(url.searchParams.get("key"))) return json(this.status());
     return new Response("not found", { status: 404 });
@@ -69,6 +76,8 @@ export class CloudBroker {
       region: r.region === "us" ? "us" : "eu", ip: r.ip, udp: r.udp, tcp: r.tcp || null,
       turnSecret: r.turnSecret, seen: Date.now(), gpu: r.gpu || null,
     });
+    const at = geo(request);
+    if (at) card.at = at;
     for (const s of r.slots || []) {
       const slot = this.slot(card, s.slot);
       slot.alive = !!s.alive;
@@ -88,9 +97,10 @@ export class CloudBroker {
     return this.tickets.size;
   }
 
-  freeSlot(region) {
+  // nearest card with a free slot; among cards about as near as that one, the busiest (so quiet cards can be switched off)
+  freeSlot(region, at) {
     const now = Date.now();
-    let best = null;
+    const open = [];
     for (const [id, card] of this.cards) {
       if (card.region !== region || now - card.seen > CARD_DEAD_MS) continue;
       let free = [], busy = 0;
@@ -98,10 +108,11 @@ export class CloudBroker {
         if (s.ticket) busy++;
         else if (s.host && !s.draining) free.push(n);
       }
-      // fill the busiest card first so whole cards can be switched off when quiet
-      if (free.length && (!best || busy > best.busy)) best = { id, card, n: free[0], busy };
+      if (free.length) open.push({ id, card, n: free[0], busy, km: at && card.at ? km(at, card.at) : 0 });
     }
-    return best;
+    if (!open.length) return null;
+    const nearest = Math.min(...open.map(c => c.km));
+    return open.filter(c => c.km <= nearest + NEAR_KM).sort((a, b) => b.busy - a.busy || a.km - b.km)[0];
   }
 
   freeCount(region) {
@@ -114,7 +125,7 @@ export class CloudBroker {
     return n;
   }
 
-  async claim(url, region) {
+  async claim(url, region, at) {
     if (region === "asia")
       return json({ none: true, reason: "No cloud machines in Asia yet. Playing in the browser instead." });
     const now = Date.now();
@@ -132,7 +143,7 @@ export class CloudBroker {
       return json({ none: true, reason: "Cloud play is offline right now." });
     }
     const room = Math.min(this.freeCount(region), CAP - this.active());
-    const pick = pos < room ? this.freeSlot(region) : null;
+    const pick = pos < room ? this.freeSlot(region, at) : null;
     if (!pick) return json({ wait: pos + 1, q: qid });
 
     q.splice(pos, 1);
@@ -278,7 +289,7 @@ export class CloudBroker {
 
   status() {
     const cards = [...this.cards].map(([id, c]) => ({
-      id, region: c.region, ip: c.ip, ageS: Math.round((Date.now() - c.seen) / 1000), gpu: c.gpu,
+      id, region: c.region, ip: c.ip, ageS: Math.round((Date.now() - c.seen) / 1000), gpu: c.gpu, at: c.at || null,
       slots: [...c.slots].map(([n, s]) => ({ n, host: !!s.host, busy: !!s.ticket, draining: s.draining })),
     }));
     return { active: this.active(), cap: CAP, queue: { eu: this.queue.eu.length, us: this.queue.us.length }, cards };
@@ -289,4 +300,17 @@ function json(o) {
   return new Response(JSON.stringify(o), {
     headers: { "content-type": "application/json", "cache-control": "no-store", "access-control-allow-origin": "*" },
   });
+}
+
+// Cloudflare's location of the caller, set by handleCloud: {lat, lon} or null
+function geo(request) {
+  const lat = parseFloat(request.headers.get("x-lat")), lon = parseFloat(request.headers.get("x-lon"));
+  return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+}
+
+// great-circle distance in km
+function km(a, b) {
+  const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
 }
