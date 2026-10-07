@@ -258,11 +258,22 @@ public class LaserEye
     // Additive, HDR-tinted material: adds light on top of whatever is behind it, like a real beam.
     static Material Additive(Texture2D tex, Color hdr)
     {
+        // clone the real additive asset: materials set up only at runtime lose their transparent shader variant in the web build
+        // (the charge-up animation then draws as a solid bright square over the eyes)
+        var baseMat = Res.Load<Material>("FX_Flash");
+        if (baseMat != null)
+        {
+            var bm = new Material(baseMat);
+            bm.SetTexture("_BaseMap", tex);
+            bm.SetColor("_BaseColor", hdr);
+            bm.SetFloat("_Cull", 0f);
+            bm.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            return bm;
+        }
         var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
         if (shader == null)
             return new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, color = hdr };
-        var baseMat = Res.Load<Material>("FX_Additive");   // real asset, so the web build keeps the additive shader variant
-        var m = baseMat != null ? new Material(baseMat) : new Material(shader);
+        var m = new Material(shader);
         m.SetTexture("_BaseMap", tex);
         m.SetColor("_BaseColor", hdr);
         m.SetFloat("_Surface", 1f);                                   // transparent

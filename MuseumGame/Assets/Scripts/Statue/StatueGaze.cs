@@ -109,7 +109,67 @@ public class StatueGaze : MonoBehaviour
         LaserEye.UpdateScorches();
     }
 
+    // ---- multiplayer: one player (the room host) runs the statues; everyone else mirrors what the host's statues do ----
+    static readonly System.Collections.Generic.Dictionary<string, StatueGaze> registry = new System.Collections.Generic.Dictionary<string, StatueGaze>();
+    string netPath; int netState; float netYaw, netK, sendT, lastRecv = -10f; Vector3 netAim;
+    static bool Following => Net.I != null && Net.I.Online && !Net.I.IsHost;
+
+    public static void ApplyRemote(Net.Msg m)
+    {
+        StatueGaze g; if (!registry.TryGetValue(m.c, out g) || g == null) return;
+        g.netState = m.cr; g.netYaw = m.r; g.netK = m.d; g.netAim = new Vector3(m.tx, m.ty, m.tz); g.lastRecv = Time.time;
+    }
+
     void Update()
+    {
+        if (netPath == null) { netPath = Net.PathOf(transform); registry[netPath] = this; }
+        if (Following && Time.time - lastRecv < 2f) { Follow(); return; }
+        Brain();
+        if (Net.I != null && Net.I.Online && Net.I.IsHost && (sendT -= Time.deltaTime) <= 0f)
+        {
+            sendT = 0.1f;
+            Vector3 aim = state == State.Firing ? aimPoint : (target != null ? target.AimPoint : head.position + head.forward * 10f);
+            float k = state == State.Charging ? Mathf.Clamp01(timer / chargeTime) : timer;
+            Net.I.SendRaw(new Net.Msg { t = "st", c = netPath, cr = (int)state, r = head.eulerAngles.y, d = k, tx = aim.x, ty = aim.y, tz = aim.z });
+        }
+    }
+
+    // mirror the host's statue: same facing, same charge, same beam (the beam here is only visual; damage comes from the host)
+    void Follow()
+    {
+        head.rotation = Quaternion.RotateTowards(head.rotation, Quaternion.Euler(0f, netYaw, 0f), turnSpeed * 2f * Time.deltaTime);
+        var ns = (State)netState;
+        if (ns != state)
+        {
+            if (state == State.Charging) whine.Stop();
+            if (state == State.Firing) { hum.Stop(); foreach (var l in lasers) l.SetIdle(); gazeLight.intensity = 6f; }
+            if (ns == State.Charging) whine.Play();
+            if (ns == State.Firing) { fx.PlayOneShot(crack, 1f); hum.volume = 0.5f; hum.Play(); aimPoint = netAim; }
+            if (ns == State.Searching) foreach (var l in lasers) l.SetIdle();
+            state = ns; timer = 0f; target = null;
+        }
+        timer += Time.deltaTime;
+        switch (state)
+        {
+            case State.Searching: Tint(Dim, Dim); foreach (var l in lasers) l.Idle(0f); break;
+            case State.Charging:
+                float k = Mathf.Clamp01(netK);
+                Tint(Color.Lerp(Bright, White, k * k), Color.Lerp(Bright, White, k));
+                foreach (var l in lasers) l.Charge(k, netAim);
+                break;
+            case State.Firing:
+                aimPoint = Vector3.MoveTowards(aimPoint, netAim, beamTrackSpeed * 2f * Time.deltaTime);
+                UpdateBeam(false);
+                break;
+            case State.Cooldown:
+                float heat = Mathf.Exp(-timer * 2.5f);
+                Tint(Color.Lerp(Dim, White, heat), Dim);
+                foreach (var l in lasers) l.Idle(heat);
+                break;
+        }
+    }
+
+    void Brain()
     {
         switch (state)
         {
@@ -152,7 +212,7 @@ public class StatueGaze : MonoBehaviour
 
             case State.Firing:
                 timer += Time.deltaTime;
-                UpdateBeam();
+                UpdateBeam(true);
                 if (timer >= beamTime) EndBeam();
                 break;
 
@@ -188,15 +248,18 @@ public class StatueGaze : MonoBehaviour
         timer = 0f;
     }
 
-    void UpdateBeam()
+    void UpdateBeam(bool authority)
     {
         // the beam follows the loudest player it can see (swings over if someone gets louder) and burns them while it touches
-        var loud = LoudestVisible();
-        if (loud != null && (target == null || !target.Alive || loud == target || loud.Noise > target.Noise + switchMargin)) target = loud;
-        if (target != null && target.Alive && CanSee(target, true))
+        if (authority)
         {
-            aimPoint = Vector3.MoveTowards(aimPoint, target.AimPoint, beamTrackSpeed * Time.deltaTime);
-            TurnToward(aimPoint, turnSpeed);
+            var loud = LoudestVisible();
+            if (loud != null && (target == null || !target.Alive || loud == target || loud.Noise > target.Noise + switchMargin)) target = loud;
+            if (target != null && target.Alive && CanSee(target, true))
+            {
+                aimPoint = Vector3.MoveTowards(aimPoint, target.AimPoint, beamTrackSpeed * Time.deltaTime);
+                TurnToward(aimPoint, turnSpeed);
+            }
         }
         float fade = Mathf.Clamp01((beamTime - timer) / 0.08f);   // snaps off at the end
         hum.volume = 0.5f * fade;
@@ -217,10 +280,12 @@ public class StatueGaze : MonoBehaviour
                 normal = hit.normal;
                 hitSomething = true;
                 var victim = hit.collider.GetComponentInParent<GazeTarget>();
-                if (victim != null && victim.Alive && !burned.Contains(victim))   // one hit of 10 per beam per player
+                if (authority && victim != null && victim.Alive && !burned.Contains(victim))   // one hit of 10 per beam per player
                 {
                     burned.Add(victim);
-                    victim.Hit(damagePerHit);
+                    var rp = victim.remoteProxy ? victim.GetComponent<RemotePlayer>() : null;
+                    if (rp != null) { if (Net.I != null) Net.I.SendHit(rp.id, damagePerHit); }   // another player: the damage travels to them
+                    else victim.Hit(damagePerHit);
                     hitAnyone = true;
                 }
             }

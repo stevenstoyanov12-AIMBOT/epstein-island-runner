@@ -23,12 +23,23 @@ public class TippableCover : MonoBehaviour
         bool looking = cam && Vector3.Dot(cam.transform.forward, (b.center - cam.transform.position).normalized) > 0.5f;
         if (d < useRange && looking) { if (focused == null || focused == this) focused = this; }
         else if (focused == this) focused = null;
-        if (focused == this && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) StartCoroutine(Tip());
+        if (focused == this && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            StartCoroutine(Tip(player.position));
+            if (Net.I != null) Net.I.SendAct("tip", transform, player.position);   // the other players see it tip the same way
+        }
     }
 
     Bounds GetBounds(){ var rs = GetComponentsInChildren<Renderer>(); var b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds); return b; }
 
-    IEnumerator Tip()
+    // another player kicked this desk over (from position `from`)
+    public static void RemoteTip(string path, Vector3 from)
+    {
+        var t = Net.FindByPath(path); var c = t != null ? t.GetComponent<TippableCover>() : null;
+        if (c != null && !c.tipped && !c.busy) c.StartCoroutine(c.Tip(from));
+    }
+
+    IEnumerator Tip(Vector3 from)
     {
         busy = true; focused = null;
         var b = GetBounds();
@@ -42,7 +53,7 @@ public class TippableCover : MonoBehaviour
             float ext = Mathf.Abs(Vector3.Dot(b.extents, new Vector3(Mathf.Abs(c.x), 0, Mathf.Abs(c.z))));
             if (ext < best) { best = ext; shortDir = c.normalized; }
         }
-        Vector3 toPlayer = player.position - b.center; toPlayer.y = 0;
+        Vector3 toPlayer = from - b.center; toPlayer.y = 0;
         Vector3 away = Vector3.Dot(toPlayer, shortDir) > 0 ? -shortDir : shortDir;
         Vector3 pivot = new Vector3(b.center.x, b.min.y, b.center.z) + away * best;
         Vector3 axis = Vector3.Cross(Vector3.up, away);

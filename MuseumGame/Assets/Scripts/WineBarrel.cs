@@ -177,8 +177,84 @@ public class WineBarrel : MonoBehaviour
             }
             Destroy(f, 8f);
         }
+        var myBounds = rend ? rend.bounds : new Bounds(center, Vector3.one);
         foreach (var rr in GetComponentsInChildren<Renderer>()) rr.enabled = false; foreach (var c in GetComponentsInChildren<Collider>()) c.enabled = false;
+        DropAbove(myBounds, this);
         Destroy(gameObject, 6f);
+    }
+
+    // ---- multiplayer sync of falling barrels ----
+    static readonly Dictionary<string, WineBarrel> registry = new Dictionary<string, WineBarrel>();
+    string netPath; float poseSend, lastPose = -10f, fellAt; Vector3 netPos; Quaternion netRot = Quaternion.identity; bool netFollow;
+    void Awake() { netPath = Net.PathOf(transform); registry[netPath] = this; }   // id taken before a fall re-parents the barrel
+    void Update()
+    {
+        if (!falling || hits >= 4) return;
+        if (netFollow)
+        {
+            if (Time.time - lastPose > 1.5f && Time.time - fellAt > 1.5f) { var rb0 = GetComponent<Rigidbody>(); if (rb0) rb0.isKinematic = false; netFollow = false; return; }   // host silent: fall locally
+            float k = 1f - Mathf.Exp(-20f * Time.deltaTime);
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, netPos, k), Quaternion.Slerp(transform.rotation, netRot, k));
+        }
+        else if (Net.I != null && Net.I.Online && Net.I.IsHost && Time.time - fellAt < 6f && (poseSend -= Time.deltaTime) <= 0f)
+        {
+            poseSend = 1f / 15f; var p = transform.position; var q = transform.rotation;
+            Net.I.SendRaw(new Net.Msg { t = "bp", c = netPath, x = p.x, y = p.y, z = p.z, tx = q.x, ty = q.y, tz = q.z, r = q.w });
+        }
+    }
+    public static void ApplyPose(Net.Msg m)
+    {
+        WineBarrel w; if (!registry.TryGetValue(m.c, out w) || w == null || w.hits >= 4) return;
+        w.netPos = new Vector3(m.x, m.y, m.z); w.netRot = new Quaternion(m.tx, m.ty, m.tz, m.r); w.lastPose = Time.time;
+        if (!w.falling) w.Fall();   // the host's barrel lost its support before ours did
+    }
+    public static void RemoteBurst(string path)
+    {
+        WineBarrel w; if (!registry.TryGetValue(path, out w) || w == null || w.hits >= 4) return;
+        var h = new RaycastHit(); h.point = w.transform.position; h.normal = Vector3.up;
+        w.hits = 4; w.Burst(h);
+    }
+
+    // ---- stacking: barrels resting on a destroyed barrel lose their support and fall (and so does everything stacked on them) ----
+    bool falling;
+    static void DropAbove(Bounds support, WineBarrel except)
+    {
+        foreach (var w in FindObjectsByType<WineBarrel>(FindObjectsSortMode.None))
+        {
+            if (w == except || w.falling || w.hits >= 4) continue;
+            var r = w.GetComponent<Renderer>(); if (r == null || !r.enabled) continue;
+            var b = r.bounds;
+            bool above = b.min.y > support.center.y && b.min.y - support.max.y < 0.35f;
+            Vector2 d = new Vector2(b.center.x - support.center.x, b.center.z - support.center.z);
+            bool overlaps = Mathf.Abs(d.x) < (b.extents.x + support.extents.x) * 0.85f && Mathf.Abs(d.y) < (b.extents.z + support.extents.z) * 0.85f;
+            if (above && overlaps) w.Fall();
+        }
+    }
+    public void Fall()
+    {
+        if (falling) return; falling = true;
+        var r = GetComponent<Renderer>(); var b = r ? r.bounds : new Bounds(transform.position, Vector3.one);
+        transform.SetParent(null, true);
+        foreach (var mc in GetComponentsInChildren<MeshCollider>()) mc.convex = true;   // a moving rigidbody needs convex colliders
+        if (GetComponentInChildren<Collider>() == null) { var bc = gameObject.AddComponent<BoxCollider>(); }
+        var rb = GetComponent<Rigidbody>(); if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = false; rb.useGravity = true; rb.mass = 60f; rb.interpolation = RigidbodyInterpolation.Interpolate; rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.AddTorque(Random.insideUnitSphere * 6f, ForceMode.Impulse);
+        fellAt = Time.time;
+        // multiplayer: only the host simulates the fall; everyone else's barrel follows the host's (same path, same landing)
+        if (Net.I != null && Net.I.Online && !Net.I.IsHost) { rb.isKinematic = true; netFollow = true; if (lastPose < fellAt - 0.5f) { netPos = transform.position; netRot = transform.rotation; } }
+        DropAbove(b, this);   // whatever sits on this barrel comes down with it
+    }
+
+    void OnCollisionEnter(Collision c)
+    {
+        // a falling barrel that slams down hard bursts
+        if (falling && !netFollow && hits < 4 && c.relativeVelocity.magnitude > 7f && c.contactCount > 0)
+        {
+            var cp = c.GetContact(0); RaycastHit h = new RaycastHit(); h.point = cp.point; h.normal = cp.normal;
+            hits = 4; Burst(h);
+            if (Net.I != null && Net.I.Online) Net.I.SendRaw(new Net.Msg { t = "act", to = "burst", c = netPath });
+        }
     }
     IEnumerator FadeLight(Light l) { float t = 0; while (t < 0.35f) { t += Time.deltaTime; l.intensity = Mathf.Lerp(14f, 0, t / 0.35f); yield return null; } Destroy(l.gameObject); }
 }

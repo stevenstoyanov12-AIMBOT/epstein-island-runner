@@ -48,9 +48,48 @@ public class SniperGuard : MonoBehaviour
         bool lit = SeesPlayer(mz) && Vector3.Angle(light.transform.forward, toP) < half * 0.7f && InQuarter(t.position);
         player = old; return lit;
     }
+    // ---- multiplayer: the room host's sniper decides and shoots; everyone else's sniper mirrors it ----
+    static readonly System.Collections.Generic.Dictionary<string, SniperGuard> registry = new System.Collections.Generic.Dictionary<string, SniperGuard>();
+    string netPath; float sendT, lastRecv = -10f, netRed; Vector3 netAim; bool netLocked;
+    static bool Following => Net.I != null && Net.I.Online && !Net.I.IsHost;
+    public static void ApplyRemote(Net.Msg m)
+    {
+        SniperGuard g; if (!registry.TryGetValue(m.c, out g) || g == null) return;
+        if (m.t == "sf")   // the host's sniper fired
+        {
+            g.flash.transform.position = g.Muzzle(); g.flash.intensity = 12f;
+            if (Net.I != null && m.to == Net.I.MyId) screenFlash = 0.6f;   // ...at me (the damage arrives as a hit)
+            return;
+        }
+        g.netAim = new Vector3(m.tx, m.ty, m.tz); g.netLocked = m.cr == 1; g.netRed = m.d; g.lastRecv = Time.time;
+    }
+    void Follow()
+    {
+        aimPt = Vector3.Lerp(aimPt, netAim, Time.deltaTime * 8f);
+        var wantRot = Quaternion.LookRotation(aimPt - light.transform.position);
+        light.transform.rotation = Quaternion.RotateTowards(light.transform.rotation, wantRot, 12f * Time.deltaTime);
+        var bt = light.transform.Find("Beam");
+        if (bt) { float len = BeamHit(light.transform.position, light.transform.forward);
+            beamLen = Mathf.Lerp(beamLen <= 0 ? len : beamLen, len, Time.deltaTime * 8f); bt.localScale = new Vector3(bt.localScale.x, bt.localScale.y, beamLen); }
+        var dir = light.transform.forward; dir.y = 0; if (dir.sqrMagnitude > 0.01f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * turnSpeed * 2f);
+        redT = Mathf.MoveTowards(redT, netRed, Time.deltaTime * 10f);
+        var red = new Color(1f, 0.08f, 0.05f);
+        if (spot) spot.color = Color.Lerp(baseCol, red, redT);
+        if (beamR) { var bc = Color.Lerp(beamBase, new Color(1f, 0.1f, 0.05f, beamBase.a), redT); beamR.material.color = bc; if (beamR.material.HasProperty("_EmissionColor")) beamR.material.SetColor("_EmissionColor", bc * 2f); }
+        flash.intensity = Mathf.MoveTowards(flash.intensity, 0, Time.deltaTime * 200f);
+        screenFlash = Mathf.MoveTowards(screenFlash, 0, Time.deltaTime * 2f);
+    }
+
     void Update()
     {
         if (!light || !player) return;
+        if (netPath == null) { netPath = Net.PathOf(transform); registry[netPath] = this; }
+        if (Following && Time.time - lastRecv < 2f) { Follow(); return; }
+        if (Net.I != null && Net.I.Online && Net.I.IsHost && (sendT -= Time.deltaTime) <= 0f)
+        {
+            sendT = 0.1f;
+            Net.I.SendRaw(new Net.Msg { t = "sg", c = netPath, cr = locked ? 1 : 0, d = redT, tx = aimPt.x, ty = aimPt.y, tz = aimPt.z });
+        }
         var mz = Muzzle();
         PickTarget(mz);
         // player visible inside the beam cone?
@@ -157,7 +196,11 @@ public class SniperGuard : MonoBehaviour
         var target = player.position + Vector3.up * 0.6f + Random.insideUnitSphere * 0.6f;
         // no tracer: the red beam is the shot line
         if (player == localPlayer) screenFlash = 0.6f;
-        var gt = player.GetComponent<GazeTarget>(); if (gt) gt.Hit(20f);
+        var gt = player.GetComponent<GazeTarget>();
+        var rp = player.GetComponent<RemotePlayer>();
+        if (rp != null) { if (Net.I != null) Net.I.SendHit(rp.id, 20f); }   // another player: the damage travels to them
+        else if (gt) gt.Hit(20f);
+        if (Net.I != null && Net.I.Online) Net.I.SendRaw(new Net.Msg { t = "sf", c = netPath, to = rp != null ? rp.id : Net.I.MyId });
     }
     void OnGUI()
     {

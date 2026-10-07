@@ -43,29 +43,43 @@ public class IntroLoader : MonoBehaviour
         var select = Addressables.LoadSceneAsync(selectKey, LoadSceneMode.Additive);
         yield return select;
         showLoad = false;
-        // the world downloads while the player chooses and the cutscene plays
+        // the street downloads while the player chooses and is built in memory (switched off) as soon as its files are in
         var outsideDl = Addressables.DownloadDependenciesAsync(outsideKey);
+        StartCoroutine(PreloadOutside(outsideDl));
         while (string.IsNullOrEmpty(CharacterSelect.Chosen)) yield return null;
         // 2. cutscene
         var cs = FindFirstObjectByType<CrateCutscene>();
         if (cs != null) { cs.Play(); yield return null; }
-        if (select.Status == AsyncOperationStatus.Succeeded) Addressables.UnloadSceneAsync(select);
+        if (select.Status == AsyncOperationStatus.Succeeded) Addressables.UnloadSceneAsync(select);   // finishes once the street is switched on
         while (cs != null && !CrateCutscene.Finished) yield return null;
-        // 3. the world
+        // 3. the world: normally already built, so this only switches it on
         showLoad = true; status = "Entering";
-        while (!outsideDl.IsDone) { progress = outsideDl.GetDownloadStatus().Percent; yield return null; }
-        Addressables.Release(outsideDl);
-        var outside = Addressables.LoadSceneAsync(outsideKey, LoadSceneMode.Additive);
-        while (!outside.IsDone) { progress = outside.PercentComplete; yield return null; }
-        if (outside.Status == AsyncOperationStatus.Succeeded) SceneManager.SetActiveScene(outside.Result.Scene);
+        while (!outsidePrepared) { progress = outsideStarted ? outsideOp.PercentComplete : outsideDl.GetDownloadStatus().Percent * 0.5f; yield return null; }
+        if (outsideOp.Status == AsyncOperationStatus.Succeeded)
+        {
+            yield return outsideOp.Result.ActivateAsync();
+            SceneManager.SetActiveScene(outsideOp.Result.Scene);
+        }
         showLoad = false;
         // then the interior, in the background
         loadingInside = true;
         yield return Download(insideKey, "Museum interior");
         var inside = Addressables.LoadSceneAsync(insideKey, LoadSceneMode.Additive);
-        yield return inside;
-        if (outside.Status == AsyncOperationStatus.Succeeded) SceneManager.SetActiveScene(outside.Result.Scene);   // keep outside lighting/sky
+        while (!inside.IsDone) { progress = inside.PercentComplete; yield return null; }
+        if (outsideOp.Status == AsyncOperationStatus.Succeeded) SceneManager.SetActiveScene(outsideOp.Result.Scene);   // keep outside lighting/sky
         InsideLoaded = true; loadingInside = false;
+    }
+
+    AsyncOperationHandle<SceneInstance> outsideOp; bool outsideStarted, outsidePrepared;
+    IEnumerator PreloadOutside(AsyncOperationHandle dl)
+    {
+        while (!dl.IsDone) yield return null;
+        if (dl.Status != AsyncOperationStatus.Succeeded) Debug.LogWarning("IntroLoader: download failed for " + outsideKey + ": " + dl.OperationException);
+        Addressables.Release(dl);
+        outsideOp = Addressables.LoadSceneAsync(outsideKey, LoadSceneMode.Additive, false);   // loaded but not switched on
+        outsideStarted = true;
+        yield return outsideOp;
+        outsidePrepared = true;
     }
 
     IEnumerator Download(string key, string label)
