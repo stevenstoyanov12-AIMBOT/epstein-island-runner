@@ -31,9 +31,15 @@ public static class OldStoneImpactFX
 
     public static void Play(RaycastHit hit, Material stone, float scale = 1f)
     {
-        Init();
+        Fragments(hit.point, hit.normal, stone, scale);
         Vector3 p = hit.point, n = hit.normal;
-        // 1. fragments
+        PlayParticles(p, n, scale);
+    }
+
+    // physics stone chunks only (used by the combined StoneImpactFX too)
+    public static void Fragments(Vector3 p, Vector3 n, Material stone, float scale = 1f)
+    {
+        Init();
         int count = Random.Range(9, 16);
         for (int i = 0; i < count; i++)
         {
@@ -49,7 +55,10 @@ public static class OldStoneImpactFX
             rb.linearVelocity = dir * Random.Range(1.5f, 5f); rb.angularVelocity = Random.insideUnitSphere * 15f;
             g.AddComponent<OldFragmentFade>().life = Random.Range(6f, 10f);
         }
-        // 2. billowing dust cloud (lingers)
+    }
+
+    static void PlayParticles(Vector3 p, Vector3 n, float scale)
+    {
         var cloud = Make("StoneDust", p + n * 0.1f, n, dustMat);
         var m = cloud.main; m.duration = 0.05f; m.startLifetime = new ParticleSystem.MinMaxCurve(0.12f, 0.2f);
         m.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 4f); m.startSize = new ParticleSystem.MinMaxCurve(0.08f * scale, 0.18f * scale);

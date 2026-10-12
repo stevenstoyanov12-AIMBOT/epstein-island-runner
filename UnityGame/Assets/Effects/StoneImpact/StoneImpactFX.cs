@@ -18,6 +18,8 @@ public class StoneImpactFX : MonoBehaviour
     public float scale = 1f;
     public int poolSize = 10;
     public float decalLife = 12f;
+    [Tooltip("Real physics stones (old museum effect) instead of particle chunks")]
+    public bool physicsStones = true;
 
     Material chunkMat, dustMat, gritMat, decalMat;
     readonly List<Fx> pool = new List<Fx>();
@@ -68,7 +70,9 @@ public class StoneImpactFX : MonoBehaviour
         fx.root.SetPositionAndRotation(point, Quaternion.LookRotation(normal));
         fx.root.gameObject.SetActive(true);
         fx.chunks.Clear(); fx.grit.Clear(); fx.dust.Clear();
-        fx.chunks.Play(); fx.grit.Play(); fx.dust.Play();
+        fx.grit.Play(); fx.dust.Play();
+        if (physicsStones) OldStoneImpactFX.Fragments(point, normal, chunkMat, scale);
+        else fx.chunks.Play();
 
         // decal sits on the surface, random spin, lifted a hair to avoid z-fighting
         fx.decal.SetPositionAndRotation(point + normal * 0.004f,

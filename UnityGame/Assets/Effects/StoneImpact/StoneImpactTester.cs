@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // Test bench: drop on any object in an empty scene and press Play.
-// Builds a stone wall + floor, sets up StoneImpactFX. Left click = new effect, right click = old museum effect.
+// Builds a stone wall + floor, sets up StoneImpactFX. Left click = combined (old stones + new dust), right click = old museum effect.
 public class StoneImpactTester : MonoBehaviour
 {
     Material stone;
