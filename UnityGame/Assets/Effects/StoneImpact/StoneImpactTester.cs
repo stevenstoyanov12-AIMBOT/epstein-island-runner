@@ -2,9 +2,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // Test bench: drop on any object in an empty scene and press Play.
-// Builds a stone wall + floor, sets up StoneImpactFX, left click shoots.
+// Builds a stone wall + floor, sets up StoneImpactFX. Left click = new effect, right click = old museum effect.
 public class StoneImpactTester : MonoBehaviour
 {
+    Material stone;
+
     void Start()
     {
         var fx = FindFirstObjectByType<StoneImpactFX>();
@@ -26,7 +28,7 @@ public class StoneImpactTester : MonoBehaviour
             go.SetActive(true);
         }
 
-        var stone = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.79f, 0.76f) };
+        stone = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.8f, 0.79f, 0.76f) };
         var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         wall.name = "TestWall"; wall.transform.position = new Vector3(0, 1.5f, 4); wall.transform.localScale = new Vector3(6, 3, 0.5f);
         wall.GetComponent<Renderer>().sharedMaterial = stone;
@@ -41,8 +43,12 @@ public class StoneImpactTester : MonoBehaviour
     void Update()
     {
         var mouse = Mouse.current;
-        if (mouse == null || !mouse.leftButton.wasPressedThisFrame || Camera.main == null) return;
+        if (mouse == null || Camera.main == null) return;
+        bool left = mouse.leftButton.wasPressedThisFrame, right = mouse.rightButton.wasPressedThisFrame;
+        if (!left && !right) return;
         var ray = Camera.main.ScreenPointToRay(mouse.position.ReadValue());
-        if (Physics.Raycast(ray, out var hit, 100f)) StoneImpactFX.Spawn(hit.point, hit.normal);
+        if (!Physics.Raycast(ray, out var hit, 100f)) return;
+        if (left) StoneImpactFX.Spawn(hit.point, hit.normal);
+        else OldStoneImpactFX.Play(hit, stone);
     }
 }
