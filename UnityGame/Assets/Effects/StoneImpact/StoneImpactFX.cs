@@ -106,7 +106,7 @@ public class StoneImpactFX : MonoBehaviour
             m.startLifetime = new ParticleSystem.MinMaxCurve(1.6f, 2.4f);
             m.startSpeed = new ParticleSystem.MinMaxCurve(2.5f * scale, 6f * scale);
             m.startSize = new ParticleSystem.MinMaxCurve(0.03f * scale, 0.09f * scale);
-            m.start3DRotation = true;
+            m.startRotation3D = true;
             m.startRotationX = m.startRotationY = m.startRotationZ = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
             m.gravityModifier = 1.6f;
             m.simulationSpace = ParticleSystemSimulationSpace.World;
